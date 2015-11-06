@@ -1,6 +1,7 @@
 #!/bin/bash
 
 #################################################
+<<<<<<< HEAD
 #           Panda Linux installer               #
 #                                               #
 # Abhimanyu Saharan <desk.abhimanyu@gmail.com>  #
@@ -15,6 +16,22 @@ source cleanup
 
 # Accept mount point from the user
 # FIXME Add leading slash if not available
+=======
+# Panda Linux installer.                       	#
+#						#
+# Abhimanyu Saharan <desk.abhimanyu@gmail.com>	#
+#################################################
+
+source handleErrors
+source global
+source requirementsCheck
+source deployScripts
+source build
+source cleanup
+
+# Accept mount point from the user
+# FIXME Add leading slash
+>>>>>>> 4160d2efeca75a9a8fba598472c74859f1a5b385
 MOUNT_POINT="${1}"
 
 # Verify existence of mount point
@@ -23,6 +40,7 @@ then
     displayMsg ERR "Mount point does not exist."
     exit 1
 fi
+<<<<<<< HEAD
 
 if [ "${MOUNT_POINT}" == "" ]
 then
@@ -45,4 +63,38 @@ checkReq
 # Create necessary directories
 createReqDir
 # Cleanup the system
+=======
+mountpoint $MOUNT_POINT &> /dev/null || {
+    displayMsg ERR "Invalid mount point."
+    exit 1
+}
+
+#################################################################
+# FIXME: Remove the following lines after finalizing the script #
+#################################################################
+
+cp -v install $MOUNT_POINT
+cp -v global $MOUNT_POINT
+cp -v requirementsCheck $MOUNT_POINT
+cp -v handleErrors $MOUNT_POINT
+cp -v deployScripts $MOUNT_POINT
+cp -v build $MOUNT_POINT
+cp -v src/scripts/* $MOUNT_POINT/src/scripts
+
+#################################################################
+
+# Verify minimum requirements
+requirementsCheck
+
+# Fetch packages
+mkdir -p ${PKG_DIR}
+# FIXME: Do not run the following command after all the packages have
+#        been successfuly downloaded
+wget --input-file=wget-list --continue --directory-prefix=${PKG_DIR}
+
+displayMsg ""
+#displayMsg OK "Creating a temporary system..."
+deployScripts
+# Cleanup the mess
+>>>>>>> 4160d2efeca75a9a8fba598472c74859f1a5b385
 cleanup

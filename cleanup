@@ -3,15 +3,24 @@
 cleanup() {
     displayMsg ""
     displayMsg OK "Creating backup of the system ..."
+<<<<<<< HEAD
     cp -ru /tools "${MOUNT_POINT}${BACKUP_DIR}/${TOOLS_DIR}"
+=======
+    cp -rf /tools/* "${MOUNT_POINT}${BACKUP_DIR}/${TOOLS_DIR}"
+>>>>>>> 4160d2efeca75a9a8fba598472c74859f1a5b385
     displayMsg OK "Done ..."
     
     displayMsg ""
     displayMsg OK "Cleaning up the mess ..."
     rm -rf "${MOUNT_POINT}${BUILD_DIR}"
+<<<<<<< HEAD
     rm -rf "${MOUNT_POINT}${TOOLS_DIR}"
     sudo rm -rf /tools
     
+=======
+    #rm -rf "${MOUNT_POINT}${TOOLS_DIR}"
+    sudo rm -rf /tools
+>>>>>>> 4160d2efeca75a9a8fba598472c74859f1a5b385
     displayMsg OK "Done ..."
 }
 

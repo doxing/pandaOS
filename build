@@ -1,0 +1,127 @@
+#!/bin/bash
+
+startBuild() {
+    displayMsg OK "Initializing build process ..."
+    # Change directory to the mount point
+    cd $MOUNT_POINT
+    
+    # Begin Pass 1
+    pass1
+    # Begin Pass 2
+    pass2
+    # Begin installation of test suites
+    testSuites
+    # Install rest
+    rest
+    
+    # Remove unnecessary symbols built so far
+    strip --strip-debug /tools/lib/*
+    /usr/bin/strip --strip-unneeded /tools/{,s}bin/*
+}
+
+# Builds all the neccessary scripts for Pass 1
+pass1() {
+    BUILD binutils1
+    BUILD gcc
+    BUILD linux-api-headers
+    BUILD glibc
+    BUILD libstdc
+    
+    # Clean up the mess made inside the package directory
+    cleanupBuild
+}
+
+# Builds all the neccessary scripts for Pass 2
+pass2() {
+    BUILD binutils2
+    BUILD gcc2
+    
+    # Clean up the mess made inside the package directory
+    cleanupBuild
+}
+
+# Begin installation of test suites
+testSuites() {
+    BUILD tcl
+    BUILD expect
+    BUILD deja
+    BUILD check
+    
+    # Clean up the mess made inside the package directory
+    cleanupBuild
+}
+
+# Installs everything rest
+rest() {
+    BUILD ncurses
+    BUILD bash
+    BUILD bzip2
+    BUILD coreutils
+    BUILD diffutils
+    BUILD file
+    BUILD findutils
+    BUILD gawk
+    BUILD gettext
+    BUILD grep
+    BUILD gzip
+    BUILD m4
+    BUILD make
+    BUILD patch
+    BUILD perl
+    BUILD sed
+    BUILD tar
+    BUILD texinfo
+    BUILD util-linux
+    BUILD xz
+    
+    # Clean up the mess made inside the package directory
+    cleanupBuild
+}
+
+BUILD() {
+    cd $MOUNT_POINT
+    # Load build script
+    local SCRIPT_SRC="${MOUNT_POINT}${SCRIPT_DIR}/${1}"
+
+    displayMsg OK "... Selected '${1}' package"
+    
+    # Extract the source code
+    extractPkg "$(cat ${SCRIPT_SRC} | grep '\FILENAME' | cut -d '=' -f2 | sed -e 's/^"//' -e 's/"$//')"
+    
+    displayMsg OK "... Building a temporary version of this software"
+    # Change directory to builds folder
+    cd "${BUILD_DIR}"
+    
+    # Create dedicated directory for the package
+    mkdir -p ${1}
+    # Move inside the dedicated directory
+    cd ${1}
+    # Execute the script
+    . ${SCRIPT_SRC}
+}
+
+# Extracts source code for the selected package.
+extractPkg() {
+    # Extract the primary source archive to a new directory.
+    if [ "$(echo ${1} | grep \\.zip\$)" ]; then
+        displayMsg OK "... Extracting source code"
+        unzip "${MOUNT_POINT}${PKG_DIR}/${1}" -d "${MOUNT_POINT}${PKG_DIR}"
+    elif [ "$(isArchive ${1})" ]; then
+        displayMsg OK "... Extracting source code"
+        tar xf "${MOUNT_POINT}${PKG_DIR}/${1}" -C "${MOUNT_POINT}${PKG_DIR}"
+    else
+        if [ "$(echo ${1} | grep \\.img\$)" == "" ]; then
+            displayMsg ERR "... Unknown source format. Not extracting '${1}'"
+        fi
+    fi
+}
+
+# Checks is a filename is an archive that can be extracted.
+isArchive() {
+  for ext in \\.zip \\.tar\\.bz2 \\.tar\\.gz \\.tar\\.xz \\.tgz \\.tar; do
+    if [ "$(echo ${1} | grep ${ext}\$)" ]; then
+      echo "true"
+      return
+    fi
+  done
+}

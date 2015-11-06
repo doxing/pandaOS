@@ -1,0 +1,46 @@
+#!/bin/bash
+
+# Install this script in a way that it is accessible to both host and target OS.
+deployScripts() {
+    # Change directory to the mount point
+    cd $MOUNT_POINT
+    
+    # Create BUILD_DIR
+    if [ ! -d "${MOUNT_POINT}${BUILD_DIR}" ]
+    then
+        mkdir -p "${MOUNT_POINT}${BUILD_DIR}"
+    fi
+    
+    # Create BACKUP_DIR
+    if [ ! -d "${MOUNT_POINT}${BACKUP_DIR}" ]
+    then
+        mkdir -p "${MOUNT_POINT}${BACKUP_DIR}"
+        mkdir -p "${MOUNT_POINT}${BACKUP_DIR}/${TOOLS_DIR}"
+    fi
+    
+    local BUILD_DIR="$(readlink -f ./${BUILD_DIR})"
+    local TOOLS_DIR="$(readlink -f ./$TOOLS_DIR)"
+    
+    if [ ! -w $BUILD_DIR ]
+    then
+        displayMsg ERR "Build directory is not writable."
+        exit 1
+    fi
+    
+    # Create the /tools directory
+    mkdir -p $TOOLS_DIR
+    sudo ln -s $TOOLS_DIR /
+    
+    # Move the contents to the mount point
+    # FIXME: Implement a better method
+    if [ "$(cat global | grep VERSION | cut -d "=" -f2 | sed -e 's/^"//' -e 's/"$//')" != "ALPHA-4" ]
+    then
+        displayMsg ""
+        displayMsg OK "Copying data to $MOUNT_POINT ..."
+        cp -vR ./* $MOUNT_POINT
+        displayMsg OK "Done ..."
+    fi
+    
+    # Initialize Setup
+    startBuild
+}
