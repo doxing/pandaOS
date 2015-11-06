@@ -60,6 +60,7 @@ rest() {
     BUILD gettext
     BUILD grep
     BUILD gzip
+    BUILD m4
     
     # Clean up the mess made inside the package directory
     cleanupBuild
