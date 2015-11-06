@@ -1,0 +1,90 @@
+#!/bin/bash
+
+FOLDERNAME="glibc-2.22"
+FILENAME="glibc-2.22.tar.xz"
+
+# FIXME: Crashes while executing make command
+
+cd ../../pkg/${FOLDERNAME}
+# Some of the Glibc programs use non-FHS compilant /var/db directory to
+# store their runtime data. Apply the following patch to make such
+# programs store their runtime data in the FHS-compliant locations
+patch -Np1 -i ../glibc-2.22-fhs-1.patch
+# Fix a build problem that affects i386 systems
+patch -Np1 -i ../glibc-2.22-upstream_i386_fix-1.patch
+
+cd ../../build/glibc-ch
+
+../../pkg/${FOLDERNAME}/configure     \
+    --prefix=/usr                     \
+    --disable-profile                 \
+    --enable-kernel=2.6.32            \
+    --enable-obsolete-rpc
+
+
+# Build the package
+make $MAKEFLAGS
+
+# Test suite for Glibc is considered critical
+#make $MAKEFLAGS check
+
+# The install stage of Glibc will complain about the absence of
+# /etc/ld.so.conf. Prevent this warning
+#touch /etc/ld.so.conf
+
+# Install the package
+#make $MAKEFLAGS install
+
+# Install the configuration file and runtime directory for nscd
+#cp -v ../../pkg/${FOLDERNAME}/nscd/nscd.conf /etc/nscd.conf
+#mkdir -p /var/cache/nscd
+
+# Install the minimum set of locales necessary for the optimal
+# coverage of tests
+#mkdir -p /usr/lib/locale
+#make $MAKELAGS localedata/install-locales
+
+# The /etc/nsswitch.conf file needs to be created because the
+# Glibc defaults do not work well in a networked environment
+#cat > /etc/nsswitch.conf << "EOF"
+# Begin /etc/nsswitch.conf
+
+#passwd: files
+#group: files
+#shadow: files
+
+#hosts: files dns
+#networks: files
+
+#protocols: files
+#services: files
+#ethers: files
+#rpc: files
+
+# End /etc/nsswitch.conf
+#EOF
+
+# By default, the dynamic loader (/lib/ld-linux.so.2) searches
+# through /lib and /usr/lib for dynamic libraries that are needed
+# by programs as they are run. However, if there are libraries in
+# directories other than /lib and /usr/lib, these need to be added
+# to the /etc/ld.so.conf file in order for the dynamic loader to
+# find them. Two directories that are commonly known to contain
+# additional libraries are /usr/local/lib and /opt/lib, so add
+# those directories to the dynamic loader's search path.
+#cat > /etc/ld.so.conf << "EOF"
+# Begin /etc/ld.so.conf
+#/usr/local/lib
+#/opt/lib
+
+#EOF
+
+# The dynamic loader can also search a directory and include the
+# contents of files found there. Generally the files in this include
+# directory are one line specifying the desired library path.
+#cat >> /etc/ld.so.conf << "EOF"
+# Add an include directory
+#include /etc/ld.so.conf.d/*.conf
+
+#EOF
+#mkdir -p /etc/ld.so.conf.d

@@ -1,0 +1,9 @@
+#!/bin/bash
+
+FOLDERNAME="man-pages-4.02"
+FILENAME="man-pages-4.02.tar.xz"
+
+cp -rf ../../pkg/${FOLDERNAME}/* ./
+
+# Install Man-pages
+make $MAKELAGS install

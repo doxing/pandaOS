@@ -1,0 +1,16 @@
+#!/bin/bash
+
+FOLDERNAME="tar-1.28"
+FILENAME="tar-1.28.tar.xz"
+
+# Prepare Tar for compilation
+../../pkg/${FOLDERNAME}/configure --prefix=/tools
+
+# Build the package
+make $MAKEFLAGS
+
+# Run the test suite
+make $MAKEFLAGS check
+
+# Install the package
+make $MAKEFLAGS install

@@ -1,0 +1,20 @@
+#!/bin/bash
+
+FOLDERNAME="bash-4.3.30"
+FILENAME="bash-4.3.30.tar.gz"
+
+# Prepare Bash for compilation
+../../pkg/${FOLDERNAME}/configure --prefix=/tools   \
+            --without-bash-malloc
+
+# Build the package
+make $MAKEFLAGS
+
+# Run the test suite
+make $MAKEFLAGS tests
+
+# Install the package
+make $MAKEFLAGS install
+
+# Make a link for the programs that use sh for a shell
+ln -s bash /tools/bin/sh

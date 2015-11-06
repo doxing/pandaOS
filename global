@@ -1,0 +1,20 @@
+#!/bin/bash
+
+VERSION="ALPHA-5"
+CODENAME="PANDA"
+TARGET="$(uname -m)-panda-linux"
+
+MOUNT_POINT=""
+PKG_DIR="src/pkg"
+PKG_BASIC_DIR="${PKG_DIR}/basic"
+PKG_STD_DIR="${PKG_DIR}/standard"
+BUILD_DIR="src/build"
+TOOLS_DIR="tools"
+SCRIPT_DIR="src/scripts"
+BACKUP_DIR="backup"
+
+WGET_LIST_BASIC="wget-list-basic"
+WGET_LIST_STD="wget-list-standard"
+
+# Utilise CPU cores for faster processing
+MAKEFLAGS="-j $(cat /proc/cpuinfo | grep processor | wc -l)"

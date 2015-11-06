@@ -1,0 +1,16 @@
+#!/bin/bash
+
+FOLDERNAME="m4-1.4.17"
+FILENAME="m4-1.4.17.tar.xz"
+
+# Prepare M4 for compilation
+../../pkg/${FOLDERNAME}/configure --prefix=/tools
+
+# Build the package
+make $MAKEFLAGS
+
+# Run the test suite
+make $MAKEFLAGS check
+
+# Install the package
+make $MAKEFLAGS install

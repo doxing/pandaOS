@@ -1,0 +1,34 @@
+#!/bin/bash
+
+getBasicPkgs() {
+    displayMsg OK "Verifying packages ..."
+
+    # Change to the package directory
+    if [ ! -d $PKG_BASIC_DIR ]
+    then
+        mkdir -p $PKG_BASIC_DIR
+    fi
+    
+    cd $PKG_BASIC_DIR
+    if [ $(ls -l | wc -l) != 81 ]
+    then
+        sudo wget --continue --input-file="../../../${WGET_LIST_BASIC}" || $ERR=$?
+        
+        if [ "${ERR}" = "127" ]
+        then
+            displayMsg ERR "You do not have the 'wget' utility installed."
+            displayMsg ERR "Therefore you should download all the required"
+            displayMsg ERR "sources manually... Or install 'wget'."
+            exit 1
+        elif [ "${ERR}" != "" ]; then
+            displayMsg ERR "Primary URL is down. Please try againg later."
+            exit 1
+        fi
+    fi
+    
+    # Change directory to home
+    cd ../../../
+    # Copy the data to the mount point
+    cp -ur ./* $MOUNT_POINT
+}
+

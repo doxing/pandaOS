@@ -1,0 +1,16 @@
+#!/bin/bash
+
+FOLDERNAME="libstdc++-v3"
+FILENAME="gcc-5.2.0.tar.bz2"
+GCC="$(cat ../../scripts/gcc | grep FOLDERNAME | cut -d "=" -f2 | cut -d " " -f2 | sed -e 's/^"//' -e 's/"$//')"
+
+../../pkg/${GCC}/${FOLDERNAME}/configure    \
+    --host=$TARGET                          \
+    --prefix=/tools                         \
+    --disable-multilib                      \
+    --disable-nls                           \
+    --disable-libstdcxx-threads             \
+    --disable-libstdcxx-pch                 \
+    --with-gxx-include-dir=/tools/$TARGET/include/c++/5.2.0
+    
+make $MAKEFLAGS && make $MAKEFLAGS install

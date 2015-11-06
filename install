@@ -1,0 +1,48 @@
+#!/bin/bash
+
+#################################################
+#           Panda Linux installer               #
+#                                               #
+# Abhimanyu Saharan <desk.abhimanyu@gmail.com>  #
+#################################################
+
+source global
+source handleErrors
+source getPkgs
+source functions
+source requirementsCheck
+source cleanup
+
+# Accept mount point from the user
+# FIXME Add leading slash if not available
+MOUNT_POINT="${1}"
+
+# Verify existence of mount point
+if [ ! -d $MOUNT_POINT ]
+then
+    displayMsg ERR "Mount point does not exist."
+    exit 1
+fi
+
+if [ "${MOUNT_POINT}" == "" ]
+then
+    displayMsg WARN "Usage: ./install <mointPoint>"
+    exit 1
+fi
+
+#################################################################
+# Copy the data to the mount point                              #
+#################################################################
+
+cp -ur ./* $MOUNT_POINT
+
+#################################################################
+
+# Download all the packages before continuing
+getBasicPkgs
+# Verify System Requirements
+checkReq
+# Create necessary directories
+createReqDir
+# Cleanup the system
+cleanup

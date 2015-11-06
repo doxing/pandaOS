@@ -1,0 +1,24 @@
+#!/bin/bash
+
+FOLDERNAME="tcl8.6.4"
+FILENAME="tcl-core8.6.4-src.tar.gz"
+
+# Prepare TCL for compilation
+../../pkg/${FOLDERNAME}/unix/configure --prefix=/tools
+
+# Build the package
+make
+# Run the Tcl test suite
+TZ=UTC make test
+
+# Install the package
+make install
+
+# Make the installed library writable so debugging symbols can be removed later
+chmod -v u+w /tools/lib/libtcl8.6.so
+
+# Install Tcl's headers
+make install-private-headers
+
+# Make a necessary symbolic link
+ln -sv tclsh8.6 /tools/bin/tclsh

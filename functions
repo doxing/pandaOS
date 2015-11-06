@@ -1,0 +1,6 @@
+#!/bin/bash
+
+# Silence wget
+wget() {
+    $(which wget) --no-check-certificate $@ 2> /dev/null
+}
