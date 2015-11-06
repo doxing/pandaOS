@@ -11,6 +11,8 @@ startBuild() {
     pass2
     # Begin installation of test suites
     testSuites
+    # Install everything rest
+    rest
 }
 
 # Builds all the neccessary scripts for Pass 1
@@ -34,11 +36,20 @@ pass2() {
     cleanupBuild
 }
 
+# Begin installation of test suites
 testSuites() {
     BUILD tcl
     BUILD expect
     BUILD deja
     BUILD check
+    
+    # Clean up the mess made inside the package directory
+    cleanupBuild
+}
+
+# Installs everything rest
+rest() {
+    BUILD ncurses
     
     # Clean up the mess made inside the package directory
     cleanupBuild

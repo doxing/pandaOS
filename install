@@ -49,11 +49,6 @@ requirementsCheck
 mkdir -p ${PKG_DIR}
 wget --input-file=wget-list --continue --directory-prefix=${PKG_DIR}
 
-# Verify that all the correct packages are available before proceeding
-pushd ${PKG_DIR}
-md5sum -c md5sums
-popd
-
 # Move the contents to the mount point
 # FIXME: Implement a better method
 if [ "$(cat global | grep VERSION | cut -d "=" -f2 | sed -e 's/^"//' -e 's/"$//')" != "ALPHA-4" ]
