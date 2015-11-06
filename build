@@ -68,6 +68,7 @@ rest() {
     BUILD tar
     BUILD texinfo
     BUILD util-linux
+    BUILD xz
     
     # Clean up the mess made inside the package directory
     cleanupBuild

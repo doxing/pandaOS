@@ -1,0 +1,16 @@
+#!/bin/bash
+
+FOLDERNAME="xz-5.2.1"
+FILENAME="xz-5.2.1.tar.xz"
+
+# Prepare Xz for compilation
+../../pkg/${FOLDERNAME}/configure --prefix=/tools
+
+# Build the package
+make $MAKEFLAGS
+
+# Run the Xz test suite
+make $MAKEFLAGS check
+
+# Install the package
+make $MAKEFLAGS install
