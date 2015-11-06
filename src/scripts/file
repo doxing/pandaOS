@@ -1,0 +1,16 @@
+#!/bin/bash
+
+FOLDERNAME="file-5.24"
+FILENAME="file-5.24.tar.gz"
+
+# Prepare Diff-Utils for compilation
+../../pkg/${FOLDERNAME}/configure --prefix=/tools
+
+# Build the package
+make $MAKEFLAGS
+
+# Run the Diff-Utils test suite
+make $MAKEFLAGS check
+
+# Install the package
+make $MAKEFLAGS install
