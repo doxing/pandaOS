@@ -6,9 +6,9 @@ startBuild() {
     cd $MOUNT_POINT
     
     # Begin Pass 1
-    #pass1
+    pass1
     # Begin Pass 2
-    #pass2
+    pass2
     # Begin installation of test suites
     testSuites
 }
@@ -35,9 +35,9 @@ pass2() {
 }
 
 testSuites() {
-    #BUILD tcl
-    #BUILD expect
-    #BUILD deja
+    BUILD tcl
+    BUILD expect
+    BUILD deja
     BUILD check
     
     # Clean up the mess made inside the package directory
