@@ -11,7 +11,7 @@ startBuild() {
     pass2
     # Begin installation of test suites
     testSuites
-    # Install everything rest
+    # Install rest
     rest
 }
 
@@ -65,6 +65,7 @@ rest() {
     BUILD patch
     BUILD perl
     BUILD sed
+    BUILD tar
     
     # Clean up the mess made inside the package directory
     cleanupBuild
