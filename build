@@ -59,6 +59,7 @@ rest() {
     BUILD gawk
     BUILD gettext
     BUILD grep
+    BUILD gzip
     
     # Clean up the mess made inside the package directory
     cleanupBuild

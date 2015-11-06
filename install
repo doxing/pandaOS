@@ -47,6 +47,8 @@ requirementsCheck
 
 # Fetch packages
 mkdir -p ${PKG_DIR}
+# FIXME: Do not run the following command after all the packages have
+#        been successfuly downloaded
 wget --input-file=wget-list --continue --directory-prefix=${PKG_DIR}
 
 # Move the contents to the mount point
