@@ -62,6 +62,8 @@ rest() {
     BUILD gzip
     BUILD m4
     BUILD make
+    BUILD patch
+    BUILD perl
     
     # Clean up the mess made inside the package directory
     cleanupBuild
