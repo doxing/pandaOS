@@ -50,6 +50,8 @@ testSuites() {
 # Installs everything rest
 rest() {
     BUILD ncurses
+    BUILD bash
+    BUILD bzip2
     
     # Clean up the mess made inside the package directory
     cleanupBuild
