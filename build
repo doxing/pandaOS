@@ -67,6 +67,7 @@ rest() {
     BUILD sed
     BUILD tar
     BUILD texinfo
+    BUILD util-linux
     
     # Clean up the mess made inside the package directory
     cleanupBuild
