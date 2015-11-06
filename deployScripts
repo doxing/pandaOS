@@ -1,0 +1,23 @@
+#!/bin/bash
+
+# Install this script in a way that it is accessible to both host and target OS.
+deployScripts() {
+    # Change directory to the mount point
+    cd $MOUNT_POINT
+    
+    local BUILD_DIR="$(readlink -f ./${BUILD_DIR})"
+    local TOOLS_DIR="$(readlink -f ./$TOOLS_DIR)"
+    
+    if [ ! -w $BUILD_DIR ]
+    then
+        displayMsg ERR "Build directory is not writable."
+        exit 1
+    fi
+    
+    # Create the /tools directory
+    mkdir -p $TOOLS_DIR
+    sudo ln -s $TOOLS_DIR /
+    
+    # Initialize Setup
+    startBuild
+}

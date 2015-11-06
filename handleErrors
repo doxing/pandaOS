@@ -1,0 +1,60 @@
+#!/bin/bash
+
+# Error handling, subshells should inherit the handler.
+trap handleErrors ERR
+trap manualAbort  INT
+set -E
+
+handleErrors() {
+    local EXITSTATUS="$?"
+
+    if [ "${EXITSTATUS}" == "126" ]; then
+        displayMsg ERR "UNEXPECTED PERMISSION ERROR"
+        displayMsg ERR "A command could not be executed. Most likely you are"
+        displayMsg ERR "running this program from within a directory which is not"
+        displayMsg ERR "publicly available."
+    else
+        displayMsg ERR "UNEXPECTED ERROR OCCURED"
+        displayMsg ERR "A command stopped with exit status: ${EXITSTATUS}"
+    fi
+}
+
+# Used to print status information
+displayMsg() {
+    if [ "${1}" == "KEY" ]; then
+        echo "" 1>&2
+        shift
+    fi
+
+    if [ "${1}" == "ERR" ]; then
+        local prefix="${prefix}(fwhi)(bred)"
+        shift
+    elif [ "${1}" == "WARN" ]; then
+        local prefix="${prefix}(fyel)(bblu)"
+        shift
+    elif [ "${1}" == "OK" ]; then
+        local prefix="${prefix}(fyel)"
+        shift
+    fi
+
+    local MSG=$(echo -e "${prefix}$@(ret)" | sed '
+        s@(fbla)@\\033[1;30m@g;
+        s@(fred)@\\033[1;31m@g;
+        s@(fgre)@\\033[1;32m@g;
+        s@(fyel)@\\033[1;33m@g;
+        s@(fblu)@\\033[1;34m@g;
+        s@(fpur)@\\033[1;35m@g;
+        s@(fcya)@\\033[1;36m@g;
+        s@(fwhi)@\\033[1;37m@g;
+        s@(bbla)@\\033[40m@g;
+        s@(bred)@\\033[41m@g;
+        s@(bgre)@\\033[42m@g;
+        s@(byel)@\\033[43m@g;
+        s@(bblu)@\\033[44m@g;
+        s@(bpur)@\\033[45m@g;
+        s@(bcya)@\\033[46m@g;
+        s@(bwhi)@\\033[47m@g;
+        s@(ret)@\\033[0m@g')
+
+    echo -e "${MSG}" 1>&2
+}

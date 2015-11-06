@@ -1,0 +1,53 @@
+#!/bin/bash
+
+FOLDERNAME="gcc-5.2.0"
+FILENAME="gcc-5.2.0.tar.bz2"
+
+# MPRF, MPC and GMP have already  been added to the tar
+
+cat ../../pkg/${FOLDERNAME}/gcc/limitx.h ../../pkg/${FOLDERNAME}/gcc/glimits.h ../../pkg/${FOLDERNAME}/gcc/limity.h > \
+  `dirname $($TARGET-gcc -print-libgcc-file-name)`/include-fixed/limits.h
+
+# Changes the location of GCC's default dynamic linker to use the one installed in 
+# TOOLS_DIR. It also removes /usr/include from GCC's include search path.
+for file in \
+    $(find ../../pkg/${FOLDERNAME}/gcc/config -name linux64.h -o -name linux.h -o -name sysv4.h)
+do
+    cp -uv $file{,.orig}
+    sed -e 's@/lib\(64\)\?\(32\)\?/ld@/tools&@g' \
+        -e 's@/usr@/tools@g' $file.orig > $file
+    echo '
+    #undef STANDARD_STARTFILE_PREFIX_1
+    #undef STANDARD_STARTFILE_PREFIX_2
+    #define STANDARD_STARTFILE_PREFIX_1 "/tools/lib/"
+    #define STANDARD_STARTFILE_PREFIX_2 ""' >> $file
+    touch $file.orig
+done
+
+CC=$TARGET-gcc                                     \
+CXX=$TARGET-g++                                    \
+AR=$TARGET-ar                                      \
+RANLIB=$TARGET-ranlib                              \
+../../pkg/${FOLDERNAME}/configure                  \
+    --prefix=/tools                                \
+    --with-local-prefix=/tools                     \
+    --with-native-system-header-dir=/tools/include \
+    --enable-languages=c,c++                       \
+    --disable-libstdcxx-pch                        \
+    --disable-multilib                             \
+    --disable-bootstrap                            \
+    --disable-libgomp
+    
+make $MAKEFLAGS && make $MAKEFLAGS install
+ln -s gcc /tools/bin/cc
+
+# Test the basic functions (compiling and linking) of the new toolchain are working as expected
+echo 'int main(){}' > dummy.c
+$TARGET-gcc dummy.c
+readelf -l a.out | grep ': /tools'
+if [ $? != 0 ]
+then
+    displayMsg ERR "Error code $?: GCC Pass 2 Test failed!"
+    exit 1
+fi
+rm dummy.c a.out

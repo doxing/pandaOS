@@ -1,0 +1,13 @@
+#!/bin/bash
+
+FOLDERNAME="dejagnu-1.5.3"
+FILENAME="dejagnu-1.5.3.tar.gz"
+
+# Prepare DejaGNU for compilation
+../../pkg/${FOLDERNAME}/configure --prefix=/tools
+            
+# Install the package
+make $MAKEFLAGS install
+
+# Test the results
+make $MAKEFLAGS check

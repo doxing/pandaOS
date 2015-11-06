@@ -1,0 +1,67 @@
+#!/bin/bash
+
+#################################################
+# Panda Linux installer.                       	#
+#						#
+# Abhimanyu Saharan <desk.abhimanyu@gmail.com>	#
+#################################################
+
+source handleErrors
+source global
+source requirementsCheck
+source deployScripts
+source build
+source cleanup
+
+# Accept mount point from the user
+# FIXME Add leading slash
+MOUNT_POINT="${1}"
+
+# Verify existence of mount point
+if [ ! -d $MOUNT_POINT ]
+then
+    displayMsg ERR "Mount point does not exist."
+    exit 1
+fi
+mountpoint $MOUNT_POINT &> /dev/null || {
+    displayMsg ERR "Invalid mount point."
+    exit 1
+}
+
+#################################################################
+# FIXME: Remove the following lines after finalizing the script #
+#################################################################
+
+cp -v install $MOUNT_POINT
+cp -v global $MOUNT_POINT
+cp -v requirementsCheck $MOUNT_POINT
+cp -v handleErrors $MOUNT_POINT
+cp -v deployScripts $MOUNT_POINT
+cp -v build $MOUNT_POINT
+cp -v src/scripts/* $MOUNT_POINT/src/scripts
+
+#################################################################
+
+# Verify minimum requirements
+requirementsCheck
+
+# Move the contents to the mount point
+# FIXME: Implement a better method
+if [ "$(cat global | grep VERSION | cut -d "=" -f2 | sed -e 's/^"//' -e 's/"$//')" != "ALPHA-4" ]
+then
+    displayMsg ""
+    displayMsg OK "Copying data to $MOUNT_POINT ..."
+    cp -vR ./* $MOUNT_POINT
+    displayMsg OK "Done ..."
+fi
+
+if [ ! -d "${MOUNT_POINT}${BUILD_DIR}" ]
+then
+    mkdir -p "${MOUNT_POINT}${BUILD_DIR}"
+fi
+
+displayMsg ""
+#displayMsg OK "Creating a temporary system..."
+deployScripts
+# Cleanup the mess
+cleanup

@@ -1,0 +1,24 @@
+#!/bin/bash
+
+FOLDERNAME="binutils-2.25.1"
+FILENAME="binutils-2.25.1.tar.bz2"
+
+../../pkg/${FOLDERNAME}/configure \
+--prefix=/tools \
+--with-sysroot=${MOUNT_POINT} \
+--with-lib-path=/tools/lib \
+--target=$TARGET \
+--disable-nls \
+--disable-werror
+
+make $MAKEFLAGS
+
+# If building on x86_64, create a symlink to 
+# ensure the sanity of the toolchain
+if [[ ! -e "/tools/lib" && ! -e "/tools/lib64" ]]; then
+    case $(uname -m) in
+        x86_64) mkdir -v "/tools/lib" && ln -sv lib "/tools/lib64" ;;
+    esac
+fi
+
+make $MAKEFLAGS install

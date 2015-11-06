@@ -1,0 +1,49 @@
+#!/bin/bash
+
+requirementsCheck() {
+    displayMsg ""
+    displayMsg OK "Verifying requirements ..."
+    
+    # Sanity checks
+    if [ "$(whoami)" == "root" ]
+    then
+        echo "This script should not be run as root. Please invoke it with a regular"
+        echo "user account with sudo privileges."
+        exit 1
+    fi
+    
+    # Verify that enough memory is available. Builds have been successfull with
+    # 768 MiB of RAM, but it is better to be safe and always warn below 1 GiB.
+    local MEMREQ_MB="950" # 1 GiB, with some slack
+    
+    local MEMSIZE_KB="$(grep MemTotal /proc/meminfo | awk '{print $2}')"
+    local MEMSIZE_MB="$((${MEMSIZE_KB} / 1024))"
+    
+    if [ "${MEMSIZE_MB}" -lt "${MEMREQ_MB}" ]; then
+        echo "ERROR:The system memory size (as reported by /proc/meminfo) is"
+        echo "${MEMSIZE_MB} MiB. This is less than the recommended"
+        echo "minimum of 1 GiB and *could* cause build failures in"
+        echo "large software (for example in the temporary build of"
+        echo "GCC) if it is significantly less."
+        echo ""
+        exit 1
+    fi
+    
+    # Ability to compile
+    echo "int main(){}" > dummy.c && gcc -o dummy dummy.c
+    if [ ! -x dummy ]; then
+        echo "ERROR: Couldn't compile basic c program"
+        exit 1
+    fi
+    
+    # Make sure there are no spaces in the current directory
+    if [ "$(echo ${PWD} | grep ' ' || echo -n '')" != "" ]; then
+        displayMsg ERR "Installer can't be run in a directory which contains spaces."
+        exit 1
+    fi
+    
+    rm dummy.c dummy
+    
+    displayMsg OK "All checks passed..."
+    displayMsg ""
+}

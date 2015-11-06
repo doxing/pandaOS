@@ -1,0 +1,16 @@
+#!/bin/bash
+
+FOLDERNAME="check-0.10.0"
+FILENAME="check-0.10.0.tar.gz"
+
+# Prepare Check for compilation
+../../pkg/${FOLDERNAME}/configure --prefix=/tools
+            
+# Build the package
+make $MAKEFLAGS
+
+# Test the results
+make $MAKEFLAGS check
+
+# Install the package
+make $MAKEFLAGS install

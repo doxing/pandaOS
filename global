@@ -1,0 +1,14 @@
+#!/bin/bash
+
+VERSION="ALPHA-4"
+CODENAME="PANDA"
+TARGET="$(uname -m)-panda-linux"
+
+MOUNT_POINT=""
+PKG_DIR="src/pkg"
+BUILD_DIR="src/build"
+TOOLS_DIR="tools"
+SCRIPT_DIR="src/scripts"
+
+# Utilise CPU cores for faster processing
+MAKEFLAGS="-j $(cat /proc/cpuinfo | grep processor | wc -l)"
