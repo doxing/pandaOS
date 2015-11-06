@@ -57,6 +57,7 @@ rest() {
     BUILD file
     BUILD findutils
     BUILD gawk
+    BUILD gettext
     
     # Clean up the mess made inside the package directory
     cleanupBuild
