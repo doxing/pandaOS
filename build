@@ -52,6 +52,7 @@ rest() {
     BUILD ncurses
     BUILD bash
     BUILD bzip2
+    BUILD coreutils
     
     # Clean up the mess made inside the package directory
     cleanupBuild

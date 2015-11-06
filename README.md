@@ -1,4 +1,4 @@
-# pandaOS
+# Panda Linux
 Open Source Linux Operating System
 
 *Note: Currently under development. Use it on your own risk.*
@@ -7,6 +7,7 @@ Installation
 ------------
 
 Before starting the installation for your system, execute the following steps:
+
 *Note: Execute the following steps after downloading the packages.*
 - Extract `GCC`, `MPFR`, `MPC` and `GMP`.
 - Create new directories inside `src/pkg/gcc-5.2.0` as `mpfr`, `mpc` and `gmp`.

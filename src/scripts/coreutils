@@ -1,0 +1,16 @@
+#!/bin/bash
+
+FOLDERNAME="coreutils-8.24"
+FILENAME="coreutils-8.24.tar.xz"
+
+# Prepare Core Utils for compilation
+../../pkg/${FOLDERNAME}/configure --prefix=/tools --enable-install-program=hostname
+
+# Build the package
+make $MAKEFLAGS
+
+# Run the Coreutils test suite
+make $MAKEFLAGS RUN_EXPENSIVE_TESTS=yes check
+
+# Install the package
+make $MAKEFLAGS install
