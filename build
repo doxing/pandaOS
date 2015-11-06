@@ -53,6 +53,7 @@ rest() {
     BUILD bash
     BUILD bzip2
     BUILD coreutils
+    BUILD diffutils
     
     # Clean up the mess made inside the package directory
     cleanupBuild

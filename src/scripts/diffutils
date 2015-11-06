@@ -1,0 +1,16 @@
+#!/bin/bash
+
+FOLDERNAME="diffutils-3.3"
+FILENAME="diffutils-3.3.tar.xz"
+
+# Prepare Diff-Utils for compilation
+../../pkg/${FOLDERNAME}/configure --prefix=/tools
+
+# Build the package
+make $MAKEFLAGS
+
+# Run the Diff-Utils test suite
+make $MAKEFLAGS check
+
+# Install the package
+make $MAKEFLAGS install
