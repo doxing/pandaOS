@@ -6,11 +6,11 @@ startBuild() {
     cd $MOUNT_POINT
     
     # Begin Pass 1
-    pass1
+#    pass1
     # Begin Pass 2
-    pass2
+#    pass2
     # Begin installation of test suites
-    testSuites
+#    testSuites
     # Install rest
     rest
 }
@@ -49,23 +49,24 @@ testSuites() {
 
 # Installs everything rest
 rest() {
-    BUILD ncurses
-    BUILD bash
-    BUILD bzip2
-    BUILD coreutils
-    BUILD diffutils
-    BUILD file
-    BUILD findutils
-    BUILD gawk
-    BUILD gettext
-    BUILD grep
-    BUILD gzip
-    BUILD m4
-    BUILD make
-    BUILD patch
-    BUILD perl
-    BUILD sed
-    BUILD tar
+#    BUILD ncurses
+#    BUILD bash
+#    BUILD bzip2
+#    BUILD coreutils
+#    BUILD diffutils
+#    BUILD file
+#    BUILD findutils
+#    BUILD gawk
+#    BUILD gettext
+#    BUILD grep
+#    BUILD gzip
+#    BUILD m4
+#    BUILD make
+#    BUILD patch
+#    BUILD perl
+#    BUILD sed
+#    BUILD tar
+    BUILD texinfo
     
     # Clean up the mess made inside the package directory
     cleanupBuild
