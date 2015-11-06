@@ -9,6 +9,7 @@ PKG_DIR="src/pkg"
 BUILD_DIR="src/build"
 TOOLS_DIR="tools"
 SCRIPT_DIR="src/scripts"
+BACKUP_DIR="backup"
 
 # Utilise CPU cores for faster processing
 MAKEFLAGS="-j $(cat /proc/cpuinfo | grep processor | wc -l)"

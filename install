@@ -51,21 +51,6 @@ mkdir -p ${PKG_DIR}
 #        been successfuly downloaded
 wget --input-file=wget-list --continue --directory-prefix=${PKG_DIR}
 
-# Move the contents to the mount point
-# FIXME: Implement a better method
-if [ "$(cat global | grep VERSION | cut -d "=" -f2 | sed -e 's/^"//' -e 's/"$//')" != "ALPHA-4" ]
-then
-    displayMsg ""
-    displayMsg OK "Copying data to $MOUNT_POINT ..."
-    cp -vR ./* $MOUNT_POINT
-    displayMsg OK "Done ..."
-fi
-
-if [ ! -d "${MOUNT_POINT}${BUILD_DIR}" ]
-then
-    mkdir -p "${MOUNT_POINT}${BUILD_DIR}"
-fi
-
 displayMsg ""
 #displayMsg OK "Creating a temporary system..."
 deployScripts
