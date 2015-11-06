@@ -2,10 +2,6 @@
 
 # Error handling, subshells should inherit the handler.
 trap handleErrors ERR
-<<<<<<< HEAD
-=======
-trap manualAbort  INT
->>>>>>> 4160d2efeca75a9a8fba598472c74859f1a5b385
 set -E
 
 handleErrors() {
@@ -17,11 +13,7 @@ handleErrors() {
         displayMsg ERR "running this program from within a directory which is not"
         displayMsg ERR "publicly available."
     else
-<<<<<<< HEAD
         displayMsg ERR "UNEXPECTED ERROR OCCURRED"
-=======
-        displayMsg ERR "UNEXPECTED ERROR OCCURED"
->>>>>>> 4160d2efeca75a9a8fba598472c74859f1a5b385
         displayMsg ERR "A command stopped with exit status: ${EXITSTATUS}"
     fi
 }

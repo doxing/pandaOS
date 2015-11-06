@@ -1,24 +1,14 @@
 #!/bin/bash
 
-<<<<<<< HEAD
 # Verifies minimum system requirements
 checkReq() {
-=======
-requirementsCheck() {
-    displayMsg ""
->>>>>>> 4160d2efeca75a9a8fba598472c74859f1a5b385
     displayMsg OK "Verifying requirements ..."
     
     # Sanity checks
     if [ "$(whoami)" == "root" ]
     then
-<<<<<<< HEAD
         displayMsg ERR "This script should not be run as root. Please invoke it with a regular"
         displayMsg ERR "user account with sudo privileges."
-=======
-        echo "This script should not be run as root. Please invoke it with a regular"
-        echo "user account with sudo privileges."
->>>>>>> 4160d2efeca75a9a8fba598472c74859f1a5b385
         exit 1
     fi
     
@@ -30,31 +20,18 @@ requirementsCheck() {
     local MEMSIZE_MB="$((${MEMSIZE_KB} / 1024))"
     
     if [ "${MEMSIZE_MB}" -lt "${MEMREQ_MB}" ]; then
-<<<<<<< HEAD
         displayMsg ERR "The system memory size (as reported by /proc/meminfo) is"
         displayMsg ERR "${MEMSIZE_MB} MiB. This is less than the recommended"
         displayMsg ERR "minimum of 1 GiB and *could* cause build failures in"
         displayMsg ERR "large software (for example in the temporary build of"
         displayMsg ERR "GCC) if it is significantly less."
-=======
-        echo "ERROR:The system memory size (as reported by /proc/meminfo) is"
-        echo "${MEMSIZE_MB} MiB. This is less than the recommended"
-        echo "minimum of 1 GiB and *could* cause build failures in"
-        echo "large software (for example in the temporary build of"
-        echo "GCC) if it is significantly less."
-        echo ""
->>>>>>> 4160d2efeca75a9a8fba598472c74859f1a5b385
         exit 1
     fi
     
     # Ability to compile
     echo "int main(){}" > dummy.c && gcc -o dummy dummy.c
     if [ ! -x dummy ]; then
-<<<<<<< HEAD
         displayMsg ERR "Couldn't compile basic c program"
-=======
-        echo "ERROR: Couldn't compile basic c program"
->>>>>>> 4160d2efeca75a9a8fba598472c74859f1a5b385
         exit 1
     fi
     
@@ -67,8 +44,6 @@ requirementsCheck() {
     rm dummy.c dummy
     
     displayMsg OK "All checks passed..."
-    displayMsg ""
-<<<<<<< HEAD
 }
 
 # Creates necessary directories
@@ -103,6 +78,4 @@ createReqDir() {
     fi
     
     displayMsg OK "Done ..."
-=======
->>>>>>> 4160d2efeca75a9a8fba598472c74859f1a5b385
 }

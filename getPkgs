@@ -12,6 +12,7 @@ getBasicPkgs() {
     cd $PKG_BASIC_DIR
     if [ $(ls -l | wc -l) != 81 ]
     then
+        displayMsg OK "Downloading packages ..."
         sudo wget --continue --input-file="../../../${WGET_LIST_BASIC}" || $ERR=$?
         
         if [ "${ERR}" = "127" ]
@@ -24,6 +25,9 @@ getBasicPkgs() {
             displayMsg ERR "Primary URL is down. Please try againg later."
             exit 1
         fi
+        
+        # Remove wget logs
+        sudo rm wget-log*
     fi
     
     # Change directory to home
