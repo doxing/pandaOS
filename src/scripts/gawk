@@ -1,15 +1,15 @@
 #!/bin/bash
 
-FOLDERNAME="file-5.24"
-FILENAME="file-5.24.tar.gz"
+FOLDERNAME="gawk-4.1.3"
+FILENAME="gawk-4.1.3.tar.xz"
 
-# Prepare File for compilation
+# Prepare Gawk for compilation
 ../../pkg/${FOLDERNAME}/configure --prefix=/tools
 
 # Build the package
 make $MAKEFLAGS
 
-# Run the File test suite
+# Run the Gawk test suite
 make $MAKEFLAGS check
 
 # Install the package

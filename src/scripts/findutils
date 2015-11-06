@@ -3,13 +3,13 @@
 FOLDERNAME="findutils-4.4.2"
 FILENAME="findutils-4.4.2.tar.gz"
 
-# Prepare Diff-Utils for compilation
+# Prepare Find-Utils for compilation
 ../../pkg/${FOLDERNAME}/configure --prefix=/tools
 
 # Build the package
 make $MAKEFLAGS
 
-# Run the Diff-Utils test suite
+# Run the Find-Utils test suite
 make $MAKEFLAGS check
 
 # Install the package
