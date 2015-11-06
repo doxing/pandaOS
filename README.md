@@ -24,7 +24,3 @@ Run the `install` file
 ```
 Here `mountPoint` is the path to an empty partition with minimum 10 GB of space. This partition should contain `ext4` filesystem.
 
-After the script enters the `chroot` environment, execute the following command:
-```
-bash install-chroot.sh
-```
