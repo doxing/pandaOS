@@ -55,6 +55,7 @@ rest() {
     BUILD coreutils
     BUILD diffutils
     BUILD file
+    BUILD findutils
     
     # Clean up the mess made inside the package directory
     cleanupBuild
