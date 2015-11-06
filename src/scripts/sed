@@ -1,0 +1,16 @@
+#!/bin/bash
+
+FOLDERNAME="sed-4.2.2"
+FILENAME="sed-4.2.2.tar.bz2"
+
+# Prepare Sed for compilation
+../../pkg/${FOLDERNAME}/configure --prefix=/tools
+
+# Build the package
+make $MAKEFLAGS
+
+# Run the test suite
+make $MAKEFLAGS check
+
+# Install the package
+make $MAKEFLAGS install

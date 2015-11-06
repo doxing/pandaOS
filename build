@@ -64,6 +64,7 @@ rest() {
     BUILD make
     BUILD patch
     BUILD perl
+    BUILD sed
     
     # Clean up the mess made inside the package directory
     cleanupBuild
