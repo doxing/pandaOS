@@ -17,6 +17,7 @@ initSetup() {
     
     # Pass 2
     BUILD binutils BASIC
+    BUILD gcc BASIC
     
     # Clean up extracted pakages
     cleanupBuild

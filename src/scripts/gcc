@@ -69,6 +69,88 @@ pass1() {
 
 pass2() {
     displayMsg OK "Building Pass 2 ..."
+    
+    # First build of GCC has installed a couple of internal system
+    # headers. Normally one of them, limits.h, will in turn include
+    # the corresponding system limits.h header, in this case,
+    # /tools/include/limits.h. However, at the time of the first
+    # build of gcc /tools/include/limits.h did not exist, so the
+    # internal header that GCC installed is a partial, self-contained
+    # file and does not include the extended features of the system
+    # header. This was adequate for building the temporary libc, but
+    # this build of GCC now requires the full internal header. Create
+    # a full version of the internal header using a command that is
+    # identical to what the GCC build system does in normal circumstances
+    cat ../../pkg/basic/${FOLDERNAME}/gcc/limitx.h ../../pkg/basic/${FOLDERNAME}/gcc/glimits.h ../../pkg/basic/${FOLDERNAME}/gcc/limity.h > \
+        `dirname $($TARGET-gcc -print-libgcc-file-name)`/include-fixed/limits.h
+        
+    # Change the location of GCC's default dynamic linker to use the
+    # one installed in /tools
+    for file in \
+        $(find ../../pkg/basic/${FOLDERNAME}/gcc/config -name linux64.h -o -name linux.h -o -name sysv4.h)
+    do
+        cp -u $file{,.orig}
+        sed -e 's@/lib\(64\)\?\(32\)\?/ld@/tools&@g' \
+            -e 's@/usr@/tools@g' $file.orig > $file
+        echo '
+#undef STANDARD_STARTFILE_PREFIX_1
+#undef STANDARD_STARTFILE_PREFIX_2
+#define STANDARD_STARTFILE_PREFIX_1 "/tools/lib/"
+#define STANDARD_STARTFILE_PREFIX_2 ""' >> $file
+        touch $file.orig
+    done
+    
+    # GCC now requires the GMP, MPFR and MPC packages. As these packages
+    # may not be included in your host distribution, they will be built
+    # with GCC. Unpack each package into the GCC source directory and
+    # rename the resulting directories so the GCC build procedures will
+    # automatically use them
+    tar xf ../../pkg/basic/gmp-6.0.0a.tar.xz -C ../../pkg/basic
+    tar xf ../../pkg/basic/mpc-1.0.3.tar.gz -C ../../pkg/basic
+    tar xf ../../pkg/basic/mpfr-3.1.3.tar.xz -C ../../pkg/basic
+    mv ../../pkg/basic/gmp-6.0.0 ../../pkg/basic/${FOLDERNAME}/gmp
+    mv ../../pkg/basic/mpc-1.0.3 ../../pkg/basic/${FOLDERNAME}/mpc
+    mv ../../pkg/basic/mpfr-3.1.3 ../../pkg/basic/${FOLDERNAME}/mpfr
+    
+    # Prepare GCC for compilation
+    CC=$TARGET-gcc                                 \
+    CXX=$TARGET-g++                                \
+    AR=$TARGET-ar                                  \
+    RANLIB=$TARGET-ranlib                          \
+    ../../pkg/basic/${FOLDERNAME}/configure        \
+    --prefix=/tools                                \
+    --with-local-prefix=/tools                     \
+    --with-native-system-header-dir=/tools/include \
+    --enable-languages=c,c++                       \
+    --disable-libstdcxx-pch                        \
+    --disable-multilib                             \
+    --disable-bootstrap                            \
+    --disable-libgomp
+    
+    # Compile the package
+    make $MAKEFLAGS
+
+    #Install the package
+    make $MAKEFLAGS install
+    
+    # Many programs and scripts run cc instead of gcc, which is used
+    # to keep programs generic and therefore usable on all kinds of
+    # UNIX systems where the GNU C compiler is not always installed.
+    # Running cc leaves the system administrator free to decide which
+    # C compiler to install
+    ln -s gcc /tools/bin/cc
+    
+    # Perform a sanity check
+    echo 'int main(){}' > dummy.c
+    $TARGET-gcc dummy.c -o dummy
+    if [ -n "$(readelf -l dummy | grep ': /tools')" ]
+    then
+        displayMsg OK "$(readelf -l dummy | grep ': /tools')"
+    else
+        displayMsg ERR "Toolchain test failed!"
+        exit 1
+    fi
+    rm dummy.c dummy
 }
 
 if [ $GCC_PASS1 == "true" ]
