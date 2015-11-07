@@ -36,14 +36,14 @@ pass2() {
     displayMsg OK "Building Pass 2 ..."
     
     # Prepare Binutils for compilation
-    CC=$TARGET-gcc                 \
-    AR=$TARGET-ar                       \
-    RANLIB=$TARGET-ranlib               \
-    ../../pkg/${FOLDERNAME}/configure   \
-        --prefix=/tools                 \
-        --disable-nls                   \
-        --disable-werror                \
-        --with-lib-path=/tools/lib      \
+    CC=$TARGET-gcc                          \
+    AR=$TARGET-ar                           \
+    RANLIB=$TARGET-ranlib                   \
+    ../../pkg/basic/${FOLDERNAME}/configure \
+        --prefix=/tools                     \
+        --disable-nls                       \
+        --disable-werror                    \
+        --with-lib-path=/tools/lib          \
         --with-sysroot
 
     # Compile the package

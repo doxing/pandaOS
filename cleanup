@@ -9,7 +9,7 @@ cleanup() {
     displayMsg ""
     displayMsg OK "Cleaning up the mess ..."
     rm -rf "${MOUNT_POINT}${BUILD_DIR}"
-    #rm -rf "${MOUNT_POINT}${TOOLS_DIR}"
+    rm -rf "${MOUNT_POINT}${TOOLS_DIR}"
     sudo rm -rf /tools
     displayMsg OK "Done ..."
 }
@@ -17,8 +17,11 @@ cleanup() {
 cleanupBuild() {
     displayMsg ""
     displayMsg OK "Cleaning up the mess ..."
-    rm -rf "${MOUNT_POINT}${BUILD_DIR}"
+    cd "${MOUNT_POINT}${BUILD_DIR}"
+    sudo rm -R -- */
+    cd ../../
     cd ${MOUNT_POINT}${PKG_BASIC_DIR}
     sudo rm -R -- */
+    cd ../../
     displayMsg OK "Done ..."
 }

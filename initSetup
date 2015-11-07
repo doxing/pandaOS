@@ -21,4 +21,10 @@ initSetup() {
     
     # Clean up extracted pakages
     cleanupBuild
+    
+    # Test Suites
+    BUILD tcl BASIC
+    
+    # Clean up extracted pakages
+    cleanupBuild
 }
