@@ -1,0 +1,9 @@
+#!/bin/bash
+
+# Begins setup
+initSetup() {
+    displayMsg ""
+    displayMsg OK "Starting Installation ..."
+    
+    BUILD binutils BASIC
+}

@@ -2,7 +2,8 @@
 
 getBasicPkgs() {
     displayMsg OK "Verifying packages ..."
-
+    cd $MOUNT_POINT
+    
     # Change to the package directory
     if [ ! -d $PKG_BASIC_DIR ]
     then
@@ -28,11 +29,10 @@ getBasicPkgs() {
         
         # Remove wget logs
         sudo rm wget-log*
+        # Change directory to home
+        cd ../../../
+        # Copy the data to the mount point
+        cp -ur ./* $MOUNT_POINT
     fi
-    
-    # Change directory to home
-    cd ../../../
-    # Copy the data to the mount point
-    cp -ur ./* $MOUNT_POINT
 }
 

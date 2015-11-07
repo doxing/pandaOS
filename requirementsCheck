@@ -63,12 +63,12 @@ createReqDir() {
     if [ ! -d "${MOUNT_POINT}${BACKUP_DIR}" ]
     then
         mkdir -p "${MOUNT_POINT}${BACKUP_DIR}"
-        mkdir -p "${MOUNT_POINT}${BACKUP_DIR}/${TOOLS_DIR}"
     fi
     
     # Create the /tools directory
-    mkdir -p $TOOLS_DIR
-    sudo ln -s $TOOLS_DIR /
+    mkdir -p ${MOUNT_POINT}$TOOLS_DIR
+    # Provide the full path to avoid errors
+    sudo ln -s ${MOUNT_POINT}$TOOLS_DIR /
     
     # Make sure BUILD_DIR is writable
     if [ ! -w "${MOUNT_POINT}${BUILD_DIR}" ]

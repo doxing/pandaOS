@@ -12,6 +12,8 @@ source getPkgs
 source functions
 source requirementsCheck
 source cleanup
+source initSetup
+source build
 
 # Accept mount point from the user
 # FIXME Add leading slash
@@ -30,19 +32,26 @@ then
     exit 1
 fi
 
+displayMsg OK "------- PANDA LINUX -------"
+displayMsg ""
+
 #################################################################
 # Copy the data to the mount point                              #
 #################################################################
 
+displayMsg OK "Copying data ..."
 cp -ur ./* $MOUNT_POINT
+displayMsg OK "Done ..."
 
 #################################################################
 
 # Download all the packages before continuing
-getBasicPkgs
+#getBasicPkgs
 # Verify System Requirements
 checkReq
 # Create necessary directories
 createReqDir
+# Start installing the basic packages
+initSetup
 # Cleanup the system
 cleanup

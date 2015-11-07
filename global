@@ -5,6 +5,7 @@ CODENAME="PANDA"
 TARGET="$(uname -m)-panda-linux"
 
 MOUNT_POINT=""
+EXTRACT_DIR=""
 PKG_DIR="src/pkg"
 PKG_BASIC_DIR="${PKG_DIR}/basic"
 PKG_STD_DIR="${PKG_DIR}/standard"
@@ -18,3 +19,6 @@ WGET_LIST_STD="wget-list-standard"
 
 # Utilise CPU cores for faster processing
 MAKEFLAGS="-j $(cat /proc/cpuinfo | grep processor | wc -l)"
+
+# Pass 1 Flags
+BINUTILS_PASS1="false"
