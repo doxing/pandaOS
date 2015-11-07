@@ -35,7 +35,8 @@ pass1() {
 pass2() {
     displayMsg OK "Building Pass 2 ..."
     
-    sudo CC=$TARGET-gcc                 \
+    # Prepare Binutils for compilation
+    CC=$TARGET-gcc                 \
     AR=$TARGET-ar                       \
     RANLIB=$TARGET-ranlib               \
     ../../pkg/${FOLDERNAME}/configure   \
@@ -45,11 +46,15 @@ pass2() {
         --with-lib-path=/tools/lib      \
         --with-sysroot
 
-    sudo make $MAKEFLAGS && sudo make $MAKEFLAGS install
+    # Compile the package
+    make $MAKEFLAGS 
+    # Install the package
+    make $MAKEFLAGS install
 
-    sudo make $MAKEFLAGS -C ld clean
-    sudo make $MAKEFLAGS -C ld LIB_PATH=/usr/lib:/lib
-    sudo cp -v ld/ld-new /tools/bin
+    # Prepare the linker for the “Re-adjusting” phase
+    make $MAKEFLAGS -C ld clean
+    make $MAKEFLAGS -C ld LIB_PATH=/usr/lib:/lib
+    cp ld/ld-new /tools/bin
 }
 
 if [ $BINUTILS_PASS1 == "true" ]

@@ -14,4 +14,10 @@ initSetup() {
     
     # Clean up extracted pakages
     cleanupBuild
+    
+    # Pass 2
+    BUILD binutils BASIC
+    
+    # Clean up extracted pakages
+    cleanupBuild
 }
