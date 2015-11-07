@@ -2,7 +2,7 @@
 
 VERSION="ALPHA-5"
 CODENAME="PANDA"
-TARGET="$(uname -m)-panda-linux"
+TARGET="$(uname -m)-panda-linux-gnu"
 
 MOUNT_POINT=""
 EXTRACT_DIR=""
@@ -24,3 +24,4 @@ MAKEFLAGS="-j $(cat /proc/cpuinfo | grep processor | wc -l)"
 BINUTILS_PASS1="false"
 GCC_PASS1="false"
 LINUX_API_HEADERS_PASS1="false"
+GLIBC_PASS1="false"

@@ -12,9 +12,10 @@ handleErrors() {
         displayMsg ERR "A command could not be executed. Most likely you are"
         displayMsg ERR "running this program from within a directory which is not"
         displayMsg ERR "publicly available."
-    else
-        displayMsg ERR "UNEXPECTED ERROR OCCURRED"
-        displayMsg ERR "A command stopped with exit status: ${EXITSTATUS}"
+#    else
+#        displayMsg ERR "UNEXPECTED ERROR OCCURRED"
+#        displayMsg ERR "A command stopped with exit status: ${EXITSTATUS}"
+#        exit 1
     fi
 }
 

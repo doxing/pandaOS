@@ -12,7 +12,7 @@ pass1() {
     # Prepare Binutils for compilation
     ../../pkg/basic/${FOLDERNAME}/configure \
             --prefix=/tools                 \
-            --with-sysroot=${MOUNT_POINT}   \
+            --with-sysroot=$MOUNT_POINT     \
             --with-lib-path=/tools/lib      \
             --target=$TARGET                \
             --disable-nls                   \

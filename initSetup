@@ -9,6 +9,7 @@ initSetup() {
     BUILD binutils BASIC
     BUILD gcc BASIC
     BUILD linux-api-headers BASIC
+    BUILD glibc BASIC
     
     # Clean up extracted pakages
     cleanupBuild

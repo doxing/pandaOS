@@ -1,21 +1,5 @@
 #!/bin/bash
 
-# Verifies the working of GCC compiler and linker
-testToolchain () {
-    echo 'int main(){}' > dummy.c && gcc -o dummy dummy.c
-    TCT=$(readelf -l dummy | grep ': /tools')
-    displayMsg OK "Toolchain Test: "
-    if [ -n "$TCT" ]
-    then
-        displayMsg OK "$TCT"
-        displayMsg OK "Successful"
-        rm dummy.c dummy
-    else 
-        displayMsg ERR "Failed"
-        exit 1;
-    fi
-}
-
 # Silence wget
 wget() {
     $(which wget) --no-check-certificate $@ 2> /dev/null

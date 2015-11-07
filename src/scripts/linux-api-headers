@@ -10,8 +10,8 @@ FILENAME="linux-4.2.tar.xz"
 pass1() {
     displayMsg OK "Building Pass 1 ..."
     
-    # Copy the files into the build directory
-    cp -r ../../pkg/basic/${FOLDERNAME}/* ./
+    # Change directory
+    cd ../../pkg/basic/${FOLDERNAME}
     
     # Make sure there are no stale files embedded in the package
     make $MAKEFLAGS mrproper
@@ -21,8 +21,9 @@ pass1() {
     # copied to the needed location because the extraction process
     # removes any existing files in the target directory.
     make $MAKEFLAGS INSTALL_HDR_PATH=dest headers_install
-    displayMsg OK "Please Wait ..."
     cp -r dest/include/* /tools/include
+    
+    LINUX_API_HEADERS_PASS1="true"
 }
 
 pass2() {
