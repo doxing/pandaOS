@@ -6,4 +6,8 @@ initSetup() {
     displayMsg OK "Starting Installation ..."
     
     BUILD binutils BASIC
+    BUILD gcc BASIC
+    
+    # Clean up extracted pakages
+    cleanupBuild
 }

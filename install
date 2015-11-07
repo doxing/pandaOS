@@ -46,7 +46,7 @@ displayMsg OK "Done ..."
 #################################################################
 
 # Download all the packages before continuing
-#getBasicPkgs
+getBasicPkgs
 # Verify System Requirements
 checkReq
 # Create necessary directories

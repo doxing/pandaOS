@@ -22,3 +22,4 @@ MAKEFLAGS="-j $(cat /proc/cpuinfo | grep processor | wc -l)"
 
 # Pass 1 Flags
 BINUTILS_PASS1="false"
+GCC_PASS1="false"
