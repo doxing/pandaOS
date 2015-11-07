@@ -3,7 +3,7 @@
 cleanup() {
     displayMsg ""
     displayMsg OK "Creating backup of the system ..."
-    cp -ru "${MOUNT_POINT}${TOOLS_DIR}" "${MOUNT_POINT}${BACKUP_DIR}"
+    sudo cp -ru "${MOUNT_POINT}${TOOLS_DIR}" "${MOUNT_POINT}${BACKUP_DIR}"
     displayMsg OK "Done ..."
     
     displayMsg ""

@@ -24,6 +24,9 @@ initSetup() {
     
     # Test Suites
     BUILD tcl BASIC
+    BUILD expect BASIC
+    BUILD dejagnu BASIC
+    BUILD check BASIC
     
     # Clean up extracted pakages
     cleanupBuild
