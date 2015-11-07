@@ -10,6 +10,7 @@ initSetup() {
     BUILD gcc BASIC
     BUILD linux-api-headers BASIC
     BUILD glibc BASIC
+    BUILD libstdc++ BASIC
     
     # Clean up extracted pakages
     cleanupBuild
