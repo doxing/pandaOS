@@ -1,0 +1,37 @@
+#!/bin/bash
+
+FOLDERNAME="linux-4.2"
+FILENAME="linux-4.2.tar.xz"
+
+# The Linux kernel needs to expose an Application Programming Interface
+# (API) for the system's C library (Glibc in LFS) to use. This is done
+# by way of sanitizing various C header files that are shipped in the
+# Linux kernel source tarball.
+pass1() {
+    displayMsg OK "Building Pass 1 ..."
+    
+    # Copy the files into the build directory
+    cp -r ../../pkg/basic/${FOLDERNAME}/* ./
+    
+    # Make sure there are no stale files embedded in the package
+    make $MAKEFLAGS mrproper
+    
+    # Extract the user-visible kernel headers from the source.
+    # They are placed in an intermediate local directory and
+    # copied to the needed location because the extraction process
+    # removes any existing files in the target directory.
+    make $MAKEFLAGS INSTALL_HDR_PATH=dest headers_install
+    displayMsg OK "Please Wait ..."
+    cp -r dest/include/* /tools/include
+}
+
+pass2() {
+    displayMsg OK "Building Pass 2 ..."
+}
+
+if [ $LINUX_API_HEADERS_PASS1 == "true" ]
+then
+    pass2
+else
+    pass1
+fi

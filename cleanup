@@ -19,7 +19,5 @@ cleanupBuild() {
     displayMsg OK "Cleaning up the mess ..."
     cd ${MOUNT_POINT}${PKG_BASIC_DIR}
     sudo rm -R -- */
-    cd ../${PKG_STD_DIR}
-    sudo rm -R -- */
     displayMsg OK "Done ..."
 }

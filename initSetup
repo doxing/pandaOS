@@ -4,9 +4,11 @@
 initSetup() {
     displayMsg ""
     displayMsg OK "Starting Installation ..."
-    
+
+    # Pass 1
     BUILD binutils BASIC
     BUILD gcc BASIC
+    BUILD linux-api-headers BASIC
     
     # Clean up extracted pakages
     cleanupBuild
