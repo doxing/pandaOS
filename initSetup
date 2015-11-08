@@ -6,41 +6,44 @@ initSetup() {
     displayMsg OK "Starting Installation ..."
 
     # Pass 1
-#    BUILD binutils BASIC
-#    BUILD gcc BASIC
-#    BUILD linux-api-headers BASIC
-#    BUILD glibc BASIC
-#    BUILD libstdc++ BASIC
-    
+    BUILD binutils BASIC
+    BUILD gcc BASIC
+    BUILD linux-api-headers BASIC
+    BUILD glibc BASIC
+    BUILD libstdc++ BASIC
+   
     # Clean up extracted pakages
-#    cleanupBuild
+    cleanupBuild
     
     # Pass 2
-#    BUILD binutils BASIC
-#    BUILD gcc BASIC
+    BUILD binutils BASIC
+    BUILD gcc BASIC
     
     # Clean up extracted pakages
-#    cleanupBuild
+    cleanupBuild
     
     # Test Suites
-#    BUILD tcl BASIC
-#    BUILD expect BASIC
-#    BUILD dejagnu BASIC
-#    BUILD check BASIC
+    BUILD tcl BASIC
+    BUILD expect BASIC
+    BUILD dejagnu BASIC
+    BUILD check BASIC
     
     # Clean up extracted pakages
-#    cleanupBuild
+    cleanupBuild
     
     # Prepare rest of the system
-#    BUILD ncurses BASIC
-#    BUILD bash BASIC
-#    BUILD bzip BASIC
-#    BUILD coreutils BASIC
-#    BUILD diffutils BASIC
-#    BUILD file BASIC
-#    BUILD findutils BASIC
-#    BUILD gawk BASIC
+    BUILD ncurses BASIC
+    BUILD bash BASIC
+    BUILD bzip BASIC
+    BUILD coreutils BASIC
+    BUILD diffutils BASIC
+    BUILD file BASIC
+    BUILD findutils BASIC
+    BUILD gawk BASIC
     BUILD gettext BASIC
+    BUILD grep BASIC
+    BUILD gzip BASIC
+    BUILD m4 BASIC
     
     # Clean up extracted pakages
     cleanupBuild

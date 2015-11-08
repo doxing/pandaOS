@@ -1,0 +1,18 @@
+#!/bin/bash
+
+FOLDERNAME="gzip-1.6"
+FILENAME="gzip-1.6.tar.xz"
+
+# The Gzip package contains programs for compressing and
+# decompressing files.
+
+cd ../../pkg/basic/${FOLDERNAME}
+
+# Prepare Gzip for compilation
+./configure --prefix=/tools
+
+# Compile the package
+make $MAKEFLAGS
+
+# Install the package
+make $MAKEFLAGS install

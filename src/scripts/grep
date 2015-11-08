@@ -1,0 +1,18 @@
+#!/bin/bash
+
+FOLDERNAME="grep-2.21"
+FILENAME="grep-2.21.tar.xz"
+
+# The Grep package contains programs for searching through
+# files.
+
+cd ../../pkg/basic/${FOLDERNAME}
+
+# Prepare Grep for compilation
+./configure --prefix=/tools
+
+# Compile the package
+make $MAKEFLAGS
+
+# Install the package
+make $MAKEFLAGS install
