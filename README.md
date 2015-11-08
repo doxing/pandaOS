@@ -6,20 +6,20 @@ Open Source Linux Operating System
 Installation
 ------------
 
-1. Make `getPkgs` executable
+- Make `getPkgs` executable
 ```
 chmod +x getPkgs
 ```
-2. Run the `getPkgs` file to download all the required packages
+- Run the `getPkgs` file to download all the required packages
 ```
 ./getPkgs
 ```
 
-3. Make `install` executable
+- Make `install` executable
 ```
 chmod +x install
 ```
-4. Run the `install` file
+- Run the `install` file
 ```
 ./install <mountPoint> <filesystem>
 ```
