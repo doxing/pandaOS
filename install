@@ -8,7 +8,6 @@
 
 source global
 source handleErrors
-source getPkgs
 source functions
 source requirementsCheck
 source cleanup
@@ -51,10 +50,6 @@ displayMsg OK "Done ..."
 
 #################################################################
 
-# Download all the packages before continuing
-# FIXME: Starts downloading packages even after they have been
-#        retrieved completed
-#getBasicPkgs
 # Verify System Requirements
 checkReq
 # Create necessary directories
