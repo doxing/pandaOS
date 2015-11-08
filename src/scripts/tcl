@@ -12,9 +12,6 @@ cd ../../pkg/basic/${FOLDERNAME}/unix
 # Build the package
 make $MAKEFLAGS
 
-# Run the Tcl test suite
-TZ=UTC make $MAKEFLAGS test
-
 # Install the package
 make $MAKEFLAGS install
 

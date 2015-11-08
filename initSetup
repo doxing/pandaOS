@@ -39,7 +39,7 @@ initSetup() {
     BUILD diffutils BASIC
     BUILD file BASIC
     BUILD findutils BASIC
-    BUILD gwak BASIC
+    BUILD gawk BASIC
     
     # Clean up extracted pakages
     cleanupBuild
