@@ -11,6 +11,9 @@ cleanup() {
     rm -rf "${MOUNT_POINT}${BUILD_DIR}"
     rm -rf "${MOUNT_POINT}${TOOLS_DIR}"
     sudo rm -rf /tools
+    
+    # Unmount the filesystem
+    sudo umount $PARTITION
     displayMsg OK "Done ..."
 }
 

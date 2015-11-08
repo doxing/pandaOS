@@ -35,11 +35,7 @@ fi
 
 # Prepare the filesystem
 displayMsg OK "Preparing the filesystem ..."
-sudo mount -t ext4 $PARTITION $MOUNT_POINT | ERR=$?
-if [ -e $ERR ]
-then
-    exit 1
-fi
+sudo mount -t ext4 $PARTITION $MOUNT_POINT
 displayMsg OK "Done ..."
 
 displayMsg OK "------- PANDA LINUX -------"
@@ -50,7 +46,7 @@ displayMsg ""
 #################################################################
 
 displayMsg OK "Copying data ..."
-#cp -ur ./* $MOUNT_POINT
+cp -ur ./* $MOUNT_POINT
 displayMsg OK "Done ..."
 
 #################################################################
