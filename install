@@ -60,10 +60,10 @@ displayMsg OK "Done ..."
 #        retrieved completed
 #getBasicPkgs
 # Verify System Requirements
-#checkReq
+checkReq
 # Create necessary directories
-#createReqDir
+createReqDir
 # Start installing the basic packages
-#initSetup
+initSetup
 # Cleanup the system
-#cleanup
+cleanup
