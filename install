@@ -17,6 +17,8 @@ source initSetup
 # Accept mount point from the user
 # FIXME Add leading slash
 MOUNT_POINT="${1}"
+# Accept partition from the user
+PARTITION="${2}"
 
 # Verify existence of mount point
 if [ ! -d $MOUNT_POINT ]
@@ -31,6 +33,15 @@ then
     exit 1
 fi
 
+# Prepare the filesystem
+displayMsg OK "Preparing the filesystem ..."
+sudo mount -t ext4 $PARTITION $MOUNT_POINT | ERR=$?
+if [ -e $ERR ]
+then
+    exit 1
+fi
+displayMsg OK "Done ..."
+
 displayMsg OK "------- PANDA LINUX -------"
 displayMsg ""
 
@@ -39,7 +50,7 @@ displayMsg ""
 #################################################################
 
 displayMsg OK "Copying data ..."
-cp -ur ./* $MOUNT_POINT
+#cp -ur ./* $MOUNT_POINT
 displayMsg OK "Done ..."
 
 #################################################################
@@ -49,10 +60,10 @@ displayMsg OK "Done ..."
 #        retrieved completed
 #getBasicPkgs
 # Verify System Requirements
-checkReq
+#checkReq
 # Create necessary directories
-createReqDir
+#createReqDir
 # Start installing the basic packages
-initSetup
+#initSetup
 # Cleanup the system
-cleanup
+#cleanup

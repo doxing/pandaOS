@@ -30,4 +30,17 @@ initSetup() {
     
     # Clean up extracted pakages
     cleanupBuild
+    
+    # Prepare rest of the system
+    BUILD ncurses BASIC
+    BUILD bash BASIC
+    BUILD bzip BASIC
+    BUILD coreutils BASIC
+    BUILD diffutils BASIC
+    BUILD file BASIC
+    BUILD findutils BASIC
+    BUILD gwak BASIC
+    
+    # Clean up extracted pakages
+    cleanupBuild
 }

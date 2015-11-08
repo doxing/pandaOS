@@ -5,6 +5,7 @@ CODENAME="PANDA"
 TARGET="$(uname -m)-panda-linux-gnu"
 
 MOUNT_POINT=""
+PARTITION=""
 EXTRACT_DIR=""
 PKG_DIR="src/pkg"
 PKG_BASIC_DIR="${PKG_DIR}/basic"

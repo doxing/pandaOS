@@ -1,0 +1,18 @@
+#!/bin/bash
+
+FOLDERNAME="diffutils-3.3"
+FILENAME="diffutils-3.3.tar.xz"
+
+# The Diffutils package contains programs that show the
+# differences between files or directories.
+
+cd ../../pkg/basic/${FOLDERNAME}
+
+# Prepare Diffutils for compilation
+./configure --prefix=/tools
+
+# Compile the package
+make $MAKEFLAGS
+
+# Install the package
+make $MAKEFLAGS install

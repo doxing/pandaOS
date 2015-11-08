@@ -12,9 +12,12 @@ chmod +x install
 ```
 Run the `install` file
 ```
-./install <mountPoint>
+./install <mountPoint> <filesystem>
 ```
-Here `mountPoint` is the path to an empty partition with minimum 10 GB of space. This partition should contain `ext4` filesystem.
+
+`<mountPoint>` - e.g. `/mnt/os`
+
+`<filesystem>` - Minimum `10 GB` and `ext4` filesystem is required.
 
 Donate
 ------
