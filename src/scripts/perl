@@ -1,0 +1,19 @@
+#!/bin/bash
+
+FOLDERNAME="perl-5.22.0"
+FILENAME="perl-5.22.0.tar.xz"
+
+# The Perl package contains the Practical Extraction and Report Language.
+
+cd ../../pkg/basic/${FOLDERNAME}
+
+# Prepare Perl for compilation
+sh Configure -des -Dprefix=/tools -Dlibs=-lm
+
+# Compile the package
+make $MAKEFLAGS
+
+# Only a few of the utilities and libraries need to be installed at this time
+cp perl cpan/podlators/pod2man /tools/bin
+mkdir -p /tools/lib/perl5/5.22.0
+cp -R lib/* /tools/lib/perl5/5.22.0

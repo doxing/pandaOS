@@ -1,0 +1,18 @@
+#!/bin/bash
+
+FOLDERNAME="texinfo-6.0"
+FILENAME="texinfo-6.0.tar.xz"
+
+# The Texinfo package contains programs for reading,
+# writing, and converting info pages.
+
+cd ../../pkg/basic/${FOLDERNAME}
+
+# Prepare Texinfo for compilation
+./configure --prefix=/tools
+
+# Compile the package
+make $MAKEFLAGS
+
+# Install the package
+make $MAKEFLAGS install

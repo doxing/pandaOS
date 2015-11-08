@@ -1,0 +1,21 @@
+#!/bin/bash
+
+FOLDERNAME="util-linux-2.27"
+FILENAME="util-linux-2.27.tar.xz"
+
+# The Util-linux package contains miscellaneous utility programs.
+
+cd ../../pkg/basic/${FOLDERNAME}
+
+# Prepare Util-linux for compilation
+./configure --prefix=/tools                \
+            --without-python               \
+            --disable-makeinstall-chown    \
+            --without-systemdsystemunitdir \
+            PKG_CONFIG=""
+
+# Compile the package
+make $MAKEFLAGS
+
+# Install the package
+make $MAKEFLAGS install

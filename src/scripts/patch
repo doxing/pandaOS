@@ -1,0 +1,19 @@
+#!/bin/bash
+
+FOLDERNAME="patch-2.7.5"
+FILENAME="patch-2.7.5.tar.xz"
+
+# The Patch package contains a program for modifying or
+# creating files by applying a “patch” file typically
+# created by the diff program.
+
+cd ../../pkg/basic/${FOLDERNAME}
+
+# Prepare Patch for compilation
+./configure --prefix=/tools
+
+# Compile the package
+make $MAKEFLAGS
+
+# Install the package
+make $MAKEFLAGS install

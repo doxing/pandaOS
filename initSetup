@@ -44,7 +44,21 @@ initSetup() {
     BUILD grep BASIC
     BUILD gzip BASIC
     BUILD m4 BASIC
+    BUILD make BASIC
+    BUILD patch BASIC
+    BUILD perl BASIC
+    BUILD sed BASIC
+    BUILD tar BASIC
+    BUILD texinfo BASIC
+    BUILD util-linux BASIC
+    BUILD xz BASIC
     
     # Clean up extracted pakages
     cleanupBuild
+    
+    # Strip
+    stripSymbols
+    # Change ownership of MOUNT_POINT/tools to root
+    sudo chown -R root:root $MOUNT_POINT/tools
+    displayMsg OK "Ownership of $MOUNT_POINT/tools changed to 'root'"
 }

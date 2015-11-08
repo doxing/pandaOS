@@ -58,3 +58,10 @@ BUILD() {
     # Execute the script
     . ${MOUNT_POINT}${SCRIPT_SRC}
 }
+
+# The executables and libraries built so far contain about 70 MB of unneeded
+# debugging symbols. Remove those symbols
+stripSymbols() {
+    strip --strip-debug /tools/lib/*
+    /usr/bin/strip --strip-unneeded /tools/{,s}bin/*
+}
