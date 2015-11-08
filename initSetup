@@ -59,6 +59,11 @@ initSetup() {
     # Strip
     stripSymbols
     # Change ownership of MOUNT_POINT/tools to root
-    sudo chown -R root:root $MOUNT_POINT/tools
-    displayMsg OK "Ownership of $MOUNT_POINT/tools changed to 'root'"
+    sudo chown -R root:root ${MOUNT_POINT}tools
+    displayMsg OK "Ownership of ${MOUNT_POINT}tools changed to 'root'"
+    
+    displayMsg OK "Preparing virtual kernel filesystem ..."
+    mkdir -p ${MOUNT_POINT}{dev,proc,sys,run}
+    
+    execChrootSetup
 }

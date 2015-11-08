@@ -12,6 +12,7 @@ source functions
 source requirementsCheck
 source cleanup
 source initSetup
+source chrootSetup
 
 # Accept mount point from the user
 # FIXME Add leading slash

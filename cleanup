@@ -13,7 +13,7 @@ cleanup() {
     sudo rm -rf /tools
     
     # Unmount the filesystem
-    sudo umount $PARTITION
+    sudo umount -l $PARTITION
     displayMsg OK "Done ..."
 }
 

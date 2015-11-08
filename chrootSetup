@@ -1,0 +1,18 @@
+#!/bin/bash
+
+execChrootSetup() {
+    # Create a standard directory tree
+    displayMsg OK "Preparing standard directory structure ..."
+    
+    inchroot "mkdir -p /{bin,boot,etc/{opt,sysconfig},home,lib/firmware,mnt,opt}"
+    inchroot "mkdir -p /{media/{floppy,cdrom},sbin,srv,var}"
+    inchroot "install -d -m 0750 /root"
+    inchroot "install -d -m 1777 /tmp /var/tmp"
+    inchroot "mkdir -p /usr/{,local/}{bin,include,lib,sbin,src}"
+    inchroot "mkdir -p /usr/{,local/}share/{color,dict,doc,info,locale,man}"
+    inchroot "mkdir /usr/{,local/}share/{misc,terminfo,zoneinfo}"
+    inchroot "mkdir /usr/libexec"
+    inchroot "mkdir -p /usr/{,local/}share/man/man{1..8}"
+    
+    displayMsg OK "Done ..."
+}

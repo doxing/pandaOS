@@ -65,3 +65,39 @@ stripSymbols() {
     strip --strip-debug /tools/lib/*
     /usr/bin/strip --strip-unneeded /tools/{,s}bin/*
 }
+
+# Override the 'chroot' command, to automate the build process.
+inchroot() {
+    # Create Initial Device Nodes
+    #sudo mknod -m 600 ${MOUNT_POINT}dev/console c 5 1
+    # FIXME: Crashes the host system
+    #sudo mknod -m 666 ${MOUNT_POINT}dev/null c 1 3
+    
+    # Mounting and Populating /dev
+    sudo mount --bind /dev ${MOUNT_POINT}dev
+    
+    # Mount Virtual Kernel File Systems
+    sudo mount -t devpts devpts ${MOUNT_POINT}dev/pts
+    sudo mount -t proc proc ${MOUNT_POINT}proc
+    sudo mount -t sysfs sysfs ${MOUNT_POINT}sys
+    sudo mount -t tmpfs tmpfs ${MOUNT_POINT}run
+    
+    sudo chroot "$MOUNT_POINT" /tools/bin/env -i \
+    HOME=/root                  \
+    TERM="$TERM"                \
+    PS1='\u:\w\$ '              \
+    PATH=/bin:/usr/bin:/sbin:/usr/sbin:/tools/bin \
+    /tools/bin/bash -c "$@"
+    
+    sync
+    sleep 1
+    
+    sudo umount -l ${MOUNT_POINT}run
+    sudo umount -l ${MOUNT_POINT}sys
+    sudo umount -l ${MOUNT_POINT}proc
+    sudo umount -l ${MOUNT_POINT}dev/pts
+    
+    #sudo rm -rvf ${MOUNT_POINT}dev/null
+    #sudo rm -rvf ${MOUNT_POINT}dev/console
+    sudo umount -l ${MOUNT_POINT}dev
+}
