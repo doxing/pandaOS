@@ -1,0 +1,68 @@
+#!/bin/bash
+
+basebuild1() {
+    # Pass 1
+    BUILD binutils BASIC
+    BUILD gcc BASIC
+    BUILD linux-api-headers BASIC
+    BUILD glibc BASIC
+    BUILD libstdc++ BASIC
+   
+    # Clean up extracted pakages
+    cleanupBuild
+}
+    
+basebuild2() {
+    # Pass 2
+    BUILD binutils BASIC
+    BUILD gcc BASIC
+    
+    # Clean up extracted pakages
+    cleanupBuild
+}
+    
+basebuild3() {
+    # Test Suites
+    BUILD tcl BASIC
+    BUILD expect BASIC
+    BUILD dejagnu BASIC
+    BUILD check BASIC
+    
+    # Clean up extracted pakages
+    cleanupBuild
+}    
+
+basebuild4() {
+    # Prepare rest of the system
+    BUILD ncurses BASIC
+    BUILD bash BASIC
+    BUILD bzip BASIC
+    BUILD coreutils BASIC
+    BUILD diffutils BASIC
+    BUILD file BASIC
+    BUILD findutils BASIC
+    BUILD gawk BASIC
+    BUILD gettext BASIC
+    BUILD grep BASIC
+    BUILD gzip BASIC
+    BUILD m4 BASIC
+    BUILD make BASIC
+    BUILD patch BASIC
+    BUILD perl BASIC
+    BUILD sed BASIC
+    BUILD tar BASIC
+    BUILD texinfo BASIC
+    BUILD util-linux BASIC
+    BUILD xz BASIC
+    
+    # Clean up extracted pakages
+    cleanupBuild
+}
+
+basebuildFinal() {
+    # Strip
+    stripSymbols
+    # Change ownership of MOUNT_POINT/tools to root
+    sudo chown -R root:root ${MOUNT_POINT}tools
+    displayMsg OK "Ownership of ${MOUNT_POINT}tools changed to 'root'"
+}

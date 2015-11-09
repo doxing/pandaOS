@@ -14,5 +14,84 @@ execChrootSetup() {
     inchroot "mkdir /usr/libexec"
     inchroot "mkdir -p /usr/{,local/}share/man/man{1..8}"
     
+    inchroot "case $(uname -m) in 
+                x86_64) ln -s lib /lib64 
+                        ln -s lib /usr/lib64 
+                        ln -s lib /usr/local/lib64 ;; 
+             esac"
+    inchroot "mkdir /var/{log,mail,spool}"
+    inchroot "ln -s /run /var/run"
+    inchroot "ln -s /run/lock /var/lock"
+    inchroot "mkdir -p /var/{opt,cache,lib/{color,misc,locate},local}"
+    
+    # Some programs use hard-wired paths to programs which do not
+    # exist yet. In order to satisfy these programs, create a number
+    # of symbolic links
+    inchroot "ln -s /tools/bin/{bash,cat,echo,pwd,stty} /bin"
+    inchroot "ln -s /tools/bin/perl /usr/bin"
+    inchroot "ln -s /tools/lib/libgcc_s.so{,.1} /usr/lib"
+    inchroot "ln -s /tools/lib/libstdc++.so{,.6} /usr/lib"
+    inchroot "sed 's/tools/usr/' /tools/lib/libstdc++.la > /usr/lib/libstdc++.la"
+    inchroot "ln -s bash /bin/sh"
+    
+    # Linux maintains a list of the mounted file systems in the file
+    # /etc/mtab. Modern kernels maintain this list internally and
+    # exposes it to the user via the /proc filesystem. To satisfy
+    # utilities that expect the presence of /etc/mtab, create the
+    # following symbolic link
+    inchroot "ln -s /proc/self/mounts /etc/mtab"
+    
     displayMsg OK "Done ..."
+    
+    displayMsg OK "Creating essential files ..."
+    
+    # In order for user root to be able to login and for the name
+    # “root” to be recognized, there must be relevant entries in
+    # the /etc/passwd and /etc/group files. Create the /etc/passwd
+    # file
+    inchroot "cat > /etc/passwd << "EOF"
+root:x:0:0:root:/root:/bin/bash
+bin:x:1:1:bin:/dev/null:/bin/false
+daemon:x:6:6:Daemon User:/dev/null:/bin/false
+messagebus:x:18:18:D-Bus Message Daemon User:/var/run/dbus:/bin/false
+nobody:x:99:99:Unprivileged User:/dev/null:/bin/false
+EOF"
+
+    # Create the /etc/group file
+    inchroot "cat > /etc/group << "EOF"
+root:x:0:
+bin:x:1:daemon
+sys:x:2:
+kmem:x:3:
+tape:x:4:
+tty:x:5:
+daemon:x:6:
+floppy:x:7:
+disk:x:8:
+lp:x:9:
+dialout:x:10:
+audio:x:11:
+video:x:12:
+utmp:x:13:
+usb:x:14:
+cdrom:x:15:
+adm:x:16:
+messagebus:x:18:
+systemd-journal:x:23:
+input:x:24:
+mail:x:34:
+nogroup:x:99:
+users:x:999:
+EOF"
+
+    # Initialize the log files and give them proper permissions
+    inchroot "touch /var/log/{btmp,lastlog,wtmp}"
+    inchroot "chgrp -v utmp /var/log/lastlog"
+    inchroot "chmod -v 664  /var/log/lastlog"
+    inchroot "chmod -v 600  /var/log/btmp"
+    
+    displayMsg OK "Done ..."
+    
+    # Install packages
+    inchroot "bash /src/scripts/chroot-build"
 }

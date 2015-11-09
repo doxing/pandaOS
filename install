@@ -6,13 +6,7 @@
 # Abhimanyu Saharan <desk.abhimanyu@gmail.com>  #
 #################################################
 
-source global
-source handleErrors
-source functions
-source requirementsCheck
-source cleanup
-source initSetup
-source chrootSetup
+source imports
 
 # Accept mount point from the user
 # FIXME Add leading slash
