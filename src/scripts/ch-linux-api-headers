@@ -7,7 +7,6 @@ FILENAME="linux-4.2.tar.xz"
 # (API) for the system's C library (Glibc in LFS) to use. This is done
 # by way of sanitizing various C header files that are shipped in the
 # Linux kernel source tarball.
-displayMsg OK "Building Pass 2 ..."
     
 # Change directory
 cd /src/pkg/basic/${FOLDERNAME}

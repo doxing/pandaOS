@@ -64,3 +64,4 @@ BUILD() {
 }
 
 BUILD ch-linux-api-headers BASIC
+BUILD ch-man-pages BASIC
