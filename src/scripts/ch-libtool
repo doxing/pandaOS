@@ -1,0 +1,20 @@
+#!/bin/bash
+
+FOLDERNAME="libtool-2.4.6"
+FILENAME="libtool-2.4.6.tar.xz"
+
+# The Libtool package contains the GNU generic library support
+# script. It wraps the complexity of using shared libraries in
+# a consistent, portable interface.
+    
+# Change directory
+cd /src/pkg/basic/${FOLDERNAME}
+
+# Prepare Libtool for compilation
+./configure --prefix=/usr
+
+# Compile the package
+make
+
+# Install the package
+make install
