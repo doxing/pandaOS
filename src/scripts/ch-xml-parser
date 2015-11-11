@@ -1,0 +1,19 @@
+#!/bin/bash
+
+FOLDERNAME="XML-Parser-2.44"
+FILENAME="XML-Parser-2.44.tar.gz"
+
+# The XML::Parser module is a Perl interface to James
+# Clark's XML parser, Expat.
+    
+# Change directory
+cd /src/pkg/basic/${FOLDERNAME}
+
+# Prepare XML::Parser for compilation
+perl Makefile.PL
+
+# Compile the package
+make
+
+# Install the package
+make install
