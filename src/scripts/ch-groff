@@ -1,0 +1,18 @@
+#!/bin/bash
+
+FOLDERNAME="groff-1.22.3"
+FILENAME="groff-1.22.3.tar.gz"
+
+# The Groff package contains programs for processing and formatting text.
+    
+# Change directory
+cd /src/pkg/basic/${FOLDERNAME}
+
+# Prepare Groff for compilation
+PAGE=A4 ./configure --prefix=/usr
+
+# Compile the package
+make
+
+# Install the package
+make install
