@@ -11,7 +11,7 @@ cd /src/build/ch-binutils
     
 # FIXME: Verify expect output before running test suites
 
-# Prepare File for compilation
+# Prepare Binutils for compilation
 ../../pkg/basic/${FOLDERNAME}/configure --prefix=/usr \
         --enable-shared \
         --disable-werror

@@ -132,3 +132,9 @@ grep found dummy.log
 rm -v dummy.c a.out dummy.log
 
 BUILD ch-zlib BASIC
+BUILD ch-file BASIC
+BUILD ch-binutils BASIC
+BUILD ch-gmp BASIC
+BUILD ch-mpfr BASIC
+BUILD ch-mpc BASIC
+BUILD ch-gcc BASIC
