@@ -7,53 +7,39 @@ FILENAME="glibc-2.22.tar.xz"
 # the basic routines for allocating memory, searching directories,
 # opening and closing files, reading and writing files, string handling,
 # pattern matching, arithmetic, and so on.
-pass1() {
-    displayMsg OK "Building Pass 1 ..."
+
+# Fix a build problem that affects i386 systems
+cd ../../pkg/basic/${FOLDERNAME} &&
+patch -Np1 -i ../glibc-2.22-upstream_i386_fix-1.patch
+cd ../../../build/glibc
     
-    # Fix a build problem that affects i386 systems
-    cd ../../pkg/basic/${FOLDERNAME} &&
-    patch -Np1 -i ../glibc-2.22-upstream_i386_fix-1.patch
-    cd ../../../build/glibc
-    
-    # Prepare Glibc for compilation
-    ../../pkg/basic/${FOLDERNAME}/configure                         \
-      --prefix=/tools                                               \
-      --host=$TARGET                                                \
-      --build=$(../../pkg/basic/${FOLDERNAME}/scripts/config.guess) \
-      --disable-profile                                             \
-      --enable-kernel=2.6.32                                        \
-      --enable-obsolete-rpc                                         \
-      --with-headers=/tools/include                                 \
-      libc_cv_forced_unwind=yes                                     \
-      libc_cv_ctors_header=yes                                      \
-      libc_cv_c_cleanup=yes
+# Prepare Glibc for compilation
+../../pkg/basic/${FOLDERNAME}/configure                         \
+--prefix=/tools                                               \
+--host=$TARGET                                                \
+--build=$(../../pkg/basic/${FOLDERNAME}/scripts/config.guess) \
+--disable-profile                                             \
+--enable-kernel=2.6.32                                        \
+--enable-obsolete-rpc                                         \
+--with-headers=/tools/include                                 \
+libc_cv_forced_unwind=yes                                     \
+libc_cv_ctors_header=yes                                      \
+libc_cv_c_cleanup=yes
       
-    # Compile the package
-    make
+# Compile the package
+make
     
-    # Install the package
-    make install
-    
-    # Perform a sanity check
-    echo 'int main(){}' > dummy.c
-    $TARGET-gcc dummy.c -o dummy
-    if [ -n "$(readelf -l dummy | grep ': /tools')" ]
-    then
-        displayMsg OK "$(readelf -l dummy | grep ': /tools')"
-    else
-        displayMsg ERR "Toolchain test failed!"
-        exit 1
-    fi
-    rm dummy.c dummy
-}
+# Install the package
+make install
 
-pass2() {
-    displayMsg OK "Building Pass 2 ..."
-}
-
-if [ $GLIBC_PASS1 == "true" ]
+# Perform a sanity check
+echo 'int main(){}' > dummy.c
+/tools/bin/$TARGET-gcc dummy.c -o dummy
+if [ -n "$(readelf -l dummy | grep ': /tools')" ]
 then
-    pass2
+    displayMsg OK "$(readelf -l dummy | grep ': /tools')"
 else
-    pass1
+    displayMsg ERR "Toolchain test failed!"
+    exit 1
 fi
+rm dummy.c dummy

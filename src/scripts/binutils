@@ -34,7 +34,7 @@ pass1() {
 
 pass2() {
     displayMsg OK "Building Pass 2 ..."
-    
+  
     # Prepare Binutils for compilation
     CC=$TARGET-gcc                          \
     AR=$TARGET-ar                           \

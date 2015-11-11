@@ -2,13 +2,13 @@
 
 source ../../handleErrors
 
-PKG_DIR="src/pkg"
+PKG_DIR="/src/pkg"
 PKG_BASIC_DIR="${PKG_DIR}/basic"
 PKG_STD_DIR="${PKG_DIR}/standard"
-BUILD_DIR="src/build"
+BUILD_DIR="/src/build"
 TOOLS_DIR="tools"
-SCRIPT_DIR="src/scripts"
-BACKUP_DIR="backup"
+SCRIPT_DIR="/src/scripts"
+BACKUP_DIR="/backup"
 
 # Extracts source code for the selected package.
 extractPkg() {
@@ -65,3 +65,4 @@ BUILD() {
 
 BUILD ch-linux-api-headers BASIC
 BUILD ch-man-pages BASIC
+BUILD ch-glibc BASIC

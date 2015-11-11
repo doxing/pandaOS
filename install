@@ -35,6 +35,9 @@ displayMsg OK "Done ..."
 displayMsg OK "------- PANDA LINUX -------"
 displayMsg ""
 
+# Get rights to build the system
+sudo chown $(whoami) $MOUNT_POINT
+
 #################################################################
 # Copy the data to the mount point                              #
 #################################################################
