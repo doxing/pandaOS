@@ -1,0 +1,20 @@
+#!/bin/bash
+
+FOLDERNAME="sed-4.2.2"
+FILENAME="sed-4.2.2.tar.bz2"
+
+# The Sed package contains a stream editor.
+    
+# Change directory
+cd /src/pkg/basic/${FOLDERNAME}
+
+# Prepare Sed for compilation
+./configure --prefix=/usr \
+            --bindir=/bin \
+            --htmldir=/usr/share/doc/sed-4.2.2
+
+# Compile the package
+make && make html
+
+# Install the package
+make install && make -C doc install-html
