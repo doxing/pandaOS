@@ -1,0 +1,26 @@
+#!/bin/bash
+
+FOLDERNAME="gmp-6.0.0"
+FILENAME="gmp-6.0.0a.tar.xz"
+
+# The GMP package contains math libraries. These have useful
+# functions for arbitrary precision arithmetic.
+    
+# Change directory
+cd /src/pkg/basic/${FOLDERNAME}
+
+# Prepare GMP for compilation
+./configure --prefix=/usr    \
+            --enable-cxx     \
+            --disable-static \
+            --docdir=/usr/share/doc/gmp-6.0.0a
+
+# Compile the package
+make
+# Generate the HTML Documentation
+make html
+
+# Install the package
+make install
+# Install the Documentation
+make install-html
