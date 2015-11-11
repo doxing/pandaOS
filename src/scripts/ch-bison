@@ -1,0 +1,19 @@
+#!/bin/bash
+
+FOLDERNAME="bison-3.0.4"
+FILENAME="bison-3.0.4.tar.xz"
+
+# The Bison package contains a parser generator.
+    
+# Change directory
+cd /src/pkg/basic/${FOLDERNAME}
+
+# Prepare Bison for compilation
+./configure --prefix=/usr \
+            --docdir=/usr/share/doc/bison-3.0.4
+
+# Compile the package
+make
+
+# Install the package
+make install
