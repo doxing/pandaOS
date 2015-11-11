@@ -1,0 +1,19 @@
+#!/bin/bash
+
+FOLDERNAME="less-458"
+FILENAME="less-458.tar.gz"
+
+# The Less package contains a text file viewer.
+    
+# Change directory
+cd /src/pkg/basic/${FOLDERNAME}
+
+# Prepare Less for compilation
+./configure --prefix=/usr    \
+            --sysconfdir=/etc
+
+# Compile the package
+make
+
+# Install the package
+make install
