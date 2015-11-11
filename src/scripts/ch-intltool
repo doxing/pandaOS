@@ -1,0 +1,23 @@
+#!/bin/bash
+
+FOLDERNAME="intltool-0.51.0"
+FILENAME="intltool-0.51.0.tar.gz"
+
+# The Intltool is an internationalization tool used
+# for extracting translatable strings from source files.
+    
+# Change directory
+cd /src/pkg/basic/${FOLDERNAME}
+
+# Fix a warning that is caused by perl-5.22 and later
+sed -i 's:\\\${:\\\$\\{:' intltool-update.in
+
+# Prepare Intltool for compilation
+./configure --prefix=/usr
+
+# Compile the package
+make
+
+# Install the package
+make install
+install -v -Dm644 doc/I18N-HOWTO /usr/share/doc/intltool-0.51.0/I18N-HOWTO
