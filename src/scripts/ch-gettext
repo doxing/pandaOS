@@ -1,0 +1,24 @@
+#!/bin/bash
+
+FOLDERNAME="gettext-0.19.5.1"
+FILENAME="gettext-0.19.5.1.tar.xz"
+
+# The Gettext package contains utilities for
+# internationalization and localization. These
+# allow programs to be compiled with NLS (Native
+# Language Support), enabling them to output messages
+# in the user's native language.
+    
+# Change directory
+cd /src/pkg/basic/${FOLDERNAME}
+
+# Prepare Gettext for compilation
+./configure --prefix=/usr    \
+            --disable-static \
+            --docdir=/usr/share/doc/gettext-0.19.5.1
+
+# Compile the package
+make
+
+# Install the package
+make install
