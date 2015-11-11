@@ -1,0 +1,54 @@
+#!/bin/bash
+
+FOLDERNAME="ncurses-6.0"
+FILENAME="ncurses-6.0.tar.gz"
+
+# The Ncurses package contains libraries for terminal
+# independent handling of character screens.
+    
+# Change directory
+cd /src/pkg/basic/${FOLDERNAME}
+
+# Don't install a static library that is not
+# handled by configure
+sed -i '/LIBTOOL_INSTALL/d' c++/Makefile.in
+
+# Prepare Ncurses for compilation
+./configure --prefix=/usr           \
+            --mandir=/usr/share/man \
+            --with-shared           \
+            --without-debug         \
+            --without-normal        \
+            --enable-pc-files       \
+            --enable-widec
+
+# Compile the package
+make
+
+# Install the package
+make install
+
+# Move the shared libraries to the /lib directory
+mv -v /usr/lib/libncursesw.so.6* /lib
+ln -sfv ../../../lib/$(readlink /usr/lib/libncursesw.so) /usr/lib/libncursesw.so
+
+# Many applications still expect the linker to
+# be able to find non-wide-character Ncurses
+# libraries. Trick such applications into linking
+# with wide-character libraries by means of
+# symlinks and linker scripts
+for lib in ncurses form panel menu ; do
+    rm -vf                    /usr/lib/lib${lib}.so
+    echo "INPUT(-l${lib}w)" > /usr/lib/lib${lib}.so
+    ln -sfv ${lib}w.pc        /usr/lib/pkgconfig/${lib}.pc
+done
+
+# Make sure that old applications that look for
+# -lcurses at build time are still buildable
+rm -vf                     /usr/lib/libcursesw.so
+echo "INPUT(-lncursesw)" > /usr/lib/libcursesw.so
+ln -sfv libncurses.so      /usr/lib/libcurses.so
+
+# Install the Ncurses documentation
+mkdir -v       /usr/share/doc/ncurses-6.0
+cp -v -R doc/* /usr/share/doc/ncurses-6.0
