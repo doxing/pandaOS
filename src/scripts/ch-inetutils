@@ -1,0 +1,31 @@
+#!/bin/bash
+
+FOLDERNAME="inetutils-1.9.4"
+FILENAME="inetutils-1.9.4.tar.xz"
+
+# The Inetutils package contains programs for basic networking.
+    
+# Change directory
+cd /src/pkg/basic/${FOLDERNAME}
+
+# Prepare Inetutils for compilation
+./configure --prefix=/usr \
+            --localstatedir=/var \
+            --disable-logger     \
+            --disable-whois      \
+            --disable-rcp        \
+            --disable-rexec      \
+            --disable-rlogin     \
+            --disable-rsh        \
+            --disable-servers
+
+# Compile the package
+make
+
+# Install the package
+make install
+
+# Move some programs so they are available if /usr
+# is not accessible
+mv -v /usr/bin/{hostname,ping,ping6,traceroute} /bin
+mv -v /usr/bin/ifconfig /sbin
