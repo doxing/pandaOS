@@ -4,6 +4,8 @@
 initSetup() {
     displayMsg ""
     displayMsg OK "Starting Installation ..."
+    
+    export PATH="/tools/bin:/bin:/usr/bin"
 
     source "${MOUNT_POINT}${SCRIPT_DIR}/base-build"
     basebuild1
