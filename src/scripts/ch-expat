@@ -1,0 +1,23 @@
+#!/bin/bash
+
+FOLDERNAME="expat-2.1.0"
+FILENAME="expat-2.1.0.tar.gz"
+
+# The Expat package contains a stream oriented C library for parsing XML.
+    
+# Change directory
+cd /src/pkg/basic/${FOLDERNAME}
+
+# Prepare Expat for compilation
+./configure --prefix=/usr \
+            --disable-static
+
+# Compile the package
+make
+
+# Install the package
+make install
+
+# Install the documentation
+install -v -dm755 /usr/share/doc/expat-2.1.0
+install -v -m644 doc/*.{html,png,css} /usr/share/doc/expat-2.1.0
