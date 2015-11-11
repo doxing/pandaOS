@@ -1,0 +1,23 @@
+#!/bin/bash
+
+FOLDERNAME="grep-2.21"
+FILENAME="grep-2.21.tar.xz"
+
+# The Grep package contains programs for searching
+# through files.
+    
+# Change directory
+cd /src/pkg/basic/${FOLDERNAME}
+
+# First fix a potential security issue identified upstream
+sed -i -e '/tp++/a  if (ep <= tp) break;' src/kwset.c
+
+# Prepare Grep for compilation
+./configure --prefix=/usr \
+            --bindir=/bin
+
+# Compile the package
+make
+
+# Install the package
+make install
