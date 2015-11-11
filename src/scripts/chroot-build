@@ -66,3 +66,69 @@ BUILD() {
 BUILD ch-linux-api-headers BASIC
 BUILD ch-man-pages BASIC
 BUILD ch-glibc BASIC
+
+# Adjust the toolchain so that it will link any newly compiled program
+# against these new libraries. Replace /tools linker with the adjusted
+# linker. Also create a link to its counterpart in
+# /tools/$(gcc -dumpmachine)/bin
+
+mv -v /tools/bin/{ld,ld-old}
+mv -v /tools/$(gcc -dumpmachine)/bin/{ld,ld-old}
+mv -v /tools/bin/{ld-new,ld}
+ln -sv /tools/bin/ld /tools/$(gcc -dumpmachine)/bin/ld
+
+# Amend the GCC specs file so that it points to the new dynamic linker.
+# Simply deleting all instances of “/tools” should leave us with the
+# correct path to the dynamic linker. Also adjust the specs file so
+# that GCC knows where to find the correct headers and Glibc start files.
+gcc -dumpspecs | sed -e 's@/tools@@g'                   \
+    -e '/\*startfile_prefix_spec:/{n;s@.*@/usr/lib/ @}' \
+    -e '/\*cpp:/{n;s@$@ -isystem /usr/include@}' >      \
+    `dirname $(gcc --print-libgcc-file-name)`/specs
+    
+# Perform sanity check
+echo 'int main(){}' > dummy.c
+cc dummy.c -v -Wl,--verbose &> dummy.log
+if [ -n "$(readelf -l a.out | grep ': /lib')" ]
+then
+    echo readelf -l a.out | grep ': /lib'
+else
+    echo "Toolchain test failed while adjusting the toolchain."
+    exit 1
+fi
+
+# Make sure that we're setup to use the correct startfiles
+# FIXME: Verify the result
+# Result: /usr/lib/crt1.o succeeded
+#         /usr/lib/crti.o succeeded
+#         /usr/lib/crtn.o succeeded
+grep -o '/usr/lib.*/crt[1in].*succeeded' dummy.log
+
+# Verify that the compiler is searching for the correct
+# header files.
+# FIXME: Verify the result
+# Result: #include <...> search starts here:
+#        /usr/include
+grep -B1 '^ /usr/include' dummy.log
+
+# Verify that the new linker is being used with the
+# correct search paths.
+# FIXME: Verify the result
+# Result: SEARCH_DIR("/usr/lib")
+#         SEARCH_DIR("/lib");
+grep 'SEARCH.*/usr/lib' dummy.log |sed 's|; |\n|g'
+
+# Make sure that we're using the correct libc
+# FIXME: Verify the result
+# Result: attempt to open /lib/libc.so.6 succeeded
+grep "/lib.*/libc.so.6 " dummy.log
+
+# Make sure GCC is using the correct dynamic linker
+# FIXME: Verify the result
+# Result: found ld-linux.so.2 at /lib/ld-linux.so.2
+grep found dummy.log
+
+# Clean up the test files
+rm -v dummy.c a.out dummy.log
+
+BUILD ch-zlib BASIC

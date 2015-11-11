@@ -1,0 +1,25 @@
+#!/bin/bash
+
+FOLDERNAME="zlib-1.2.8"
+FILENAME="zlib-1.2.8.tar.xz"
+
+# The Zlib package contains compression and
+# decompression routines used by some programs.
+    
+# Change directory
+cd /src/pkg/basic/${FOLDERNAME}
+    
+# Prepare Zlib for compilation
+./configure --prefix=/usr
+
+# Compile the package
+make
+
+# Install the package
+make install
+
+# The shared library needs to be moved to /lib,
+# and as a result the .so file in /usr/lib will
+# need to be recreated
+mv -v /usr/lib/libz.so.* /lib
+ln -sfv ../../lib/$(readlink /usr/lib/libz.so) /usr/lib/libz.so
