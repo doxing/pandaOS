@@ -1,0 +1,26 @@
+#!/bin/bash
+
+FOLDERNAME="mpc-1.0.3"
+FILENAME="mpc-1.0.3.tar.gz"
+
+# The MPC package contains a library for the arithmetic of complex
+# numbers with arbitrarily high precision and correct rounding of
+# the result.
+    
+# Change directory
+cd /src/pkg/basic/${FOLDERNAME}
+
+# Prepare MPC for compilation
+./configure --prefix=/usr    \
+            --disable-static \
+            --docdir=/usr/share/doc/mpc-1.0.3
+
+# Compile the package
+make
+# Generate the HTML Documentation
+make html
+
+# Install the package
+make install
+# Install the Documentation
+make install-html
