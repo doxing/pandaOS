@@ -1,0 +1,21 @@
+#!/bin/bash
+
+FOLDERNAME="tar-1.28"
+FILENAME="tar-1.28.tar.xz"
+
+# The Tar package contains an archiving program.
+    
+# Change directory
+cd /src/pkg/basic/${FOLDERNAME}
+
+# Prepare Tar for compilation:
+FORCE_UNSAFE_CONFIGURE=1  \
+./configure --prefix=/usr \
+            --bindir=/bin
+            
+# Compile the package
+make
+
+# Install the package
+make install
+make -C doc install-html docdir=/usr/share/doc/tar-1.28
