@@ -1,0 +1,77 @@
+#!/bin/bash
+
+FOLDERNAME="systemd-224"
+FILENAME="systemd-224.tar.xz"
+
+# The systemd package contains programs for controlling the
+# startup, running, and shutdown of the system.
+    
+# Change directory
+cd /src/pkg/basic/${FOLDERNAME}
+
+# Create a file to allow systemd to build when using Util-Linux
+# and disable LTO by default
+cat > config.cache << "EOF"
+KILL=/bin/kill
+MOUNT_PATH=/bin/mount
+UMOUNT_PATH=/bin/umount
+HAVE_BLKID=1
+BLKID_LIBS="-lblkid"
+BLKID_CFLAGS="-I/tools/include/blkid"
+HAVE_LIBMOUNT=1
+MOUNT_LIBS="-lmount"
+MOUNT_CFLAGS="-I/tools/include/libmount"
+cc_cv_CFLAGS__flto=no
+EOF
+
+# Fix a build error when using Util-Linux
+sed -i "s:blkid/::" $(grep -rl "blkid/blkid.h")
+
+# Apply the following patch so that compat pkg-config files get
+# installed without installing compat libs
+patch -Np1 -i ../systemd-224-compat-3.patch
+
+# Disable two tests that always fail
+sed -e 's:test/udev-test.pl ::g'  \
+    -e 's:test-copy$(EXEEXT) ::g' \
+    -i Makefile.in
+    
+# Prepare systemd for compilation
+./configure --prefix=/usr                                           \
+            --sysconfdir=/etc                                       \
+            --localstatedir=/var                                    \
+            --config-cache                                          \
+            --with-rootprefix=                                      \
+            --with-rootlibdir=/lib                                  \
+            --enable-split-usr                                      \
+            --disable-firstboot                                     \
+            --disable-ldconfig                                      \
+            --disable-sysusers                                      \
+            --without-python                                        \
+            --docdir=/usr/share/doc/systemd-224                     \
+            --with-dbuspolicydir=/etc/dbus-1/system.d               \
+            --with-dbussessionservicedir=/usr/share/dbus-1/services \
+            --with-dbussystemservicedir=/usr/share/dbus-1/system-services
+
+# Compile the package
+make LIBRARY_PATH=/tools/lib
+
+# Install the package
+make LD_LIBRARY_PATH=/tools/lib install
+
+# Move NSS libraries to /lib
+mv -v /usr/lib/libnss_{myhostname,mymachines,resolve}.so.2 /lib
+# Remove an unnecessary directory
+rm -rfv /usr/lib/rpm
+
+# Create the Sysvinit compatibility symlinks, so systemd
+# is used as the default init system
+for tool in runlevel reboot shutdown poweroff halt telinit; do
+     ln -sfv ../../../bin/systemctl /sbin/${tool}
+done
+ln -sfv ../../../lib/systemd/systemd /sbin/init
+
+# Remove a reference to a non-existent group
+sed -i "s:0775 root lock:0755 root root:g" /usr/lib/tmpfiles.d/legacy.conf
+# Create the /etc/machine-id file needed by systemd-journald
+systemd-machine-id-setup
