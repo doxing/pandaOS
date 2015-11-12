@@ -24,7 +24,7 @@ make modules_install
 # used. The filename below can be changed to suit your taste, but the
 # stem of the filename should be vmlinuz to be compatible with the
 # automatic setup of the boot process
-cp -v arch/x86/boot/bzImage /boot/vmlinuz-0.1-panda-linux
+cp -v arch/x86/boot/bzImage /boot/vmlinuz-0.2-panda-linux
 
 # System.map is a symbol file for the kernel. It maps the function entry
 # points of every function in the kernel API, as well as the addresses of
@@ -67,7 +67,7 @@ insmod ext4
 set root=(hd0,10)
 
 menuentry "Panda Linux" {
-        linux   /boot/vmlinuz-0.1-panda-linux root=/dev/sda10 ro
+        linux   /boot/vmlinuz-0.2-panda-linux root=/dev/sda10 ro
 }
 EOF
 
@@ -80,7 +80,7 @@ cat > /etc/os-release << "EOF"
 NAME="Panda Linux"
 VERSION="0.1"
 ID=panda
-PRETTY_NAME="Panda Linux v0.1"
+PRETTY_NAME="Panda Linux v0.2"
 EOF
 
 # Create /etc/lfs-release for compatibility with non systemd branch
@@ -90,7 +90,7 @@ echo 0.1a > /etc/panda-release
 # to the Linux Standards Base (LSB)
 cat > /etc/lsb-release << "EOF"
 DISTRIB_ID="Panda Linux"
-DISTRIB_RELEASE="v0.1a"
+DISTRIB_RELEASE="v0.2a"
 DISTRIB_CODENAME="panda"
 DISTRIB_DESCRIPTION="Panda Linux"
 EOF
