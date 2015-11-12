@@ -1,0 +1,16 @@
+#!/bin/bash
+
+#!/bin/bash
+
+FOLDERNAME="Linux-PAM-1.2.1"
+FILENAME="Linux-PAM-1.2.1.tar.bz2"
+
+# The Linux PAM package contains Pluggable Authentication Modules used
+# to enable the local system administrator to choose how applications
+# authenticate users.
+
+# Change directory
+cd /src/pkg/standard/${FOLDERNAME}
+
+# Untar documentation
+tar -xf ../Linux-PAM-1.2.0-docs.tar.bz2 --strip-components=1

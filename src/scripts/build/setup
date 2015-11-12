@@ -312,3 +312,4 @@ BUILD lsb-release STD
 BUILD cracklib STD
 BUILD haveged STD
 BUILD iptables STD
+BUILD linux-pam
