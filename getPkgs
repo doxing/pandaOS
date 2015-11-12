@@ -12,10 +12,10 @@ then
 fi
     
 cd $PKG_BASIC_DIR
-if [ $(ls -l | wc -l) != 81 ]
+if [ "$(ls -l | wc -l)" != 81 ]
 then
     displayMsg OK "Downloading packages ..."
-    wget --continue --input-file="../../../${WGET_LIST_BASIC}" || $ERR=$?
+    wget --continue --input-file="../../../${WGET_LIST_BASIC}" || ERR=$?
         
     if [ "${ERR}" = "127" ]
     then
@@ -30,6 +30,4 @@ then
         
     # Remove wget logs
     rm wget-log*
-    fi
-}
-
+fi
