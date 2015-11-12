@@ -4,7 +4,7 @@ VERSION="ALPHA-5"
 CODENAME="PANDA"
 TARGET="$(uname -m)-panda-linux-gnu"
 
-MOUNT_POINT=""
+MOUNT_POINT="/mnt/panda/"
 PARTITION=""
 EXTRACT_DIR=""
 PKG_DIR="src/pkg"

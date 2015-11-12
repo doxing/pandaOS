@@ -94,4 +94,12 @@ EOF"
     
     # Install packages
     inchroot "bash /src/scripts/chroot-build"
+    
+    displayMsg OK "Configuring the environment ..."
+    
+    # Configure chroot environment
+    inModchroot "bash /src/scripts/chroot-config"
+    inModchroot "bash src/scripts/chroot-linux-kernel"
+    
+    displayMsg OK "Done ..."
 }

@@ -6,26 +6,15 @@ Open Source Linux Operating System
 Installation
 ------------
 
-- Make `getPkgs` executable
+Run the `getPkgs` file to download all the required packages
 ```
-chmod +x getPkgs
-```
-- Run the `getPkgs` file to download all the required packages
-```
-./getPkgs
+bash getPkgs
 ```
 
-- Make `install` executable
+Run the `install` file
 ```
-chmod +x install
+bash install <filesystem>
 ```
-- Run the `install` file
-```
-./install <mountPoint> <filesystem>
-```
-
-`<mountPoint>` - e.g. `/mnt/os`
-
 `<filesystem>` - Minimum `10 GB` and `ext4` filesystem is required.
 
 Donate

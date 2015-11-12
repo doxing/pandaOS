@@ -1,0 +1,77 @@
+#!/bin/bash
+
+source ../../handleErrors
+
+PKG_DIR="/src/pkg"
+PKG_BASIC_DIR="${PKG_DIR}/basic"
+PKG_STD_DIR="${PKG_DIR}/standard"
+BUILD_DIR="/src/build"
+TOOLS_DIR="tools"
+SCRIPT_DIR="/src/scripts"
+BACKUP_DIR="/backup"
+
+# Extracts source code for the selected package.
+extractPkg() {
+    if [ "$(echo ${2} | grep "BASIC")" ]
+    then
+        EXTRACT_DIR="${PKG_BASIC_DIR}"
+    else
+        EXTRACT_DIR="${PKG_STD_DIR}"
+    fi
+    # Extract the primary source archive to a new directory.
+    if [ "$(echo ${1} | grep \\.zip\$)" ]
+    then
+        displayMsg OK "... Extracting source code"
+        unzip "${EXTRACT_DIR}/${1}" -d "${EXTRACT_DIR}"
+    elif [ "$(isArchive ${1})" ]
+    then
+        displayMsg OK "... Extracting source code"
+        tar xf "${EXTRACT_DIR}/${1}" -C "${EXTRACT_DIR}"
+    else
+            displayMsg ERR "... Unknown source format. Not extracting '${1}'"
+    fi
+}
+
+# Checks if a filename is an archive that can be extracted.
+isArchive() {
+  for ext in \\.zip \\.tar\\.bz2 \\.tar\\.gz \\.tar\\.xz \\.tgz \\.tar; do
+    if [ "$(echo ${1} | grep ${ext}\$)" ]; then
+      echo "true"
+      return
+    fi
+  done
+}
+
+BUILD() {
+    # Load build script
+    local SCRIPT_SRC="${SCRIPT_DIR}/${1}"
+
+    displayMsg OK "... Selected '${1}' package"
+    
+    # Extract the source code
+    extractPkg "$(cat ${SCRIPT_SRC} | grep '\FILENAME' | cut -d '=' -f2 | sed -e 's/^"//' -e 's/"$//')" "${2}"
+    
+    displayMsg OK "... Building a temporary version of this software"
+    # Change directory to builds folder
+    cd "${BUILD_DIR}"
+    
+    # Create dedicated directory for the package
+    mkdir -p ${1}
+    # Move inside the dedicated directory
+    cd ${1}
+    # Execute the script
+    bash /${SCRIPT_SRC}
+}
+
+cleanupBuild() {
+    displayMsg OK "Cleaning up chroot env..."
+    cd /src/build
+    rm -R -- */
+    cd /src/pkg/basic
+    rm -R -- */
+    displayMsg OK "Done ..."
+    
+}
+
+BUILD ch-linux-kernel BASIC
+cleanupBuild

@@ -3,7 +3,8 @@
 FOLDERNAME="bc-1.06.95"
 FILENAME="bc-1.06.95.tar.bz2"
 
-# The Bash package contains the Bourne-Again SHell.
+# The Bc package contains an arbitrary precision
+# numeric processing language.
     
 # Change directory
 cd /src/pkg/basic/${FOLDERNAME}

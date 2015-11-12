@@ -8,22 +8,19 @@
 
 source imports
 
-# Accept mount point from the user
-# FIXME Add leading slash
-MOUNT_POINT="${1}"
 # Accept partition from the user
-PARTITION="${2}"
+PARTITION="${1}"
 
 # Verify existence of mount point
 if [ ! -d $MOUNT_POINT ]
 then
-    displayMsg ERR "Mount point does not exist."
-    exit 1
+    displayMsg OK "Creating Mount point ..."
+    mkdir -pv $MOUNT_POINT
 fi
 
-if [ "${MOUNT_POINT}" == "" ]
+if [ "${PARTITION}" == "" ]
 then
-    displayMsg WARN "Usage: ./install <mointPoint>"
+    displayMsg WARN "Usage: ./install <filesystem>"
     exit 1
 fi
 

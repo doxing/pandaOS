@@ -2,23 +2,28 @@
 
 cleanup() {
     displayMsg ""
-    displayMsg OK "Creating backup of the system ..."
-    sudo cp -ru "${MOUNT_POINT}${TOOLS_DIR}" "${MOUNT_POINT}${BACKUP_DIR}"
-    displayMsg OK "Done ..."
-    
-    displayMsg ""
     displayMsg OK "Cleaning up the mess ..."
-#    rm -rf "${MOUNT_POINT}${BUILD_DIR}"
-#    sudo rm -rf "${MOUNT_POINT}${TOOLS_DIR}"
+    rm -rf "${MOUNT_POINT}${BUILD_DIR}"
+    sudo rm -rf "${MOUNT_POINT}${TOOLS_DIR}"
     sudo rm -rf /tools
     
     # Unmount the filesystem
     sudo umount -l $PARTITION
     displayMsg OK "Done ..."
+    
+    # Update Grub
+    displayMsg OK "... Updating GRUB ..."
+    sudo bash $(which update-grub)
+    displayMsg OK "... Done ..."
 }
 
 cleanupBuild() {
     displayMsg ""
+
+    displayMsg OK "Creating backup of the system ..."
+    sudo cp -ru "${MOUNT_POINT}${TOOLS_DIR}" "${MOUNT_POINT}${BACKUP_DIR}"
+    displayMsg OK "Done ..."
+    
     displayMsg OK "Cleaning up the mess ..."
     cd "${MOUNT_POINT}${BUILD_DIR}"
     sudo rm -R -- */
