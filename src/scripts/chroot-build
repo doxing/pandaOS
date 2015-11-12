@@ -72,10 +72,10 @@ BUILD ch-glibc BASIC
 # linker. Also create a link to its counterpart in
 # /tools/$(gcc -dumpmachine)/bin
 
-mv -v /tools/bin/{ld,ld-old}
-mv -v /tools/$(gcc -dumpmachine)/bin/{ld,ld-old}
-mv -v /tools/bin/{ld-new,ld}
-ln -sv /tools/bin/ld /tools/$(gcc -dumpmachine)/bin/ld
+mv /tools/bin/{ld,ld-old}
+mv /tools/$(gcc -dumpmachine)/bin/{ld,ld-old}
+mv /tools/bin/{ld-new,ld}
+ln -s /tools/bin/ld /tools/$(gcc -dumpmachine)/bin/ld
 
 # Amend the GCC specs file so that it points to the new dynamic linker.
 # Simply deleting all instances of “/tools” should leave us with the
@@ -129,7 +129,7 @@ grep "/lib.*/libc.so.6 " dummy.log
 grep found dummy.log
 
 # Clean up the test files
-rm -v dummy.c a.out dummy.log
+rm dummy.c a.out dummy.log
 
 BUILD ch-zlib BASIC
 BUILD ch-file BASIC
@@ -138,3 +138,63 @@ BUILD ch-gmp BASIC
 BUILD ch-mpfr BASIC
 BUILD ch-mpc BASIC
 BUILD ch-gcc BASIC
+BUILD ch-bzip BASIC
+BUILD ch-pkg-config BASIC
+BUILD ch-ncurses BASIC
+BUILD ch-attr BASIC
+BUILD ch-acl BASIC
+BUILD ch-libcap BASIC
+BUILD ch-sed BASIC
+BUILD ch-shadow BASIC
+BUILD ch-psmisc BASIC
+BUILD ch-procps-ng BASIC
+BUILD ch-e2fsprogs BASIC
+BUILD ch-coreutils BASIC
+BUILD ch-iana BASIC
+BUILD ch-m4 BASIC
+BUILD ch-flex BASIC
+BUILD ch-bison BASIC
+BUILD ch-grep BASIC
+BUILD ch-readline BASIC
+BUILD ch-bash BASIC
+BUILD ch-bc BASIC
+BUILD ch-libtool BASIC
+BUILD ch-gdbm BASIC
+BUILD ch-expat BASIC
+BUILD ch-inetutils BASIC
+BUILD ch-perl BASIC
+BUILD ch-xml-parser BASIC
+BUILD ch-autoconf BASIC
+BUILD ch-automake BASIC
+BUILD ch-diffutils BASIC
+BUILD ch-gawk BASIC
+BUILD ch-findutils BASIC
+BUILD ch-gettext BASIC
+BUILD ch-intltool BASIC
+BUILD ch-gperf BASIC
+BUILD ch-groff BASIC
+BUILD ch-xz BASIC
+BUILD ch-grub BASIC
+BUILD ch-less BASIC
+BUILD ch-gzip BASIC
+BUILD ch-iproute2 BASIC
+BUILD ch-kbd BASIC
+BUILD ch-kmod BASIC
+BUILD ch-libpipeline BASIC
+BUILD ch-make BASIC
+BUILD ch-patch BASIC
+BUILD ch-systemd BASIC
+BUILD ch-dbus BASIC
+BUILD ch-util-linux BASIC
+BUILD ch-mandb BASIC
+BUILD ch-tar BASIC
+BUILD ch-texinfo BASIC
+BUILD ch-vim BASIC
+
+# Strip the binaries and libraries
+/tools/bin/find /{,usr/}{bin,lib,sbin} -type f \
+    -exec /tools/bin/strip --strip-debug '{}' ';'
+    
+# Clean up some extra files left around from
+# running tests
+rm -rf /tmp/*
