@@ -1,0 +1,24 @@
+#!/bin/bash
+
+#!/bin/bash
+
+FOLDERNAME="haveged-1.9.1"
+FILENAME="haveged-1.9.1.tar.gz"
+
+# The Haveged package contains a daemon that generates an unpredictable
+# stream of random numbers and feeds the /dev/random device.
+
+# Change directory
+cd /src/pkg/standard/${FOLDERNAME}
+
+# Install Haveged
+./configure --prefix=/usr &&
+make
+
+make install &&
+mkdir -pv    /usr/share/doc/haveged-1.9.1 &&
+cp -v README /usr/share/doc/haveged-1.9.1
+
+# Configure Haveged
+cd ../blfs-bootscripts-20150924
+make install-haveged

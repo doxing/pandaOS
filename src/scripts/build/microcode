@@ -1,0 +1,28 @@
+#!/bin/bash
+
+FOLDERNAME="microcode_ctl-2.1-7"
+FILENAME="microcode_ctl-2.1-7.tar.xz"
+
+# This package reformats the microcode supplied by intel into
+# a format which the kernel can apply. The program
+# intel-microcode2ucode is built and invoked by the Makefile
+# to create the individual firmware blobs, so there is no
+# reason to install it.
+
+# Change directory
+cd /src/pkg/standard/${FOLDERNAME}
+
+# Compile the package
+make
+
+# Determine processor's identity
+CPU="$(head -n7 /proc/cpuinfo | grep 'cpu family	: ' | cut -d ':' -f2)"
+MODEL="$(head -n7 /proc/cpuinfo | grep 'model		: ' | cut -d ':' -f2)"
+STEPPING="$(head -n7 /proc/cpuinfo | grep 'stepping	: ' | cut -d ':' -f2)"
+
+ID="$(printf "%02x" $CPU)""-""$(printf "%02x" $MODEL)""-""$(printf "%02x" $STEPPING)"
+
+# If there is a blob for your system then test if it will
+# be applied by copying it to where the kernel can find it
+mkdir -pv /lib/firmware/intel-ucode
+cp -v intel-ucode/"$ID" /lib/firmware/intel-ucode
