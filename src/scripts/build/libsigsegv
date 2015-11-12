@@ -1,0 +1,24 @@
+#!/bin/bash
+
+#!/bin/bash
+
+FOLDERNAME="libsigsegv-2.10"
+FILENAME="libsigsegv-2.10.tar.gz"
+
+# This is a library for handling page faults in user mode.
+# A page fault occurs when a program tries to access to a
+# region of memory that is currently not available. Catching
+# and handling a page fault is a useful technique for
+# implementing pageable virtual memory, memory-mapped access
+# to persistent databases, generational garbage collectors,
+# stack overflow handlers, and distributed shared memory.
+
+# Change directory
+cd /src/pkg/standard/${FOLDERNAME}
+
+# Install Libsigsegv
+./configure --prefix=/usr   \
+            --enable-shared \
+            --disable-static &&
+make
+make install
