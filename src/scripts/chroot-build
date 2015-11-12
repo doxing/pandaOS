@@ -63,6 +63,16 @@ BUILD() {
     bash /${SCRIPT_SRC}
 }
 
+cleanupBuild() {
+    displayMsg OK "Cleaning up chroot env..."
+    cd /src/build
+    rm -R -- */
+    cd /src/pkg/basic
+    rm -R -- */
+    displayMsg OK "Done ..."
+    
+}
+
 BUILD ch-linux-api-headers BASIC
 BUILD ch-man-pages BASIC
 BUILD ch-glibc BASIC
@@ -198,3 +208,13 @@ BUILD ch-vim BASIC
 # Clean up some extra files left around from
 # running tests
 rm -rf /tmp/*
+
+# Remove some static libraries
+rm /usr/lib/lib{bfd,opcodes}.a
+rm /usr/lib/libbz2.a
+rm /usr/lib/lib{com_err,e2p,ext2fs,ss}.a
+rm /usr/lib/libltdl.a
+rm /usr/lib/libz.a
+
+# Clean up the mess
+cleanupBuild
