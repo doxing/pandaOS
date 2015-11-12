@@ -1,0 +1,24 @@
+#!/bin/bash
+
+#!/bin/bash
+
+FOLDERNAME="boost_1_59_0"
+FILENAME="boost_1_59_0.tar.bz2"
+
+# Boost provides a set of free peer-reviewed portable C++ source
+# libraries. It includes libraries for linear algebra,
+# pseudorandom number generation, multithreading, image processing,
+# regular expressions and unit testing.
+
+# Change directory
+cd /src/pkg/standard/${FOLDERNAME}
+
+# Install Boost
+sed -e '1 i#ifndef Q_MOC_RUN' \
+    -e '$ a#endif'            \
+    -i boost/type_traits/detail/has_binary_operator.hpp &&
+
+./bootstrap.sh --prefix=/usr &&
+./b2 stage threading=multi link=shared
+
+./b2 install threading=multi link=shared
