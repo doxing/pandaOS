@@ -1,0 +1,13 @@
+#!/bin/bash
+
+FOLDERNAME="recordproto-1.14.2"
+FILENAME="recordproto-1.14.2.tar.bz2"
+
+# Xorg Protocol Headers
+
+# Change directory
+cd /src/pkg/standard/${FOLDERNAME}
+
+# Install bigreqsproto
+./configure $XORG_CONFIG
+make install

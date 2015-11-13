@@ -1,0 +1,13 @@
+#!/bin/bash
+
+FOLDERNAME="xf86driproto-2.1.1"
+FILENAME="xf86driproto-2.1.1.tar.bz2"
+
+# Xorg Protocol Headers
+
+# Change directory
+cd /src/pkg/standard/${FOLDERNAME}
+
+# Install bigreqsproto
+./configure $XORG_CONFIG
+make install

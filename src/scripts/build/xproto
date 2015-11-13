@@ -1,0 +1,13 @@
+#!/bin/bash
+
+FOLDERNAME="xproto-7.0.28"
+FILENAME="xproto-7.0.28.tar.bz2"
+
+# Xorg Protocol Headers
+
+# Change directory
+cd /src/pkg/standard/${FOLDERNAME}
+
+# Install bigreqsproto
+./configure $XORG_CONFIG
+make install
