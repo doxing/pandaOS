@@ -1,0 +1,14 @@
+#!/bin/bash
+
+FOLDERNAME="xtrans-1.3.5"
+FILENAME="xtrans-1.3.5.tar.bz2"
+
+# Xorg Library
+
+# Change directory
+cd /src/pkg/standard/${FOLDERNAME}
+
+# Install
+./configure $XORG_CONFIG
+make
+/sbin/ldconfig
