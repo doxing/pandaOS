@@ -1,7 +1,5 @@
 #!/bin/bash
 
-#!/bin/bash
-
 FOLDERNAME="util-macros-1.19.0"
 FILENAME="util-macros-1.19.0.tar.bz2"
 
