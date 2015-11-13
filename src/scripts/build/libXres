@@ -1,0 +1,15 @@
+#!/bin/bash
+
+FOLDERNAME="libXres-1.0.7"
+FILENAME="libXres-1.0.7.tar.bz2"
+
+# Xorg Library
+
+# Change directory
+cd /src/pkg/standard/${FOLDERNAME}
+
+# Install
+./configure $XORG_CONFIG
+make
+make install
+/sbin/ldconfig
