@@ -1,0 +1,16 @@
+#!/bin/bash
+
+FOLDERNAME="twm-1.0.9"
+FILENAME="twm-1.0.9.tar.bz2"
+
+# The twm package contains a very minimal window manager.
+
+# Change directory
+cd /src/pkg/standard/${FOLDERNAME}
+
+# Install
+sed -i -e '/^rcdir =/s,^\(rcdir = \).*,\1/etc/X11/app-defaults,' src/Makefile.in &&
+./configure $XORG_CONFIG &&
+make
+
+make install

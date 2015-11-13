@@ -1,0 +1,18 @@
+#!/bin/bash
+
+FOLDERNAME="xf86-input-synaptics-1.8.2"
+FILENAME="xf86-input-synaptics-1.8.2.tar.bz2"
+
+# The Xorg Synaptics Driver package contains the X.Org Input Driver,
+# support programs and SDK for Synaptics touchpads. Even though the
+# evdev driver can handle touchpads very well, this driver is required
+# if you want to use advanced features like multi tapping, scrolling
+# with touchpad, turning the touchpad off while typing, etc. 
+
+# Change directory
+cd /src/pkg/standard/${FOLDERNAME}
+
+# Install libevdev
+./configure $XORG_CONFIG &&
+make
+make install

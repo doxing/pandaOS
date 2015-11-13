@@ -1,0 +1,26 @@
+#!/bin/bash
+
+FOLDERNAME="libva-1.6.0"
+FILENAME="libva-1.6.0.tar.bz2"
+
+# The libva package contains a library which provides access to
+# hardware accelerated video processing, using hardware to accelerate
+# video processing in order to offload the central processing unit
+# (CPU) to decode and encode compressed digital video. VA API video
+# decode/encode interface is platform and window system independent
+# targeted at Direct Rendering Infrastructure (DRI) in the X Window
+# System however it can potentially also be used with direct framebuffer
+# and graphics sub-systems for video output. Accelerated processing
+# includes support for video decoding, video encoding, subpicture
+# blending, and rendering.
+
+# Change directory
+cd /src/pkg/standard/${FOLDERNAME}
+
+# Install
+mkdir -p m4 &&
+autoreconf -fi           &&
+./configure $XORG_CONFIG &&
+make
+
+make install

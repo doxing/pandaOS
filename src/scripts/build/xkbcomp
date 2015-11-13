@@ -1,13 +1,14 @@
 #!/bin/bash
 
-FOLDERNAME="glproto-1.4.17"
-FILENAME="glproto-1.4.17.tar.bz2"
+FOLDERNAME="xkbcomp-1.3.0"
+FILENAME="xkbcomp-1.3.0.tar.bz2"
 
-# Xorg Protocol Headers
+# Xorg Application
 
 # Change directory
 cd /src/pkg/standard/${FOLDERNAME}
 
 # Install
 ./configure $XORG_CONFIG
+make
 make install

@@ -1,0 +1,14 @@
+#!/bin/bash
+
+FOLDERNAME="libepoxy-1.3.1"
+FILENAME="libepoxy-1.3.1.tar.bz2"
+
+# libepoxy is a library for handling OpenGL function pointer management.
+
+# Change directory
+cd /src/pkg/standard/${FOLDERNAME}
+
+# Install libepoxy
+./configure --prefix=/usr &&
+make
+make install

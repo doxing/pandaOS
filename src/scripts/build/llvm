@@ -1,0 +1,42 @@
+#!/bin/bash
+
+FOLDERNAME="llvm-3.7.0.src"
+FILENAME="llvm-3.7.0.src.tar.xz"
+
+# The LLVM package contains a collection of modular and reusable
+# compiler and toolchain technologies. The Low Level Virtual Machine
+# (LLVM) Core libraries provide a modern source and target-independent
+# optimizer, along with code generation support for many popular CPUs
+# (as well as some less common ones!). These libraries are built around
+# a well specified code representation known as the LLVM intermediate
+# representation ("LLVM IR").
+
+# Change directory
+cd /src/pkg/standard/${FOLDERNAME}
+
+# Install LLVM
+sed -e "s:/docs/llvm:/share/doc/llvm-3.7.0:" \
+    -i Makefile.config.in &&
+
+mkdir -v build &&
+cd       build &&
+
+CC=gcc CXX=g++                          \
+../configure --prefix=/usr              \
+             --datarootdir=/usr/share   \
+             --sysconfdir=/etc          \
+             --enable-libffi            \
+             --enable-optimized         \
+             --enable-shared            \
+             --enable-targets=host,r600 \
+             --disable-assertions       \
+             --docdir=/usr/share/doc/llvm-3.7.0 &&
+make
+
+make install &&
+
+for file in /usr/lib/lib{clang,LLVM,LTO}*.a
+do
+  test -f $file && chmod -v 644 $file
+done &&
+unset file

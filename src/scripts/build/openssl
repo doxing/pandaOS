@@ -1,0 +1,27 @@
+#!/bin/bash
+
+FOLDERNAME="openssl-1.0.2d"
+FILENAME="openssl-1.0.2d.tar.gz"
+
+# The OpenSSL package contains management tools and libraries
+# relating to cryptography. These are useful for providing
+# cryptography functions to other packages, such as OpenSSH,
+# email applications and web browsers (for accessing HTTPS sites).
+
+# Change directory
+cd /src/pkg/standard/${FOLDERNAME}
+
+# Install OpenSSL
+./config --prefix=/usr         \
+         --openssldir=/etc/ssl \
+         --libdir=lib          \
+         shared                \
+         zlib-dynamic &&
+make
+
+# Disable installing the static libraries
+sed -i 's# libcrypto.a##;s# libssl.a##' Makefile
+
+make MANDIR=/usr/share/man MANSUFFIX=ssl install &&
+install -dv -m755 /usr/share/doc/openssl-1.0.2d  &&
+cp -vfr doc/*     /usr/share/doc/openssl-1.0.2d

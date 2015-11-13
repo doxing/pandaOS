@@ -1,0 +1,34 @@
+#!/bin/bash
+
+FOLDERNAME="xterm-320"
+FILENAME="xterm-320.tgz"
+
+# xterm is a terminal emulator for the X Window System. 
+
+# Change directory
+cd /src/pkg/standard/${FOLDERNAME}
+
+# Install
+sed -i '/v0/{n;s/new:/new:kb=^?:/}' termcap &&
+printf '\tkbs=\\177,\n' >> terminfo &&
+
+TERMINFO=/usr/share/terminfo \
+./configure $XORG_CONFIG     \
+    --with-app-defaults=/etc/X11/app-defaults &&
+
+make
+
+make install &&
+make install-ti
+
+# In order for xterm to follow the locale settings in the
+# environment, use TrueType fonts, and follow the Linux
+# convention about the code sent by the Backspace key,
+# add the following definitions
+cat >> /etc/X11/app-defaults/XTerm << "EOF"
+*VT100*locale: true
+*VT100*faceName: Monospace
+*VT100*faceSize: 10
+*backarrowKeyIsErase: true
+*ptyInitialErase: true
+EOF

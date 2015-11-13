@@ -1,13 +1,14 @@
 #!/bin/bash
 
-FOLDERNAME="glproto-1.4.17"
-FILENAME="glproto-1.4.17.tar.bz2"
+FOLDERNAME="font-cronyx-cyrillic-1.0.3"
+FILENAME="font-cronyx-cyrillic-1.0.3.tar.bz2"
 
-# Xorg Protocol Headers
+# Xorg Fonts
 
 # Change directory
 cd /src/pkg/standard/${FOLDERNAME}
 
 # Install
 ./configure $XORG_CONFIG
+make
 make install

@@ -1,0 +1,24 @@
+#!/bin/bash
+
+FOLDERNAME="libffi-3.2.1"
+FILENAME="libffi-3.2.1.tar.gz"
+
+# The libffi library provides a portable, high level programming
+# interface to various calling conventions. This allows a programmer
+# to call any function specified by a call interface description at
+# run time.
+
+# Change directory
+cd /src/pkg/standard/${FOLDERNAME}
+
+# Install libffi
+sed -e '/^includesdir/ s/$(libdir).*$/$(includedir)/' \
+    -i include/Makefile.in &&
+
+sed -e '/^includedir/ s/=.*$/=@includedir@/' \
+    -e 's/^Cflags: -I${includedir}/Cflags:/' \
+    -i libffi.pc.in        &&
+
+./configure --prefix=/usr --disable-static &&
+make
+make install

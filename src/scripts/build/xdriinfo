@@ -1,13 +1,14 @@
 #!/bin/bash
 
-FOLDERNAME="glproto-1.4.17"
-FILENAME="glproto-1.4.17.tar.bz2"
+FOLDERNAME="xdriinfo-1.0.5"
+FILENAME="xdriinfo-1.0.5.tar.bz2"
 
-# Xorg Protocol Headers
+# Xorg Application
 
 # Change directory
 cd /src/pkg/standard/${FOLDERNAME}
 
 # Install
 ./configure $XORG_CONFIG
+make
 make install
