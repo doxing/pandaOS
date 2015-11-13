@@ -1,0 +1,15 @@
+#!/bin/bash
+
+FOLDERNAME="libXxf86vm-1.1.4"
+FILENAME="libXxf86vm-1.1.4.tar.bz2"
+
+# Xorg Library
+
+# Change directory
+cd /src/pkg/standard/${FOLDERNAME}
+
+# Install
+./configure $XORG_CONFIG
+make
+make install
+/sbin/ldconfig
