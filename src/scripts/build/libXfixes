@@ -1,0 +1,15 @@
+#!/bin/bash
+
+FOLDERNAME="libXfixes-5.0.1"
+FILENAME="libXfixes-5.0.1.tar.bz2"
+
+# Xorg Library
+
+# Change directory
+cd /src/pkg/standard/${FOLDERNAME}
+
+# Install
+./configure $XORG_CONFIG
+make
+make install
+/sbin/ldconfig
