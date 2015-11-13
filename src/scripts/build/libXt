@@ -1,0 +1,16 @@
+#!/bin/bash
+
+FOLDERNAME="libXt-1.1.5"
+FILENAME="libXt-1.1.5.tar.bz2"
+
+# Xorg Library
+
+# Change directory
+cd /src/pkg/standard/${FOLDERNAME}
+
+# Install
+./configure $XORG_CONFIG \
+                  --with-appdefaultdir=/etc/X11/app-defaults
+make
+make install
+/sbin/ldconfig
