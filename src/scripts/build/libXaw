@@ -1,0 +1,15 @@
+#!/bin/bash
+
+FOLDERNAME="libXaw-1.0.13"
+FILENAME="libXaw-1.0.13.tar.bz2"
+
+# Xorg Library
+
+# Change directory
+cd /src/pkg/standard/${FOLDERNAME}
+
+# Install
+./configure $XORG_CONFIG
+make
+make install
+/sbin/ldconfig
