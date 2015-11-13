@@ -1,0 +1,14 @@
+#!/bin/bash
+
+FOLDERNAME="libXau-1.0.8"
+FILENAME="libXau-1.0.8.tar.bz2"
+
+# Xorg Protocol Headers
+
+# Change directory
+cd /src/pkg/standard/${FOLDERNAME}
+
+# Install libXau
+./configure $XORG_CONFIG &&
+make
+make install
