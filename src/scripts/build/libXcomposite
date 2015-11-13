@@ -1,0 +1,15 @@
+#!/bin/bash
+
+FOLDERNAME="libXcomposite-0.4.4"
+FILENAME="libXcomposite-0.4.4.tar.bz2"
+
+# Xorg Library
+
+# Change directory
+cd /src/pkg/standard/${FOLDERNAME}
+
+# Install
+./configure $XORG_CONFIG
+make
+make install
+/sbin/ldconfig
