@@ -3,7 +3,9 @@
 FOLDERNAME="libXau-1.0.8"
 FILENAME="libXau-1.0.8.tar.bz2"
 
-# Xorg Protocol Headers
+# The libXau package contains a library implementing the X11
+# Authorization Protocol. This is useful for restricting client
+# access to the display.
 
 # Change directory
 cd /src/pkg/standard/${FOLDERNAME}
