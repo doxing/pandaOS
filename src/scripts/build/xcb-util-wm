@@ -1,0 +1,15 @@
+#!/bin/bash
+
+FOLDERNAME="xcb-util-wm-0.4.1"
+FILENAME="xcb-util-wm-0.4.1.tar.bz2"
+
+# The xcb-util-renderutil package provides additional
+# extensions to the XCB library.
+
+# Change directory
+cd /src/pkg/standard/${FOLDERNAME}
+
+# Install xcb-util-image
+./configure $XORG_CONFIG &&
+make
+make install
