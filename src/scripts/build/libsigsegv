@@ -1,7 +1,5 @@
 #!/bin/bash
 
-#!/bin/bash
-
 FOLDERNAME="libsigsegv-2.10"
 FILENAME="libsigsegv-2.10.tar.gz"
 

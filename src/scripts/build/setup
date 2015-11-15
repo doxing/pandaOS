@@ -548,11 +548,14 @@ BUILD xorg-nouveau-driver STD
 BUILD libva STD
 BUILD libva-intel-driver STD
 
-# Window Manager
+# Minimal Window Manager
 BUILD twm STD
 BUILD xterm STD
 BUILD xclock STD
 BUILD xinit STD
+
+# Display Manager
+# FIXME
 
 reconfigureKernel
 # Clean up files

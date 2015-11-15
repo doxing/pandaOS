@@ -33,8 +33,6 @@ password required       pam_deny.so
 session  required       pam_deny.so
 EOF
 
-# FIXME: Verify test
-make check
 # Remove the configuration file
 rm -fv /etc/pam.d/*
 
@@ -44,7 +42,7 @@ chmod -v 4755 /sbin/unix_chkpwd &&
 for file in pam pam_misc pamc
 do
   mv -v /usr/lib/lib${file}.so.* /lib &&
-  ln -sfv ../../lib/$(readlink /usr/lib/lib${file}.so) /usr/lib/lib${file}.so
+  ln -sfv ../../../../lib/$(readlink /usr/lib/lib${file}.so) /usr/lib/lib${file}.so
 done
 
 # Set up some generic files

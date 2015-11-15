@@ -26,7 +26,7 @@ make install
 
 # Some packages expect the C preprocessor to be installed
 # in the /lib directory.
-ln -s ../../../usr/bin/cpp /lib
+ln -sv ../../../../usr/bin/cpp /lib
 
 # Many packages use the name cc to call the C compiler.
 ln -s gcc /usr/bin/cc
@@ -34,7 +34,7 @@ ln -s gcc /usr/bin/cc
 # Add a compatibility symlink to enable building
 # programs with Link Time Optimization (LTO)
 install -dm755 /usr/lib/bfd-plugins
-ln -sf ../../../tools/libexec/gcc/$(gcc -dumpmachine)/5.2.0/liblto_plugin.so /usr/lib/bfd-plugins/
+ln -sf ../../../../tools/libexec/gcc/$(gcc -dumpmachine)/5.2.0/liblto_plugin.so /usr/lib/bfd-plugins/
 
 # Perform Sanity check
 echo 'int main(){}' > dummy.c

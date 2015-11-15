@@ -30,7 +30,7 @@ make install
 
 # Move the shared libraries to the /lib directory
 mv -v /usr/lib/libncursesw.so.6* /lib
-ln -sfv ../../../lib/$(readlink /usr/lib/libncursesw.so) /usr/lib/libncursesw.so
+ln -sfv ../../../../lib/$(readlink /usr/lib/libncursesw.so) /usr/lib/libncursesw.so
 
 # Many applications still expect the linker to
 # be able to find non-wide-character Ncurses

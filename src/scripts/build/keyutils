@@ -1,7 +1,5 @@
 #!/bin/bash
 
-#!/bin/bash
-
 FOLDERNAME="keyutils-1.5.9"
 FILENAME="keyutils-1.5.9.tar.bz2"
 

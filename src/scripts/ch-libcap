@@ -25,4 +25,4 @@ chmod -v 755 /usr/lib/libcap.so
 # and as a result the .so file in /usr/lib will
 # need to be recreated
 mv -v /usr/lib/libcap.so.* /lib
-ln -sfv ../../../lib/$(readlink /usr/lib/libcap.so) /usr/lib/libcap.so
+ln -sfv ../../../../lib/$(readlink /usr/lib/libcap.so) /usr/lib/libcap.so

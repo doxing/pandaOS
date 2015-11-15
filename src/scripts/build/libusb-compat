@@ -1,7 +1,5 @@
 #!/bin/bash
 
-#!/bin/bash
-
 FOLDERNAME="libusb-compat-0.1.5"
 FILENAME="libusb-compat-0.1.5.tar.bz2"
 

@@ -1,7 +1,5 @@
 #!/bin/bash
 
-#!/bin/bash
-
 FOLDERNAME="boost_1_59_0"
 FILENAME="boost_1_59_0.tar.bz2"
 

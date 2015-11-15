@@ -1,7 +1,5 @@
 #!/bin/bash
 
-#!/bin/bash
-
 FOLDERNAME="libusb-1.0.19"
 FILENAME="libusb-1.0.19.tar.bz2"
 

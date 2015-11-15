@@ -26,7 +26,7 @@ make install
 # Create symlinks for compatibility with Module-Init-Tools
 # (the package that previously handled Linux kernel modules)
 for target in depmod insmod lsmod modinfo modprobe rmmod; do
-  ln -sv ../bin/kmod /sbin/$target
+  ln -sv ../../../../bin/kmod /sbin/$target
 done
 
 ln -sv kmod /bin/lsmod

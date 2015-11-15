@@ -32,4 +32,4 @@ chmod -v 755 /usr/lib/libattr.so
 # and as a result the .so file in /usr/lib will
 # need to be recreated
 mv -v /usr/lib/libattr.so.* /lib
-ln -sfv ../../../lib/$(readlink /usr/lib/libattr.so) /usr/lib/libattr.so
+ln -sfv ../../../../lib/$(readlink /usr/lib/libattr.so) /usr/lib/libattr.so

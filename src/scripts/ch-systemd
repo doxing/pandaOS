@@ -67,9 +67,9 @@ rm -rfv /usr/lib/rpm
 # Create the Sysvinit compatibility symlinks, so systemd
 # is used as the default init system
 for tool in runlevel reboot shutdown poweroff halt telinit; do
-     ln -sfv ../../../bin/systemctl /sbin/${tool}
+     ln -sfv ../../../../bin/systemctl /sbin/${tool}
 done
-ln -sfv ../../../lib/systemd/systemd /sbin/init
+ln -sfv ../../../../lib/systemd/systemd /sbin/init
 
 # Remove a reference to a non-existent group
 sed -i "s:0775 root lock:0755 root root:g" /usr/lib/tmpfiles.d/legacy.conf

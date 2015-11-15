@@ -1,7 +1,5 @@
 #!/bin/bash
 
-#!/bin/bash
-
 FOLDERNAME="libstatgrab-0.91"
 FILENAME="libstatgrab-0.91.tar.gz"
 
