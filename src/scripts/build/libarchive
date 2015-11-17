@@ -1,0 +1,14 @@
+#!/bin/bash
+
+FOLDERNAME="libarchive-3.1.2"
+FILENAME="libarchive-3.1.2.tar.gz"
+
+# The libarchive library provides a single interface for reading/writing various compression formats.
+
+# Change directory
+cd /src/pkg/standard/${FOLDERNAME}
+         
+# Install libarchive
+./configure --prefix=/usr --disable-static &&
+make
+make install

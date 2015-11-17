@@ -1,0 +1,22 @@
+#!/bin/bash
+
+FOLDERNAME="sqlite-autoconf-3081101"
+FILENAME="sqlite-autoconf-3081101.tar.gz"
+
+# The SQLite package is a software library that implements a
+# self-contained, serverless, zero-configuration, transactional
+# SQL database engine.
+
+# Change directory
+cd /src/pkg/standard/${FOLDERNAME}
+
+# Install Sqlite
+./configure --prefix=/usr --disable-static        \
+            CFLAGS="-g -O2 -DSQLITE_ENABLE_FTS3=1 \
+            -DSQLITE_ENABLE_COLUMN_METADATA=1     \
+            -DSQLITE_ENABLE_UNLOCK_NOTIFY=1       \
+            -DSQLITE_SECURE_DELETE=1              \
+            -DSQLITE_ENABLE_DBSTAT_VTAB=1" &&
+make
+
+make install

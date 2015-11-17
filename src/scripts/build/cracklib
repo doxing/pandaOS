@@ -1,7 +1,5 @@
 #!/bin/bash
 
-#!/bin/bash
-
 FOLDERNAME="cracklib-2.9.6"
 FILENAME="cracklib-2.9.6.tar.gz"
 
