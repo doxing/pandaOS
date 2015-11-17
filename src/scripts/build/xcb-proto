@@ -1,0 +1,15 @@
+#!/bin/bash
+
+FOLDERNAME="xcb-proto-1.11"
+FILENAME="xcb-proto-1.11.tar.bz2"
+
+# The xcb-proto package provides the XML-XCB protocol
+# descriptions that libxcb uses to generate the majority
+# of its code and API.
+
+# Change directory
+cd /src/pkg/standard/${FOLDERNAME}
+
+# Install xcb-proto
+./configure $XORG_CONFIG
+make install

@@ -18,9 +18,8 @@ echo "127.0.0.1 localhost $(hostname)" > /etc/hosts
 # By default Perl will use an internal copy of the sources
 # for the build. Issue the following command so that Perl
 # will use the libraries installed on the system
-# FIXME: CRITICAL
-#export BUILD_ZLIB=False
-#export BUILD_BZIP2=0
+export BUILD_ZLIB=False
+export BUILD_BZIP2=0
 
 # Prepare Perl for compilation
 sh Configure -des -Dprefix=/usr                 \
@@ -35,4 +34,4 @@ make
 
 # Install the package
 make install
-#unset BUILD_ZLIB BUILD_BZIP2
+unset BUILD_ZLIB BUILD_BZIP2

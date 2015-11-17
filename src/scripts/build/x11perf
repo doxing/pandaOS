@@ -1,0 +1,14 @@
+#!/bin/bash
+
+FOLDERNAME="x11perf-1.6.0"
+FILENAME="x11perf-1.6.0.tar.bz2"
+
+# Xorg Application
+
+# Change directory
+cd /src/pkg/standard/${FOLDERNAME}
+
+# Install
+./configure $XORG_CONFIG
+make
+make install

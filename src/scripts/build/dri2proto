@@ -1,0 +1,13 @@
+#!/bin/bash
+
+FOLDERNAME="dri2proto-2.8"
+FILENAME="dri2proto-2.8.tar.bz2"
+
+# Xorg Protocol Headers
+
+# Change directory
+cd /src/pkg/standard/${FOLDERNAME}
+
+# Install bigreqsproto
+./configure $XORG_CONFIG
+make install

@@ -34,7 +34,7 @@ make install
 
 # Perform a sanity check
 echo 'int main(){}' > dummy.c
-/tools/bin/$TARGET-gcc dummy.c -o dummy
+$TARGET-gcc dummy.c -o dummy
 if [ -n "$(readelf -l dummy | grep ': /tools')" ]
 then
     displayMsg OK "$(readelf -l dummy | grep ': /tools')"

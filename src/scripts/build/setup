@@ -1,0 +1,567 @@
+#!/bin/bash
+
+source ../../handleErrors
+
+PKG_DIR="/src/pkg"
+PKG_BASIC_DIR="${PKG_DIR}/basic"
+PKG_STD_DIR="${PKG_DIR}/standard"
+BUILD_DIR="/src/build"
+SCRIPT_DIR="/src/scripts/build"
+
+# Extracts source code for the selected package.
+extractPkg() {
+    if [ "$(echo ${2} | grep "BASIC")" ]
+    then
+        EXTRACT_DIR="${PKG_BASIC_DIR}"
+    elif [ "$(echo ${2} | grep "STD")" ]
+    then
+        EXTRACT_DIR="${PKG_STD_DIR}"
+    fi
+    
+    # Extract the primary source archive to a new directory.
+    if [ "$(echo ${1} | grep \\.zip\$)" ]
+    then
+        displayMsg OK "... Extracting source code"
+        unzip "${EXTRACT_DIR}/${1}" -d "${EXTRACT_DIR}"
+    elif [ "$(isArchive ${1})" ]
+    then
+        displayMsg OK "... Extracting source code"
+        tar xf "${EXTRACT_DIR}/${1}" -C "${EXTRACT_DIR}"
+    else
+            displayMsg ERR "... Unknown source format. Not extracting '${1}'"
+    fi
+}
+
+# Checks if a filename is an archive that can be extracted.
+isArchive() {
+  for ext in \\.zip \\.tar\\.bz2 \\.tar\\.gz \\.tar\\.xz \\.tgz \\.tar \\.tar\\.lzma; do
+    if [ "$(echo ${1} | grep ${ext}\$)" ]; then
+      echo "true"
+      return
+    fi
+  done
+}
+
+BUILD() {
+    # Load build script
+    local SCRIPT_SRC="${SCRIPT_DIR}/${1}"
+
+    displayMsg OK "... Selected '${1}' package"
+    
+    # Extract the source code
+    extractPkg "$(cat ${SCRIPT_SRC} | grep '\FILENAME' | cut -d '=' -f2 | sed -e 's/^"//' -e 's/"$//')" "${2}"
+    
+    displayMsg OK "... Building a temporary version of this software"
+    # Change directory to builds folder
+    cd "${BUILD_DIR}"
+    
+    # Create dedicated directory for the package
+    mkdir -p ${1}
+    # Move inside the dedicated directory
+    cd ${1}
+    # Execute the script
+    bash /${SCRIPT_SRC}
+}
+
+reconfigureKernel() {
+    # Extract the package
+    displayMsg OK "... Selected 'linux-kernel' package"
+    extractPkg "linux-4.2.tar.xz" "BASIC"
+    displayMsg OK "... Building a temporary version of this software"
+    
+    # Change the directory to the source folder
+    cd "${PKG_BASIC_DIR}/linux-4.2"
+    make mrproper
+    #make allmodconfig
+    make defconfig
+    make
+    make modules_install
+    cp -v arch/x86/boot/bzImage /boot/vmlinuz-0.2-panda-linux
+    cp -v System.map /boot/System.map-0.1
+    install -d /usr/share/doc/linux-4.2
+    cp -r Documentation/* /usr/share/doc/linux-4.2
+}
+
+cleanupBuild() {
+    displayMsg OK "Cleaning up chroot env..."
+    cd /src/build
+    rm -R -- */
+    cd /src/pkg/basic
+    rm -R -- */
+    cd /src/pkg/standard
+    rm -R -- */
+    displayMsg OK "Done ..."
+}
+
+# Intel Microcode for the CPU
+BUILD microcode STD
+
+# Bash Shell startup files
+cat > /etc/profile << "EOF"
+# Begin /etc/profile
+# System wide environment variables and startup programs.
+
+# System wide aliases and functions should go in /etc/bashrc.  Personal
+# environment variables and startup programs should go into
+# ~/.bash_profile.  Personal aliases and functions should go into
+# ~/.bashrc.
+
+# Functions to help us manage paths.  Second argument is the name of the
+# path variable to be modified (default: PATH)
+pathremove () {
+        local IFS=':'
+        local NEWPATH
+        local DIR
+        local PATHVARIABLE=${2:-PATH}
+        for DIR in ${!PATHVARIABLE} ; do
+                if [ "$DIR" != "$1" ] ; then
+                  NEWPATH=${NEWPATH:+$NEWPATH:}$DIR
+                fi
+        done
+        export $PATHVARIABLE="$NEWPATH"
+}
+
+pathprepend () {
+        pathremove $1 $2
+        local PATHVARIABLE=${2:-PATH}
+        export $PATHVARIABLE="$1${!PATHVARIABLE:+:${!PATHVARIABLE}}"
+}
+
+pathappend () {
+        pathremove $1 $2
+        local PATHVARIABLE=${2:-PATH}
+        export $PATHVARIABLE="${!PATHVARIABLE:+${!PATHVARIABLE}:}$1"
+}
+
+export -f pathremove pathprepend pathappend
+
+# Set the initial path
+export PATH=/bin:/usr/bin
+
+if [ $EUID -eq 0 ] ; then
+        pathappend /sbin:/usr/sbin
+        unset HISTFILE
+fi
+
+# Setup some environment variables.
+export HISTSIZE=1000
+export HISTIGNORE="&:[bf]g:exit"
+
+# Set some defaults for graphical systems
+export XDG_DATA_DIRS=/usr/share/
+export XDG_CONFIG_DIRS=/etc/xdg/
+
+# Setup a red prompt for root and a green one for users.
+NORMAL="\[\e[0m\]"
+RED="\[\e[1;31m\]"
+GREEN="\[\e[1;32m\]"
+if [[ $EUID == 0 ]] ; then
+  PS1="$RED\u [$NORMAL\w$RED]# $NORMAL"
+else
+  PS1="$GREEN\u [$NORMAL\w$GREEN]\$ $NORMAL"
+fi
+
+for script in /etc/profile.d/*.sh ; do
+        if [ -r $script ] ; then
+                . $script
+        fi
+done
+
+unset script RED GREEN NORMAL
+
+# End /etc/profile
+EOF
+
+# Create the /etc/profile.d directory, where the individual
+# initialization scripts are placed
+install --directory --mode=0755 --owner=root --group=root /etc/profile.d
+
+# The following script uses the ~/.dircolors and /etc/dircolors
+# files to control the colors of file names in a directory listing.
+# They control colorized output of things like ls --color
+cat > /etc/profile.d/dircolors.sh << "EOF"
+# Setup for /bin/ls and /bin/grep to support color, the alias is in /etc/bashrc.
+if [ -f "/etc/dircolors" ] ; then
+        eval $(dircolors -b /etc/dircolors)
+fi
+
+if [ -f "$HOME/.dircolors" ] ; then
+        eval $(dircolors -b $HOME/.dircolors)
+fi
+
+alias ls='ls --color=auto'
+alias grep='grep --color=auto'
+EOF
+
+# The following script adds some useful paths to the PATH and can be
+# used to customize other PATH related environment variables
+# (e.g. LD_LIBRARY_PATH, etc) that may be needed for all users.
+cat > /etc/profile.d/extrapaths.sh << "EOF"
+if [ -d /usr/local/lib/pkgconfig ] ; then
+        pathappend /usr/local/lib/pkgconfig PKG_CONFIG_PATH
+fi
+if [ -d /usr/local/bin ]; then
+        pathprepend /usr/local/bin
+fi
+if [ -d /usr/local/sbin -a $EUID -eq 0 ]; then
+        pathprepend /usr/local/sbin
+fi
+
+# Set some defaults before other applications add to these paths.
+pathappend /usr/share/man  MANPATH
+pathappend /usr/share/info INFOPATH
+EOF
+
+# The following script sets up the default inputrc configuration file.
+# If the user does not have individual settings, it uses the global file.
+cat > /etc/profile.d/readline.sh << "EOF"
+# Setup the INPUTRC environment variable.
+if [ -z "$INPUTRC" -a ! -f "$HOME/.inputrc" ] ; then
+        INPUTRC=/etc/inputrc
+fi
+export INPUTRC
+EOF
+
+# Setting the umask value is important for security. Here the default
+# group write permissions are turned off for system users and when the
+# user name and group name are not the same.
+cat > /etc/profile.d/umask.sh << "EOF"
+# By default, the umask should be set.
+if [ "$(id -gn)" = "$(id -un)" -a $EUID -gt 99 ] ; then
+  umask 002
+else
+  umask 022
+fi
+EOF
+
+# Base /etc/bashrc
+cat > /etc/bashrc << "EOF"
+# Begin /etc/bashrc
+# System wide aliases and functions.
+
+# System wide environment variables and startup programs should go into
+# /etc/profile.  Personal environment variables and startup programs
+# should go into ~/.bash_profile.  Personal aliases and functions should
+# go into ~/.bashrc
+
+# Provides colored /bin/ls and /bin/grep commands.  Used in conjunction
+# with code in /etc/profile.
+
+alias ls='ls --color=auto'
+alias grep='grep --color=auto'
+
+# Provides prompt for non-login shells, specifically shells started
+# in the X environment.
+
+NORMAL="\[\e[0m\]"
+RED="\[\e[1;31m\]"
+GREEN="\[\e[1;32m\]"
+if [[ $EUID == 0 ]] ; then
+  PS1="$RED\u [$NORMAL\w$RED]# $NORMAL"
+else
+  PS1="$GREEN\u [$NORMAL\w$GREEN]\$ $NORMAL"
+fi
+
+unset RED GREEN NORMAL
+
+# End /etc/bashrc
+EOF
+
+# Base ~/.bash_profile
+cat > ~/.bash_profile << "EOF"
+# Begin ~/.bash_profile
+# Personal environment variables and startup programs.
+
+# Personal aliases and functions should go in ~/.bashrc.  System wide
+# environment variables and startup programs are in /etc/profile.
+# System wide aliases and functions are in /etc/bashrc.
+
+if [ -f "$HOME/.bashrc" ] ; then
+  source $HOME/.bashrc
+fi
+
+if [ -d "$HOME/bin" ] ; then
+  pathprepend $HOME/bin
+fi
+
+# End ~/.bash_profile
+EOF
+
+# Base ~/.bashrc
+cat > ~/.bashrc << "EOF"
+# Begin ~/.bashrc
+# Personal aliases and functions.
+
+# Personal environment variables and startup programs should go in
+# ~/.bash_profile.  System wide environment variables and startup
+# programs are in /etc/profile.  System wide aliases and functions are
+# in /etc/bashrc.
+
+if [ -f "/etc/bashrc" ] ; then
+  source /etc/bashrc
+fi
+
+# End ~/.bashrc
+EOF
+
+# Base ~/.bash_logout
+cat > ~/.bash_logout << "EOF"
+# Begin ~/.bash_logout
+# Personal items to perform on logout.
+
+# End ~/.bash_logout
+EOF
+
+# Use the dircolors capability
+dircolors -p > /etc/dircolors
+
+# Base /etc/issue
+cat > /etc/issue << "EOF"
+__________                    .___        .____    .__                     
+\______   \_____    ____    __| _/____    |    |   |__| ____  __ _____  ___
+ |     ___/\__  \  /    \  / __ |\__  \   |    |   |  |/    \|  |  \  \/  /
+ |    |     / __ \|   |  \/ /_/ | / __ \_ |    |___|  |   |  \  |  />    < 
+ |____|    (______/___|  /\____ |(______/ |_______ \__|___|  /____//__/\__\
+EOF
+
+# Install Packages
+BUILD random-number-gen STD
+BUILD lsb-release STD
+BUILD cracklib STD
+BUILD haveged STD
+BUILD iptables STD
+BUILD linux-pam
+BUILD shadow BASIC
+BUILD libcap BASIC
+BUILD sudo STD
+BUILD nano STD
+BUILD boost STD
+BUILD keyutils STD
+BUILD libsigsegv STD
+BUILD libstatgrab STD
+BUILD libusb STD
+BUILD libusb-compat STD
+
+
+######################################################################################################
+
+# Set the XORG_PREFIX variable
+export XORG_PREFIX="/usr"
+# Create the XORG_CONFIG variable to use for this parameter substitution
+export XORG_CONFIG="--prefix=$XORG_PREFIX --sysconfdir=/etc \
+    --localstatedir=/var --disable-static"
+# Create an /etc/profile.d/xorg.sh configuration file containing these variables
+cat > /etc/profile.d/xorg.sh << "EOF"
+XORG_PREFIX="<PREFIX>"
+XORG_CONFIG="--prefix=$XORG_PREFIX --sysconfdir=/etc --localstatedir=/var --disable-static"
+export XORG_PREFIX XORG_CONFIG
+EOF
+chmod 644 /etc/profile.d/xorg.sh
+
+BUILD util-macros STD
+# Xorg Protocol Headers
+BUILD bigreqsproto STD
+BUILD compositeproto STD
+BUILD damageproto STD
+BUILD dmxproto STD
+BUILD dri2proto STD
+BUILD dri3proto STD
+BUILD fixesproto STD
+BUILD fontsproto STD
+BUILD glproto STD
+BUILD inputproto STD
+BUILD kbproto STD
+BUILD presentproto STD
+BUILD randrproto STD
+BUILD recordproto STD
+BUILD renderproto STD
+BUILD resourceproto STD
+BUILD scrnsaverproto STD
+BUILD videoproto STD
+BUILD xcmiscproto STD
+BUILD xextproto STD
+BUILD xf86bigfontproto STD
+BUILD xf86dgaproto STD
+BUILD xf86driproto STD
+BUILD xf86vidmodeproto STD
+BUILD xineramaproto STD
+BUILD xproto STD
+
+BUILD libxau STD
+BUILD libxdmcp STD
+BUILD python2 STD
+BUILD xcb-proto STD
+BUILD libxcb STD
+BUILD freetype STD
+BUILD fontconfig STD
+BUILD xtrans STD
+BUILD libX11 STD
+BUILD libXext STD
+BUILD libFS STD
+BUILD libICE STD
+BUILD libSM STD
+BUILD libXScrnSaver STD
+BUILD libXt STD
+BUILD libXmu STD
+BUILD libXpm STD
+BUILD libXaw STD
+BUILD libXfixes STD
+BUILD libXcomposite STD
+BUILD libXrender STD
+BUILD libXcursor STD
+BUILD libXdamage STD
+BUILD libfontenc STD
+BUILD libXfont STD
+BUILD libXft STD
+BUILD libXi STD
+BUILD libXinerama STD
+BUILD libXrandr STD
+BUILD libXres STD
+BUILD libXtst STD
+BUILD libXv STD
+BUILD libXvMC STD
+BUILD libXxf86dga STD
+BUILD libXxf86vm STD
+BUILD libdmx STD
+BUILD libpciaccess STD
+BUILD libxkbfile STD
+BUILD libxshmfence STD
+BUILD xcb-util STD
+BUILD xcb-util-image STD
+BUILD xcb-util-keysyms STD
+BUILD xcb-util-renderutil STD
+BUILD xcb-util-wm STD
+BUILD libdrm STD
+BUILD libffi STD
+BUILD llvm STD
+BUILD elfutils STD
+BUILD libvdpau STD
+BUILD mesalib STD
+BUILD xbitmaps STD
+BUILD libpng STD
+BUILD bdftopcf STD
+BUILD iceauth STD
+BUILD luit STD
+BUILD mkfontdir STD
+BUILD mkfontscale STD
+BUILD sessreg STD
+BUILD setxkbmap STD
+BUILD smproxy STD
+BUILD x11perf STD
+BUILD xauth STD
+BUILD xbacklight STD
+BUILD xcmsdb STD
+BUILD xcursorgen STD
+BUILD xdpyinfo STD
+BUILD xdriinfo STD
+BUILD xev STD
+BUILD xgamma STD
+BUILD xhost STD
+BUILD xinput STD
+BUILD xkbcomp STD
+BUILD xkbevd STD
+BUILD xkbutils STD
+BUILD xkill STD
+BUILD xlsatoms STD
+BUILD xlsclients STD
+BUILD xmessage STD
+BUILD xmodmap STD
+BUILD xpr STD
+BUILD xprop STD
+BUILD xrandr STD
+BUILD xrdb STD
+BUILD xrefresh STD
+BUILD xset STD
+BUILD xsetroot STD
+BUILD xvinfo STD
+BUILD xwd STD
+BUILD xwininfo STD
+BUILD xwud STD
+
+# Remove an undocumented script which is reported to
+# be broken (xkeystone provided by the xrandr package).
+rm -f $XORG_PREFIX/bin/xkeystone
+
+BUILD xcursor-themes STD
+
+# Xorg Fonts
+BUILD font-util STD
+BUILD encodings STD
+BUILD font-adobe-100dpi STD
+BUILD font-adobe-75dpi STD
+BUILD font-adobe-utopia-100dpi STD
+BUILD font-adobe-utopia-75dpi STD
+BUILD font-adobe-utopia-type1 STD
+BUILD font-alias STD
+BUILD font-arabic-misc STD
+BUILD font-bh-100dpi STD
+BUILD font-bh-75dpi STD
+BUILD font-bh-lucidatypewriter-100dpi STD
+BUILD font-bh-lucidatypewriter-75dpi STD
+BUILD font-bh-type1 STD
+BUILD font-bitstream-100dpi STD
+BUILD font-bitstream-75dpi STD
+BUILD font-bitstream-type1 STD
+BUILD font-cronyx-cyrillic STD
+BUILD font-cursor-misc STD
+BUILD font-daewoo-misc STD
+BUILD font-dec-misc STD
+BUILD font-ibm-type1 STD
+BUILD font-isas-misc STD
+BUILD font-jis-misc STD
+BUILD font-micro-misc STD
+BUILD font-misc-cyrillic STD
+BUILD font-misc-ethiopic STD
+BUILD font-misc-meltho STD
+BUILD font-misc-misc STD
+BUILD font-mutt-misc STD
+BUILD font-schumacher-misc STD
+BUILD font-screen-cyrillic STD
+BUILD font-sony-misc STD
+BUILD font-sun-misc STD
+BUILD font-winitzki-cyrillic STD
+BUILD font-xfree86-type1 STD
+
+# The system must be configured so that Fontconfig can find the
+# TrueType fonts since they are outside of the default search
+# path of /usr/share/fonts. Make symlinks to the Xorg TrueType
+# font directories
+install -v -d -m755 /usr/share/fonts                               &&
+ln -svfn $XORG_PREFIX/share/fonts/X11/OTF /usr/share/fonts/X11-OTF &&
+ln -svfn $XORG_PREFIX/share/fonts/X11/TTF /usr/share/fonts/X11-TTF
+
+BUILD xkeyboardConfig STD
+BUILD openssl STD
+BUILD pixman STD
+BUILD libepoxy STD
+BUILD xorgServer STD
+
+# Install Xorg Drivers
+BUILD libevdev STD
+BUILD xorg-evdev-driver STD
+BUILD xorg-synaptics-driver STD
+BUILD xorg-ati-driver STD
+BUILD xorg-fbdev-driver STD
+BUILD xorg-intel-driver STD
+BUILD xorg-nouveau-driver STD
+BUILD libva STD
+BUILD libva-intel-driver STD
+
+# Minimal Window Manager
+BUILD twm STD
+BUILD xterm STD
+BUILD xclock STD
+BUILD xinit STD
+
+# Display Manager
+BUILD sqlite STD
+BUILD qt STD
+BUILD curl STD
+BUILD libarchive STD
+BUILD cmake STD
+BUILD sddm STD
+BUILD fluxbox STD
+
+reconfigureKernel
+# Clean up files
+cleanupBuild

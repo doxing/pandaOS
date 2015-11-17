@@ -1,0 +1,16 @@
+#!/bin/bash
+
+FOLDERNAME="xcb-util-keysyms-0.4.0"
+FILENAME="xcb-util-keysyms-0.4.0.tar.bz2"
+
+# The xcb-util-keysyms package contains a library for
+# handling standard X key constants and conversion
+# to/from keycodes.
+
+# Change directory
+cd /src/pkg/standard/${FOLDERNAME}
+
+# Install xcb-util-image
+./configure $XORG_CONFIG &&
+make
+make install

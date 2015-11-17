@@ -1,0 +1,15 @@
+#!/bin/bash
+
+FOLDERNAME="xcb-util-renderutil-0.3.9"
+FILENAME="xcb-util-renderutil-0.3.9.tar.bz2"
+
+# The xcb-util-renderutil package provides additional
+# extensions to the XCB library.
+
+# Change directory
+cd /src/pkg/standard/${FOLDERNAME}
+
+# Install xcb-util-image
+./configure $XORG_CONFIG &&
+make
+make install

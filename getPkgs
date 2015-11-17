@@ -12,10 +12,11 @@ then
 fi
     
 cd $PKG_BASIC_DIR
-if [ $(ls -l | wc -l) != 81 ]
+
+if [ "$(ls -l | wc -l)" != 81 ]
 then
     displayMsg OK "Downloading packages ..."
-    wget --continue --input-file="../../../${WGET_LIST_BASIC}" || $ERR=$?
+    wget --continue --input-file="../../../${WGET_LIST_BASIC}" || ERR=$?
         
     if [ "${ERR}" = "127" ]
     then
@@ -30,6 +31,32 @@ then
         
     # Remove wget logs
     rm wget-log*
-    fi
-}
+fi
 
+# Change to the package directory
+if [ ! -d $PKG_STD_DIR ]
+then
+    mkdir -p $PKG_STD_DIR
+fi
+    
+cd ../../../$PKG_STD_DIR
+
+if [ "$(ls -l | wc -l)" != 211 ]
+then
+    displayMsg OK "Downloading packages ..."
+    wget --continue --input-file="../../../${WGET_LIST_STD}" || ERR=$?
+        
+    if [ "${ERR}" = "127" ]
+    then
+        displayMsg ERR "You do not have the 'wget' utility installed."
+        displayMsg ERR "Therefore you should download all the required"
+        displayMsg ERR "sources manually... Or install 'wget'."
+        exit 1
+    elif [ "${ERR}" != "" ]; then
+        displayMsg ERR "Primary URL is down. Please try againg later."
+        exit 1
+    fi
+        
+    # Remove wget logs
+    rm wget-log*
+fi

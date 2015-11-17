@@ -1,0 +1,13 @@
+#!/bin/bash
+
+FOLDERNAME="videoproto-2.3.2"
+FILENAME="videoproto-2.3.2.tar.bz2"
+
+# Xorg Protocol Headers
+
+# Change directory
+cd /src/pkg/standard/${FOLDERNAME}
+
+# Install bigreqsproto
+./configure $XORG_CONFIG
+make install

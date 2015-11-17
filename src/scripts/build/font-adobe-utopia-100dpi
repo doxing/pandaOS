@@ -1,0 +1,14 @@
+#!/bin/bash
+
+FOLDERNAME="font-adobe-utopia-100dpi-1.0.4"
+FILENAME="font-adobe-utopia-100dpi-1.0.4.tar.bz2"
+
+# Xorg Fonts
+
+# Change directory
+cd /src/pkg/standard/${FOLDERNAME}
+
+# Install
+./configure $XORG_CONFIG
+make
+make install

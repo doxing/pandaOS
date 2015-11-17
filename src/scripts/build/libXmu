@@ -1,0 +1,15 @@
+#!/bin/bash
+
+FOLDERNAME="libXmu-1.1.2"
+FILENAME="libXmu-1.1.2.tar.bz2"
+
+# Xorg Library
+
+# Change directory
+cd /src/pkg/standard/${FOLDERNAME}
+
+# Install
+./configure $XORG_CONFIG
+make
+make install
+/sbin/ldconfig

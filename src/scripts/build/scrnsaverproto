@@ -1,0 +1,13 @@
+#!/bin/bash
+
+FOLDERNAME="scrnsaverproto-1.2.2"
+FILENAME="scrnsaverproto-1.2.2.tar.bz2"
+
+# Xorg Protocol Headers
+
+# Change directory
+cd /src/pkg/standard/${FOLDERNAME}
+
+# Install bigreqsproto
+./configure $XORG_CONFIG
+make install

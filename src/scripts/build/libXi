@@ -1,0 +1,15 @@
+#!/bin/bash
+
+FOLDERNAME="libXi-1.7.4"
+FILENAME="libXi-1.7.4.tar.bz2"
+
+# Xorg Library
+
+# Change directory
+cd /src/pkg/standard/${FOLDERNAME}
+
+# Install
+./configure $XORG_CONFIG
+make
+make install
+/sbin/ldconfig

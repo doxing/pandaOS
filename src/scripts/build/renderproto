@@ -1,0 +1,13 @@
+#!/bin/bash
+
+FOLDERNAME="renderproto-0.11.1"
+FILENAME="renderproto-0.11.1.tar.bz2"
+
+# Xorg Protocol Headers
+
+# Change directory
+cd /src/pkg/standard/${FOLDERNAME}
+
+# Install bigreqsproto
+./configure $XORG_CONFIG
+make install

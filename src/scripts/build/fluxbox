@@ -1,0 +1,29 @@
+#!/bin/bash
+
+FOLDERNAME="fluxbox-1.3.7"
+FILENAME="fluxbox-1.3.7.tar.xz"
+
+# The Fluxbox package contains a window manager.
+
+# Change directory
+cd /src/pkg/standard/${FOLDERNAME}
+
+# Install Fluxbox
+./configure --prefix=/usr &&
+make
+make install
+
+# Fluxbox is the only Window Manager you want to use
+echo startfluxbox > ~/.xinitrc
+
+# Create Fluxbox config files
+mkdir -v ~/.fluxbox &&
+cp -v /usr/share/fluxbox/init ~/.fluxbox/init &&
+cp -v /usr/share/fluxbox/keys ~/.fluxbox/keys
+
+# Generate the application menu
+cd ~/.fluxbox &&
+fluxbox-generate_menu -h
+
+# Copy a pregenerated menu
+cp -v /usr/share/fluxbox/menu ~/.fluxbox/menu

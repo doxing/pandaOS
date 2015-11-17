@@ -1,0 +1,14 @@
+#!/bin/bash
+
+FOLDERNAME="font-misc-cyrillic-1.0.3"
+FILENAME="font-misc-cyrillic-1.0.3.tar.bz2"
+
+# Xorg Fonts
+
+# Change directory
+cd /src/pkg/standard/${FOLDERNAME}
+
+# Install
+./configure $XORG_CONFIG
+make
+make install

@@ -1,0 +1,17 @@
+#!/bin/bash
+
+FOLDERNAME="xf86-input-evdev-2.9.2"
+FILENAME="xf86-input-evdev-2.9.2.tar.bz2"
+
+# The Xorg Evdev Driver package contains Generic Linux input
+# driver for the Xorg X server. It handles keyboard, mouse,
+# touchpads and wacom devices, though for touchpad and wacom
+# advanced handling, additional drivers are required. 
+
+# Change directory
+cd /src/pkg/standard/${FOLDERNAME}
+
+# Install libevdev
+./configure $XORG_CONFIG &&
+make
+make install

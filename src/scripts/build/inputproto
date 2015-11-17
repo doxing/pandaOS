@@ -1,0 +1,13 @@
+#!/bin/bash
+
+FOLDERNAME="inputproto-2.3.1"
+FILENAME="inputproto-2.3.1.tar.bz2"
+
+# Xorg Protocol Headers
+
+# Change directory
+cd /src/pkg/standard/${FOLDERNAME}
+
+# Install bigreqsproto
+./configure $XORG_CONFIG
+make install

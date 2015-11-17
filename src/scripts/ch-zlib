@@ -22,4 +22,4 @@ make install
 # and as a result the .so file in /usr/lib will
 # need to be recreated
 mv -v /usr/lib/libz.so.* /lib
-ln -sfv ../../lib/$(readlink /usr/lib/libz.so) /usr/lib/libz.so
+ln -sfv ../../../../lib/$(readlink /usr/lib/libz.so) /usr/lib/libz.so

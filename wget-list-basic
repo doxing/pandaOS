@@ -69,6 +69,7 @@ http://cpan.metacpan.org/authors/id/T/TO/TODDR/XML-Parser-2.44.tar.gz
 http://tukaani.org/xz/xz-5.2.1.tar.xz
 http://www.zlib.net/zlib-1.2.8.tar.xz
 http://anduin.linuxfromscratch.org/sources/other/systemd/systemd-224.tar.xz
+http://www.linuxfromscratch.org/patches/lfs/systemd/systemd-224-compat-3.patch
 http://dbus.freedesktop.org/releases/dbus/dbus-1.8.20.tar.gz
 http://www.linuxfromscratch.org/patches/lfs/7.8/bash-4.3.30-upstream_fixes-2.patch
 http://www.linuxfromscratch.org/patches/lfs/7.8/bc-1.06.95-memory_leak-1.patch

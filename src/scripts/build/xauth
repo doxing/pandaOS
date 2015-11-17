@@ -1,0 +1,14 @@
+#!/bin/bash
+
+FOLDERNAME="xauth-1.0.9"
+FILENAME="xauth-1.0.9.tar.bz2"
+
+# Xorg Application
+
+# Change directory
+cd /src/pkg/standard/${FOLDERNAME}
+
+# Install
+./configure $XORG_CONFIG
+make
+make install

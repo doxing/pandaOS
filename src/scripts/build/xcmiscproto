@@ -1,0 +1,13 @@
+#!/bin/bash
+
+FOLDERNAME="xcmiscproto-1.2.2"
+FILENAME="xcmiscproto-1.2.2.tar.bz2"
+
+# Xorg Protocol Headers
+
+# Change directory
+cd /src/pkg/standard/${FOLDERNAME}
+
+# Install bigreqsproto
+./configure $XORG_CONFIG
+make install

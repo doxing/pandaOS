@@ -1,0 +1,15 @@
+#!/bin/bash
+
+FOLDERNAME="libXfont-1.5.1"
+FILENAME="libXfont-1.5.1.tar.bz2"
+
+# Xorg Library
+
+# Change directory
+cd /src/pkg/standard/${FOLDERNAME}
+
+# Install
+./configure $XORG_CONFIG --disable-devel-docs
+make
+make install
+/sbin/ldconfig

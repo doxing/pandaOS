@@ -1,0 +1,15 @@
+#!/bin/bash
+
+FOLDERNAME="elfutils-0.163"
+FILENAME="elfutils-0.163.tar.bz2"
+
+# The elfutils package contains a set of utilities and libraries
+# for handling ELF (Executable and Linkable Format) files.
+
+# Change directory
+cd /src/pkg/standard/${FOLDERNAME}
+
+# Install ELF Utils
+./configure --prefix=/usr --program-prefix="eu-" &&
+make
+make install

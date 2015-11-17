@@ -51,5 +51,7 @@ checkReq
 createReqDir
 # Start installing the basic packages
 initSetup
+# Go Beyond
+buildSystem
 # Cleanup the system
 cleanup

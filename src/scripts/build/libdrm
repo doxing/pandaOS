@@ -1,0 +1,24 @@
+#!/bin/bash
+
+FOLDERNAME="libdrm-2.4.64"
+FILENAME="libdrm-2.4.64.tar.bz2"
+
+# libdrm provides a user space library for accessing the DRM,
+# direct rendering manager, on operating systems that support
+# the ioctl interface. libdrm is a low-level library, typically
+# used by graphics drivers such as the Mesa DRI drivers, the X
+# drivers, libva and similar projects.
+
+# Change directory
+cd /src/pkg/standard/${FOLDERNAME}
+
+# Install libdrm
+sed -e "/pthread-stubs/d" \
+    -i configure.ac &&
+autoreconf -fiv     &&
+
+./configure --prefix=/usr \
+            --enable-udev \
+            --disable-valgrind &&
+make
+make install
