@@ -46,11 +46,11 @@ displayMsg OK "Done ..."
 #################################################################
 
 # Verify System Requirements
-#checkReq
+checkReq
 # Create necessary directories
-#createReqDir
+createReqDir
 # Start installing the basic packages
-#initSetup
+initSetup
 # Go Beyond
 buildSystem
 # Cleanup the system

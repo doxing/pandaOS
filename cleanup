@@ -3,13 +3,13 @@
 cleanup() {
     displayMsg ""
     displayMsg OK "Cleaning up the mess ..."
-#    rm -rf "${MOUNT_POINT}${BUILD_DIR}"
+    rm -rf "${MOUNT_POINT}${BUILD_DIR}"
     sudo rm -rf "${MOUNT_POINT}${TOOLS_DIR}"
     sudo rm -rf /tools
     
     # Update Grub
     displayMsg OK "... Updating GRUB ..."
-#    sudo bash $(which update-grub)
+    sudo bash $(which update-grub)
     displayMsg OK "... Done ..."
     
     # Unmount the filesystem
@@ -26,10 +26,10 @@ cleanupBuild() {
     
     displayMsg OK "Cleaning up the mess ..."
     cd "${MOUNT_POINT}${BUILD_DIR}"
-#    sudo rm -R -- */
+    sudo rm -R -- */
     cd ../../
     cd ${MOUNT_POINT}${PKG_BASIC_DIR}
-#    sudo rm -R -- */
+    sudo rm -R -- */
     cd ../../
     displayMsg OK "Done ..."
 }
