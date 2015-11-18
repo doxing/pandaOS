@@ -34,7 +34,7 @@ extractPkg() {
 
 # Checks if a filename is an archive that can be extracted.
 isArchive() {
-  for ext in \\.zip \\.tar\\.bz2 \\.tar\\.gz \\.tar\\.xz \\.tgz \\.tar \\.tar\\.lzma; do
+  for ext in \\.zip \\.tar\\.bz2 \\.tar\\.gz \\.tar\\.xz \\.tgz \\.tar \\.tar\\.lzma \\.tgz; do
     if [ "$(echo ${1} | grep ${ext}\$)" ]; then
       echo "true"
       return
@@ -91,6 +91,239 @@ cleanupBuild() {
     cd /src/pkg/standard
     rm -R -- */
     displayMsg OK "Done ..."
+}
+
+certificate-authority-certificates() {
+    # Create a script to reformat a certificate into a form needed by openssl
+    cat > /usr/bin/make-cert.pl << "EOF"
+#!/usr/bin/perl -w
+
+# Used to generate PEM encoded files from Mozilla certdata.txt.
+# Run as ./make-cert.pl > certificate.crt
+#
+# Parts of this script courtesy of RedHat (mkcabundle.pl)
+#
+# This script modified for use with single file data (tempfile.cer) extracted
+# from certdata.txt, taken from the latest version in the Mozilla NSS source.
+# mozilla/security/nss/lib/ckfw/builtins/certdata.txt
+#
+# Authors: DJ Lucas
+#          Bruce Dubbs
+#
+# Version 20120211
+
+my $certdata = './tempfile.cer';
+
+open( IN, "cat $certdata|" )
+    || die "could not open $certdata";
+
+my $incert = 0;
+
+while ( <IN> )
+{
+    if ( /^CKA_VALUE MULTILINE_OCTAL/ )
+    {
+        $incert = 1;
+        open( OUT, "|openssl x509 -text -inform DER -fingerprint" )
+            || die "could not pipe to openssl x509";
+    }
+
+    elsif ( /^END/ && $incert )
+    {
+        close( OUT );
+        $incert = 0;
+        print "\n\n";
+    }
+
+    elsif ($incert)
+    {
+        my @bs = split( /\\/ );
+        foreach my $b (@bs)
+        {
+            chomp $b;
+            printf( OUT "%c", oct($b) ) unless $b eq '';
+        }
+    }
+}
+EOF
+
+    chmod +x /usr/bin/make-cert.pl
+
+    # Following script creates the certificates and a bundle of all the certificates
+    cat > /usr/bin/make-ca.sh << "EOF"
+#!/bin/sh
+# Begin make-ca.sh
+# Script to populate OpenSSL's CApath from a bundle of PEM formatted CAs
+#
+# The file certdata.txt must exist in the local directory
+# Version number is obtained from the version of the data.
+#
+# Authors: DJ Lucas
+#          Bruce Dubbs
+#
+# Version 20120211
+
+certdata="certdata.txt"
+
+if [ ! -r $certdata ]; then
+  echo "$certdata must be in the local directory"
+  exit 1
+fi
+
+REVISION=$(grep CVS_ID $certdata | cut -f4 -d'$')
+
+if [ -z "${REVISION}" ]; then
+  echo "$certfile has no 'Revision' in CVS_ID"
+  exit 1
+fi
+
+VERSION=$(echo $REVISION | cut -f2 -d" ")
+
+TEMPDIR=$(mktemp -d)
+TRUSTATTRIBUTES="CKA_TRUST_SERVER_AUTH"
+BUNDLE="BLFS-ca-bundle-${VERSION}.crt"
+CONVERTSCRIPT="/usr/bin/make-cert.pl"
+SSLDIR="/etc/ssl"
+
+mkdir "${TEMPDIR}/certs"
+
+# Get a list of starting lines for each cert
+CERTBEGINLIST=$(grep -n "^# Certificate" "${certdata}" | cut -d ":" -f1)
+
+# Get a list of ending lines for each cert
+CERTENDLIST=`grep -n "^CKA_TRUST_STEP_UP_APPROVED" "${certdata}" | cut -d ":" -f 1`
+
+# Start a loop
+for certbegin in ${CERTBEGINLIST}; do
+  for certend in ${CERTENDLIST}; do
+    if test "${certend}" -gt "${certbegin}"; then
+      break
+    fi
+  done
+
+  # Dump to a temp file with the name of the file as the beginning line number
+  sed -n "${certbegin},${certend}p" "${certdata}" > "${TEMPDIR}/certs/${certbegin}.tmp"
+done
+
+unset CERTBEGINLIST CERTDATA CERTENDLIST certbegin certend
+
+mkdir -p certs
+rm -f certs/*      # Make sure the directory is clean
+
+for tempfile in ${TEMPDIR}/certs/*.tmp; do
+  # Make sure that the cert is trusted...
+  grep "CKA_TRUST_SERVER_AUTH" "${tempfile}" | \
+    egrep "TRUST_UNKNOWN|NOT_TRUSTED" > /dev/null
+
+  if test "${?}" = "0"; then
+    # Throw a meaningful error and remove the file
+    cp "${tempfile}" tempfile.cer
+    perl ${CONVERTSCRIPT} > tempfile.crt
+    keyhash=$(openssl x509 -noout -in tempfile.crt -hash)
+    echo "Certificate ${keyhash} is not trusted!  Removing..."
+    rm -f tempfile.cer tempfile.crt "${tempfile}"
+    continue
+  fi
+
+  # If execution made it to here in the loop, the temp cert is trusted
+  # Find the cert data and generate a cert file for it
+
+  cp "${tempfile}" tempfile.cer
+  perl ${CONVERTSCRIPT} > tempfile.crt
+  keyhash=$(openssl x509 -noout -in tempfile.crt -hash)
+  mv tempfile.crt "certs/${keyhash}.pem"
+  rm -f tempfile.cer "${tempfile}"
+  echo "Created ${keyhash}.pem"
+done
+
+# Remove blacklisted files
+# MD5 Collision Proof of Concept CA
+if test -f certs/8f111d69.pem; then
+  echo "Certificate 8f111d69 is not trusted!  Removing..."
+  rm -f certs/8f111d69.pem
+fi
+
+# Finally, generate the bundle and clean up.
+cat certs/*.pem >  ${BUNDLE}
+rm -r "${TEMPDIR}"
+EOF
+
+    chmod +x /usr/bin/make-ca.sh
+    
+    # Add a short script to remove expired certificates from a directory
+    cat > /usr/sbin/remove-expired-certs.sh << "EOF"
+#!/bin/sh
+# Begin /usr/sbin/remove-expired-certs.sh
+#
+# Version 20120211
+
+# Make sure the date is parsed correctly on all systems
+mydate()
+{
+  local y=$( echo $1 | cut -d" " -f4 )
+  local M=$( echo $1 | cut -d" " -f1 )
+  local d=$( echo $1 | cut -d" " -f2 )
+  local m
+
+  if [ ${d} -lt 10 ]; then d="0${d}"; fi
+
+  case $M in
+    Jan) m="01";;
+    Feb) m="02";;
+    Mar) m="03";;
+    Apr) m="04";;
+    May) m="05";;
+    Jun) m="06";;
+    Jul) m="07";;
+    Aug) m="08";;
+    Sep) m="09";;
+    Oct) m="10";;
+    Nov) m="11";;
+    Dec) m="12";;
+  esac
+
+  certdate="${y}${m}${d}"
+}
+
+OPENSSL=/usr/bin/openssl
+DIR=/etc/ssl/certs
+
+if [ $# -gt 0 ]; then
+  DIR="$1"
+fi
+
+certs=$( find ${DIR} -type f -name "*.pem" -o -name "*.crt" )
+today=$( date +%Y%m%d )
+
+for cert in $certs; do
+  notafter=$( $OPENSSL x509 -enddate -in "${cert}" -noout )
+  date=$( echo ${notafter} |  sed 's/^notAfter=//' )
+  mydate "$date"
+
+  if [ ${certdate} -lt ${today} ]; then
+     echo "${cert} expired on ${certdate}! Removing..."
+     rm -f "${cert}"
+  fi
+done
+EOF
+
+    chmod u+x /usr/sbin/remove-expired-certs.sh
+    
+    # Fetch the certificates and convert them to the correct format
+    cp -v /src/pkg/standard/certdata.txt /
+    
+    make-ca.sh
+    
+    SSLDIR=/etc/ssl                                              &&
+    remove-expired-certs.sh certs                                &&
+    install -d ${SSLDIR}/certs                                   &&
+    cp -v certs/*.pem ${SSLDIR}/certs                            &&
+    c_rehash                                                     &&
+    install BLFS-ca-bundle*.crt ${SSLDIR}/ca-bundle.crt          &&
+    ln -sfv ../ca-bundle.crt ${SSLDIR}/certs/ca-certificates.crt &&
+    unset SSLDIR
+    
+    rm -r certs BLFS-ca-bundle*
 }
 
 # Intel Microcode for the CPU
@@ -342,6 +575,9 @@ BUILD libstatgrab STD
 BUILD libusb STD
 BUILD libusb-compat STD
 
+# Clean up files
+cleanupBuild
+
 
 ######################################################################################################
 
@@ -387,6 +623,9 @@ BUILD xf86vidmodeproto STD
 BUILD xineramaproto STD
 BUILD xproto STD
 
+# Clean up files
+cleanupBuild
+
 BUILD libxau STD
 BUILD libxdmcp STD
 BUILD python2 STD
@@ -408,10 +647,8 @@ BUILD libXaw STD
 BUILD libXfixes STD
 BUILD libXcomposite STD
 BUILD libXrender STD
-BUILD libXcursor STD
 BUILD libXdamage STD
 BUILD libfontenc STD
-BUILD libXfont STD
 BUILD libXft STD
 BUILD libXi STD
 BUILD libXinerama STD
@@ -478,6 +715,9 @@ BUILD xwd STD
 BUILD xwininfo STD
 BUILD xwud STD
 
+# Clean up files
+cleanupBuild
+
 # Remove an undocumented script which is reported to
 # be broken (xkeystone provided by the xrandr package).
 rm -f $XORG_PREFIX/bin/xkeystone
@@ -522,6 +762,9 @@ BUILD font-sun-misc STD
 BUILD font-winitzki-cyrillic STD
 BUILD font-xfree86-type1 STD
 
+# Clean up files
+cleanupBuild
+
 # The system must be configured so that Fontconfig can find the
 # TrueType fonts since they are outside of the default search
 # path of /usr/share/fonts. Make symlinks to the Xorg TrueType
@@ -547,11 +790,14 @@ BUILD xorg-nouveau-driver STD
 BUILD libva STD
 BUILD libva-intel-driver STD
 
+# Clean up files
+cleanupBuild
+
 # Minimal Window Manager
-BUILD twm STD
-BUILD xterm STD
-BUILD xclock STD
-BUILD xinit STD
+#BUILD twm STD
+#BUILD xterm STD
+#BUILD xclock STD
+#BUILD xinit STD
 
 # Display Manager
 BUILD sqlite STD
@@ -560,7 +806,179 @@ BUILD curl STD
 BUILD libarchive STD
 BUILD cmake STD
 BUILD sddm STD
-BUILD fluxbox STD
+#BUILD fluxbox STD
+
+# Clean up files
+cleanupBuild
+
+# KDE 5 - Part I
+#########################################################
+BUILD pcre STD
+BUILD glib STD
+BUILD desktop-file-utils STD
+BUILD phonon STD
+BUILD libxml2 STD
+BUILD gobject-introspection STD
+BUILD gstreamer STD
+BUILD gst-plugins-base STD
+BUILD gst-plugins-good STD
+BUILD phonon-backend-gstreamer STD
+BUILD nspr STD
+BUILD zip STD
+BUILD js STD
+BUILD polkit STD
+BUILD polkit-qt STD
+BUILD libdbusmenu-qt STD
+BUILD extra-cmake-modules STD
+########################################################
+# KDE 5 - Part II
+# Add the following variables to the system profiles
+cat >> /etc/profile.d/qt5.sh << "EOF"
+# Begin kf5 extention for /etc/profile.d/qt5.sh
+
+pathappend /usr/lib/qt5/plugins    QT_PLUGIN_PATH
+pathappend /usr/lib/qt5/qml        QML_IMPORT_PATH
+pathappend /usr/lib/qt5/qml        QML2_IMPORT_PATH
+
+# End extention for /etc/profile.d/qt5.sh
+EOF
+
+cat > /etc/profile.d/kf5.sh << "EOF"
+# Begin /etc/profile.d/kf5.sh
+
+export KF5_PREFIX=/usr
+
+# End /etc/profile.d/kf5.sh
+EOF
+########################################################
+
+# Clean up files
+cleanupBuild
+
+# KDE 5 - Part III
+BUILD sgml-common STD
+BUILD unzip STD
+BUILD docbook-xml STD
+BUILD docbook-xsl STD
+BUILD giflib STD
+BUILD libgpg-error STD
+BUILD libgcrypt STD
+BUILD nasm STD
+BUILD libjpeg-turbo STD
+BUILD libpng STD
+BUILD libxslt STD
+BUILD shared-mime-info STD
+BUILD uri STD
+BUILD nettle STD
+BUILD libtasn STD
+BUILD unbound STD
+certificate-authority-certificates
+BUILD p11-kit STD
+BUILD gnu-tls STD
+BUILD wget STD
+BUILD which STD
+BUILD aspell STD
+BUILD dbus STD
+BUILD at-spi2-core STD
+BUILD atk STD
+BUILD at-spi2-atk STD
+BUILD cairo STD
+BUILD cairomm STD
+BUILD libtiff STD
+BUILD harfbuzz STD
+BUILD freetype STD
+BUILD fontconfig STD
+BUILD pango STD
+BUILD gdk-pixbuf STD
+BUILD gtk3 STD
+BUILD gtk2 STD
+BUILD libdaemon STD
+BUILD avahi STD
+BUILD libical STD
+BUILD bluez STD
+BUILD nss STD
+BUILD libnl STD
+BUILD libndp STD
+BUILD libgudev STD
+BUILD dbus-glib STD
+BUILD s-lang STD
+BUILD gpm STD
+BUILD popt STD
+BUILD libnewt STD
+BUILD network-manager STD
+BUILD attica STD
+BUILD kapidox STD
+BUILD karchive STD
+BUILD kcodecs STD
+BUILD kconfig STD
+BUILD kcoreaddons STD
+BUILD kdbusaddons STD
+BUILD kdnssd STD
+BUILD kguiaddons STD
+BUILD ki18n STD
+BUILD kidletime STD
+BUILD kimageformats STD
+BUILD kitemmodels STD
+BUILD kitemviews STD
+BUILD kplotting STD
+BUILD kwidgetsaddons STD
+BUILD kwindowsystem STD
+BUILD networkmanager-qt STD
+BUILD solid STD
+BUILD sonnet STD
+BUILD threadweaver STD
+BUILD kauth STD
+BUILD kcompletion STD
+BUILD kcrash STD
+BUILD kdoctools STD
+BUILD kpty STD
+BUILD kunitconversion STD
+BUILD kconfigwidgets STD
+BUILD kglobalaccel STD
+BUILD kpackage STD
+BUILD kservice0 STD
+BUILD kservice1 STD
+BUILD kservice2 STD
+BUILD kservice3 STD
+BUILD kdesu STD
+BUILD kemoticons STD
+BUILD kiconthemes STD
+BUILD kjobwidgets STD
+BUILD knotifications STD
+BUILD ktextwidgets STD
+BUILD kwallet STD
+BUILD kxmlgui STD
+BUILD kbookmarks STD
+BUILD kio STD
+BUILD kdeclarative
+BUILD kcmutils STD
+BUILD frameworkintegration STD
+BUILD kinit STD
+BUILD knewstuff STD
+BUILD knotifyconfig STD
+BUILD kparts STD
+BUILD kactivities STD
+BUILD kded STD
+BUILD kdewebkit STD
+BUILD ktexteditor STD
+BUILD kdesignerplugin STD
+BUILD plasma-framework STD
+#BUILD modemmanager-qt STD
+BUILD kpeople STD
+BUILD kxmlrpcclient STD
+BUILD bluez-qt STD
+BUILD kfilemetadata STD
+#BUILD baloo STD
+BUILD kjs STD
+BUILD kdelibs4support STD
+BUILD khtml STD
+BUILD kjsembed STD
+BUILD kmediaplayer STD
+BUILD kross STD
+BUILD krunner STD
+
+mv -v /opt/kf5 /opt/kf5-5.14.0
+ln -sfvn kf5-5.14.0 /opt/kf5
 
 reconfigureKernel
 # Clean up files

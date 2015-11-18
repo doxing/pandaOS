@@ -1,0 +1,15 @@
+#!/bin/bash
+
+FOLDERNAME="gobject-introspection-1.44.0"
+FILENAME="gobject-introspection-1.44.0.tar.xz"
+
+# The GObject Introspection is used to describe the program APIs
+# and collect them in a uniform, machine readable format.
+
+# Change directory
+cd /src/pkg/standard/${FOLDERNAME}
+
+# Install GObject introspection
+./configure --prefix=/usr --disable-static &&
+make
+make install

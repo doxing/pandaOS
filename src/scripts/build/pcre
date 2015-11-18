@@ -1,0 +1,30 @@
+#!/bin/bash
+
+FOLDERNAME="pcre-8.37"
+FILENAME="pcre-8.37.tar.bz2"
+
+# The PCRE package contains Perl Compatible Regular Expression
+# libraries. These are useful for implementing regular
+# expression pattern matching using the same syntax and
+# semantics as Perl 5.
+
+# Change directory
+cd /src/pkg/standard/${FOLDERNAME}
+
+# Install PCRE
+patch -Np1 -i ../pcre-8.37-upstream_fixes-1.patch &&
+
+./configure --prefix=/usr                     \
+            --docdir=/usr/share/doc/pcre-8.37 \
+            --enable-unicode-properties       \
+            --enable-pcre16                   \
+            --enable-pcre32                   \
+            --enable-pcregrep-libz            \
+            --enable-pcregrep-libbz2          \
+            --enable-pcretest-libreadline     \
+            --disable-static                 &&
+make
+
+make install                     &&
+mv -v /usr/lib/libpcre.so.* /lib &&
+ln -sfv ../../../../lib/$(readlink /usr/lib/libpcre.so) /usr/lib/libpcre.so

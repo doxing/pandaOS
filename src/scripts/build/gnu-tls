@@ -1,0 +1,16 @@
+#!/bin/bash
+
+FOLDERNAME="gnutls-3.4.4.1"
+FILENAME="gnutls-3.4.4.1.tar.xz"
+
+# The GnuTLS package contains libraries and userspace tools which provide a secure layer over a reliable transport layer.
+
+# Change directory
+cd /src/pkg/standard/${FOLDERNAME}
+
+# Install GnuTLS
+./configure --prefix=/usr \
+            --with-default-trust-store-file=/etc/ssl/ca-bundle.crt &&
+make
+make install
+make -C doc/reference install-data-local

@@ -1,0 +1,18 @@
+#!/bin/bash
+
+FOLDERNAME="libgcrypt-1.6.3"
+FILENAME="libgcrypt-1.6.3.tar.bz2"
+
+# The libgcrypt package contains a general purpose crypto library based on the code used in GnuPG. The library provides a high level interface to cryptographic building blocks using an extendable and flexible API.
+
+# Change directory
+cd /src/pkg/standard/${FOLDERNAME}
+
+# Install libgcrypt
+./configure --prefix=/usr &&
+make
+
+make install &&
+install -v -dm755   /usr/share/doc/libgcrypt-1.6.3 &&
+install -v -m644    README doc/{README.apichanges,fips*,libgcrypt*} \
+                    /usr/share/doc/libgcrypt-1.6.3

@@ -1,0 +1,22 @@
+#!/bin/bash
+
+FOLDERNAME="nasm-2.11.08"
+FILENAME="nasm-2.11.08.tar.xz"
+
+# NASM (Netwide Assembler) is an 80x86 assembler designed for portability and modularity. It includes a disassembler as well.
+
+# Change directory
+cd /src/pkg/standard/${FOLDERNAME}
+
+# Install nasm
+tar -xf ../nasm-2.11.08-xdoc.tar.xz --strip-components=1
+
+./configure --prefix=/usr &&
+make
+make install
+
+install -m755 -d         /usr/share/doc/nasm-2.11.08/html  &&
+cp -v doc/html/*.html    /usr/share/doc/nasm-2.11.08/html  &&
+cp -v doc/*.{txt,ps,pdf} /usr/share/doc/nasm-2.11.08       &&
+cp -v doc/info/*         /usr/share/info                   &&
+install-info /usr/share/info/nasm.info /usr/share/info/dir

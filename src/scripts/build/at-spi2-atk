@@ -1,0 +1,17 @@
+#!/bin/bash
+
+FOLDERNAME="at-spi2-atk-2.16.0"
+FILENAME="at-spi2-atk-2.16.0.tar.xz"
+
+# The At-Spi2 Atk package contains a library that bridges ATK to At-Spi2 D-Bus service.
+
+# Change directory
+cd /src/pkg/standard/${FOLDERNAME}
+
+# Install at spi2 atk
+./configure --prefix=/usr \
+            --sysconfdir=/etc &&
+make
+make install
+
+glib-compile-schemas /usr/share/glib-2.0/schemas

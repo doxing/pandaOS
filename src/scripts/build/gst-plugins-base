@@ -1,0 +1,16 @@
+#!/bin/bash
+
+FOLDERNAME="gst-plugins-base-1.4.5"
+FILENAME="gst-plugins-base-1.4.5.tar.xz"
+
+# The GStreamer Base Plug-ins is a well-groomed and well-maintained collection
+# of GStreamer plug-ins and elements, spanning the range of possible types of
+# elements one would want to write for GStreamer.
+
+# Change directory
+cd /src/pkg/standard/${FOLDERNAME}
+
+# Install GStreamer
+./configure --prefix=/usr &&
+make
+make install

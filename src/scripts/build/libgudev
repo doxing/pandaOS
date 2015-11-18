@@ -1,0 +1,14 @@
+#!/bin/bash
+
+FOLDERNAME="libgudev-230"
+FILENAME="libgudev-230.tar.xz"
+
+# The libgudev package contains GObject bindings for libudev.
+
+# Change directory
+cd /src/pkg/standard/${FOLDERNAME}
+
+# Install
+./configure --prefix=/usr &&
+make
+make install

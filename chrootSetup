@@ -99,7 +99,7 @@ EOF"
     
     # Configure chroot environment
     inModchroot "bash /src/scripts/chroot-config"
-    inModchroot "bash src/scripts/chroot-linux-kernel"
+    inModchroot "bash /src/scripts/chroot-linux-kernel"
     
     displayMsg OK "Done ..."
 }

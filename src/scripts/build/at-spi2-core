@@ -1,0 +1,15 @@
+#!/bin/bash
+
+FOLDERNAME="at-spi2-core-2.16.0"
+FILENAME="at-spi2-core-2.16.0.tar.xz"
+
+# The At-Spi2 Core package is a part of the GNOME Accessibility Project. It provides a Service Provider Interface for the Assistive Technologies available on the GNOME platform and a library against which applications can be linked.
+
+# Change directory
+cd /src/pkg/standard/${FOLDERNAME}
+
+# Install at spi2 core
+./configure --prefix=/usr \
+            --sysconfdir=/etc &&
+make
+make install

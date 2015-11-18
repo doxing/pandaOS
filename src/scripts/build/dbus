@@ -1,0 +1,49 @@
+#!/bin/bash
+
+FOLDERNAME="dbus-1.10.0"
+FILENAME="dbus-1.10.0.tar.gz"
+
+# D-Bus is a message bus system, a simple way for applications to talk to one another. D-Bus supplies both a system daemon (for events such as “new hardware device added” or “printer queue changed”) and a per-user-login-session daemon (for general IPC needs among user applications). Also, the message bus is built on top of a general one-to-one message passing framework, which can be used by any two applications to communicate directly (without going through the message bus daemon).
+
+# Change directory
+cd /src/pkg/standard/${FOLDERNAME}
+
+# Install dbus
+groupadd -g 18 messagebus &&
+useradd -c "D-Bus Message Daemon User" -d /var/run/dbus \
+        -u 18 -g messagebus -s /bin/false messagebus
+./configure --prefix=/usr                  \
+            --sysconfdir=/etc              \
+            --localstatedir=/var           \
+            --disable-doxygen-docs         \
+            --disable-xml-docs             \
+            --disable-static               \
+            --disable-systemd              \
+            --without-systemdsystemunitdir \
+            --with-console-auth-dir=/run/console/ \
+            --docdir=/usr/share/doc/dbus-1.10.0   &&
+make
+make install
+
+chown -v root:messagebus /usr/libexec/dbus-daemon-launch-helper &&
+chmod -v      4750       /usr/libexec/dbus-daemon-launch-helper
+
+dbus-uuidgen --ensure
+
+# Configuration Information
+cat > /etc/dbus-1/session-local.conf << "EOF"
+<!DOCTYPE busconfig PUBLIC
+ "-//freedesktop//DTD D-BUS Bus Configuration 1.0//EN"
+ "http://www.freedesktop.org/standards/dbus/1.0/busconfig.dtd">
+<busconfig>
+
+  <!-- Search for .service files in /usr/local -->
+  <servicedir>/usr/local/share/dbus-1/services</servicedir>
+
+</busconfig>
+EOF
+
+cd /src/pkg/standard
+tar xf blfs-bootscripts-20150924.tar.bz2
+cd blfs-bootscripts-20150924
+make install-dbus

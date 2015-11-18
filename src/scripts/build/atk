@@ -1,0 +1,16 @@
+#!/bin/bash
+
+FOLDERNAME="atk-2.16.0"
+FILENAME="atk-2.16.0.tar.xz"
+
+# ATK provides the set of accessibility interfaces that are implemented by other toolkits and applications. Using the ATK interfaces, accessibility tools have full access to view and control running applications.
+
+# Change directory
+cd /src/pkg/standard/${FOLDERNAME}
+
+# Install at atk
+./configure --prefix=/usr &&
+make
+make install
+
+glib-compile-schemas /usr/share/glib-2.0/schemas

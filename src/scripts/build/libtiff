@@ -1,0 +1,14 @@
+#!/bin/bash
+
+FOLDERNAME="tiff-4.0.5"
+FILENAME="tiff-4.0.5.tar.gz"
+
+# The Cairomm package provides a C++ interface to Cairo.
+
+# Change directory
+cd /src/pkg/standard/${FOLDERNAME}
+
+# Install
+./configure --prefix=/usr --disable-static &&
+make
+make install

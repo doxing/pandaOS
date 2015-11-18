@@ -1,0 +1,21 @@
+#!/bin/bash
+
+FOLDERNAME="gtk+-3.16.6"
+FILENAME="gtk+-3.16.6.tar.xz"
+
+# The GTK+ 3 package contains libraries used for creating graphical user interfaces for applications.
+
+# Change directory
+cd /src/pkg/standard/${FOLDERNAME}
+
+# Install at gtk3
+./configure --prefix=/usr             \
+            --sysconfdir=/etc         \
+            --enable-broadway-backend \
+            --enable-x11-backend      \
+            --disable-wayland-backend &&
+make
+glib-compile-schemas /usr/share/glib-2.0/schemas
+make install
+
+gtk-query-immodules-3.0 --update-cache

@@ -1,0 +1,14 @@
+#!/bin/bash
+
+FOLDERNAME="harfbuzz-1.0.3"
+FILENAME="harfbuzz-1.0.3.tar.bz2"
+
+# The Harfbuzz package contains an OpenType text shaping engine.
+
+# Change directory
+cd /src/pkg/standard/${FOLDERNAME}
+
+# Install
+./configure --prefix=/usr --with-gobject &&
+make
+make install

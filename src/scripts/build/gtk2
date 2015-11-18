@@ -1,0 +1,33 @@
+#!/bin/bash
+
+FOLDERNAME="gtk+-2.24.28"
+FILENAME="gtk+-2.24.28.tar.xz"
+
+# The GTK+ 2 package contains libraries used for creating graphical user interfaces for applications.
+
+# Change directory
+cd /src/pkg/standard/${FOLDERNAME}
+
+# Install
+sed -e 's#l \(gtk-.*\).sgml#& -o \1#' \
+    -i docs/{faq,tutorial}/Makefile.in      &&
+
+sed -e 's#pltcheck.sh#$(NULL)#g' \
+    -i gtk/Makefile.in                      &&
+
+./configure --prefix=/usr --sysconfdir=/etc &&
+
+make
+make install
+
+gtk-query-immodules-2.0 --update-cache
+
+cat > ~/.gtkrc-2.0 << "EOF"
+include "/usr/share/themes/Glider/gtk-2.0/gtkrc"
+gtk-icon-theme-name = "hicolor"
+EOF
+
+cat > /etc/gtk-2.0/gtkrc << "EOF"
+include "/usr/share/themes/Clearlooks/gtk-2.0/gtkrc"
+gtk-icon-theme-name = "elementary"
+EOF

@@ -1,0 +1,18 @@
+#!/bin/bash
+
+FOLDERNAME="gstreamer-1.4.5"
+FILENAME="gstreamer-1.4.5.tar.xz"
+
+# GStreamer is a streaming media framework that enables applications
+# to share a common set of plugins for things like video encoding and
+# decoding, audio encoding and decoding, audio and video filters, audio
+# visualisation, web streaming and anything else that streams in real-time
+# or otherwise. This package only provides base functionality and libraries.
+
+# Change directory
+cd /src/pkg/standard/${FOLDERNAME}
+
+# Install GStreamer
+./configure --prefix=/usr &&
+make
+make install
