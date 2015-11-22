@@ -11,5 +11,5 @@ cd /src/pkg/standard/${FOLDERNAME}
 
 # Install ELF Utils
 ./configure --prefix=/usr --program-prefix="eu-" &&
-make
-make install
+make $MAKEFLAGS
+make $MAKEFLAGS install

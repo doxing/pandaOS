@@ -10,7 +10,7 @@ cd /src/pkg/standard/${FOLDERNAME}
 
 # Install libgpg error
 ./configure --prefix=/usr --disable-static &&
-make
+make $MAKEFLAGS
 
-make install &&
+make $MAKEFLAGS install &&
 install -v -m644 -D README /usr/share/doc/libgpg-error-1.20/README

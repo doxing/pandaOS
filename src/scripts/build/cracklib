@@ -16,9 +16,9 @@ sed -i '/skipping/d' util/packer.c &&
 ./configure --prefix=/usr    \
             --disable-static \
             --with-default-dict=/lib/cracklib/pw_dict &&
-make
+make $MAKEFLAGS
 
-make install                      &&
+make $MAKEFLAGS install           &&
 mv -v /usr/lib/libcrack.so.* /lib &&
 ln -sfv ../../../../lib/$(readlink /usr/lib/libcrack.so) /usr/lib/libcrack.so
 

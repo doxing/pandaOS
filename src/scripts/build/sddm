@@ -19,15 +19,15 @@ useradd  -c "SDDM Daemon" \
          
 # Install sddm
 mkdir build &&
-cd    build &&
+cd    build
 
 cmake -DCMAKE_INSTALL_PREFIX=/usr \
       -DCMAKE_BUILD_TYPE=Release  \
       -DENABLE_JOURNALD=OFF       \
       -DDBUS_CONFIG_FILENAME=sddm_org.freedesktop.DisplayManager.conf \
-      -Wno-dev /src/pkg/standard/${FOLDERNAME} &&
-make
-make install &&
+      -Wno-dev .. &&
+make $MAKEFLAGS
+make $MAKEFLAGS install &&
 install -v -dm755 -o sddm -g sddm /var/lib/sddm
 
 # Create config file
@@ -50,58 +50,6 @@ cd ../
 tar xf blfs-bootscripts-20150924.tar.bz2
 cd blfs-bootscripts-20150924
 make install-sddm
-
-# If you have built SDDM with Linux PAM support, create the necessary configuration files
-cat > /etc/pam.d/sddm << "EOF"
-# Begin /etc/pam.d/sddm
-
-auth     requisite      pam_nologin.so
-auth     required       pam_env.so
-
-auth     required       pam_succeed_if.so uid >= 1000 quiet
-auth     include        system-auth
-
-account  include        system-account
-password include        system-password
-
-session  required       pam_limits.so
-session  include        system-session
-
-# End /etc/pam.d/sddm
-EOF
-
-cat > /etc/pam.d/sddm-autologin << "EOF"
-# Begin /etc/pam.d/sddm-autologin
-
-auth     requisite      pam_nologin.so
-auth     required       pam_env.so
-
-auth     required       pam_succeed_if.so uid >= 1000 quiet
-auth     required       pam_permit.so
-
-account  include        system-account
-
-password required       pam_deny.so
-
-session  required       pam_limits.so
-session  include        system-session
-
-# End /etc/pam.d/sddm-autologin
-EOF
-
-cat > /etc/pam.d/sddm-greeter << "EOF"
-# Begin /etc/pam.d/sddm-greeter
-
-auth     required       pam_env.so
-auth     required       pam_permit.so
-
-account  required       pam_permit.so
-password required       pam_deny.so
-session  required       pam_unix.so
--session optional       pam_systemd.so
-
-# End /etc/pam.d/sddm-greeter
-EOF
 
 # Start sddm
 /etc/rc.d/init.d/sddm start

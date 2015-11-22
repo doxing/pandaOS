@@ -17,8 +17,8 @@ gzip -cd ../libpng-1.6.18-apng.patch.gz | patch -p1
 
 # Install libpng
 ./configure --prefix=/usr --disable-static &&
-make
+make $MAKEFLAGS
 
-make install &&
+make $MAKEFLAGS install &&
 mkdir -v /usr/share/doc/libpng-1.6.18 &&
 cp -v README libpng-manual.txt /usr/share/doc/libpng-1.6.18

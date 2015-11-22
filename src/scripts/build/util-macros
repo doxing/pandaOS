@@ -10,4 +10,4 @@ cd /src/pkg/standard/${FOLDERNAME}
 
 # Install Util-Macros
 ./configure $XORG_CONFIG
-make install
+make $MAKEFLAGS install

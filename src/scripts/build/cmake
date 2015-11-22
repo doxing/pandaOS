@@ -12,13 +12,11 @@ FILENAME="cmake-3.3.1.tar.gz"
 cd /src/pkg/standard/${FOLDERNAME}
 
 # Install cmake
-source /usr/bin/setqt5
-
 ./bootstrap --prefix=/usr       \
             --system-libs       \
             --mandir=/share/man \
             --no-system-jsoncpp \
             --docdir=/share/doc/cmake-3.3.1 &&
-make
+make $MAKEFLAGS
 
-make install
+make $MAKEFLAGS install

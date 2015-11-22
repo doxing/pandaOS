@@ -15,7 +15,6 @@ FILENAME="qt-everywhere-opensource-src-5.5.0.tar.gz"
 cd /src/pkg/standard/${FOLDERNAME}
 
 # Install QT5
-
 ./configure -prefix         /usr                        \
             -sysconfdir     /etc/xdg                    \
             -bindir         /usr/bin/qt5                \
@@ -35,9 +34,9 @@ cd /src/pkg/standard/${FOLDERNAME}
             -no-rpath                                   \
             -optimized-qmake                            \
             -skip qtwebengine          &&
-make
+make $MAKEFLAGS
 
-make install
+make $MAKEFLAGS install
 
 # Remove references to the build directory from the
 # installed .pc files
@@ -129,6 +128,8 @@ cat > /etc/profile.d/qt5.sh << EOF
 # Begin /etc/profile.d/qt5.sh
 
 QT5DIR=/usr
+pathappend $QT5DIR/bin           PATH
+pathappend $QT5DIR/lib/pkgconfig PKG_CONFIG_PATH
 export QT5DIR
 
 # End /etc/profile.d/qt5.sh

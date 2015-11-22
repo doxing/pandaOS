@@ -10,5 +10,5 @@ cd /src/pkg/standard/${FOLDERNAME}
 
 # Install
 ./configure --prefix=/usr --with-gobject &&
-make
-make install
+make $MAKEFLAGS
+make $MAKEFLAGS install

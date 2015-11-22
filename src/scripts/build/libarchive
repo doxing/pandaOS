@@ -10,5 +10,5 @@ cd /src/pkg/standard/${FOLDERNAME}
          
 # Install libarchive
 ./configure --prefix=/usr --disable-static &&
-make
-make install
+make $MAKEFLAGS
+make $MAKEFLAGS install

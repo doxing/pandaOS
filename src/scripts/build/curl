@@ -17,8 +17,8 @@ cd /src/pkg/standard/${FOLDERNAME}
 ./configure --prefix=/usr              \
             --disable-static           \
             --enable-threaded-resolver &&
-make
-make install &&
+make $MAKEFLAGS
+make $MAKEFLAGS install &&
 
 find docs \( -name Makefile\* \
           -o -name \*.1       \

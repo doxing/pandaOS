@@ -11,5 +11,5 @@ cd /src/pkg/standard/${FOLDERNAME}
 # Install libvdpau
 ./configure $XORG_CONFIG \
             --docdir=/usr/share/doc/libvdpau-1.1.1 &&
-make
-make install
+make $MAKEFLAGS
+make $MAKEFLAGS install

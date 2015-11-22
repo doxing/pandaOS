@@ -21,4 +21,4 @@ FILENAME="blfs-bootscripts-20150924.tar.bz2"
 cd /src/pkg/standard/${FOLDERNAME}
 
 # Install the package
-make install-random
+make $MAKEFLAGS install-random

@@ -10,9 +10,9 @@ cd /src/pkg/standard/${FOLDERNAME}
 
 # Install libgcrypt
 ./configure --prefix=/usr &&
-make
+make $MAKEFLAGS
 
-make install &&
+make $MAKEFLAGS install &&
 install -v -dm755   /usr/share/doc/libgcrypt-1.6.3 &&
 install -v -m644    README doc/{README.apichanges,fips*,libgcrypt*} \
                     /usr/share/doc/libgcrypt-1.6.3

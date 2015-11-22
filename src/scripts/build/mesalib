@@ -28,9 +28,9 @@ GLL_DRV="nouveau,r300,r600,radeonsi,svga,swrast" &&
             --with-egl-platforms="drm,x11"  \
             --with-gallium-drivers=$GLL_DRV &&
 unset GLL_DRV &&
-make
+make $MAKEFLAGS
 
-make install
+make $MAKEFLAGS install
 
 # Install the documentation
 install -v -dm755 /usr/share/doc/mesa-10.6.6 &&

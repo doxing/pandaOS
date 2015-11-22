@@ -90,7 +90,7 @@ echo 0.1a > /etc/panda-release
 # to the Linux Standards Base (LSB)
 cat > /etc/lsb-release << "EOF"
 DISTRIB_ID="Panda Linux"
-DISTRIB_RELEASE="v0.2a"
+DISTRIB_RELEASE="v0.3a"
 DISTRIB_CODENAME="panda"
 DISTRIB_DESCRIPTION="Panda Linux"
 EOF

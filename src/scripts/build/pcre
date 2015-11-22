@@ -23,8 +23,8 @@ patch -Np1 -i ../pcre-8.37-upstream_fixes-1.patch &&
             --enable-pcregrep-libbz2          \
             --enable-pcretest-libreadline     \
             --disable-static                 &&
-make
+make $MAKEFLAGS
 
-make install                     &&
+make $MAKEFLAGS install                     &&
 mv -v /usr/lib/libpcre.so.* /lib &&
 ln -sfv ../../../../lib/$(readlink /usr/lib/libpcre.so) /usr/lib/libpcre.so

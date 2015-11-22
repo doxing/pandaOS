@@ -1,0 +1,2 @@
+- SDDM package error
+    - Tar file gets corrupted somehow while copying.

@@ -31,9 +31,9 @@ CC=gcc CXX=g++                          \
              --enable-targets=host,r600 \
              --disable-assertions       \
              --docdir=/usr/share/doc/llvm-3.7.0 &&
-make
+make $MAKEFLAGS
 
-make install &&
+make $MAKEFLAGS install &&
 
 for file in /usr/lib/lib{clang,LLVM,LTO}*.a
 do

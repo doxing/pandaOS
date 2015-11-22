@@ -22,8 +22,8 @@ useradd -c "D-Bus Message Daemon User" -d /var/run/dbus \
             --without-systemdsystemunitdir \
             --with-console-auth-dir=/run/console/ \
             --docdir=/usr/share/doc/dbus-1.10.0   &&
-make
-make install
+make $MAKEFLAGS
+make $MAKEFLAGS install
 
 chown -v root:messagebus /usr/libexec/dbus-daemon-launch-helper &&
 chmod -v      4750       /usr/libexec/dbus-daemon-launch-helper
@@ -46,4 +46,4 @@ EOF
 cd /src/pkg/standard
 tar xf blfs-bootscripts-20150924.tar.bz2
 cd blfs-bootscripts-20150924
-make install-dbus
+make $MAKEFLAGS install-dbus

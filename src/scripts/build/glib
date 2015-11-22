@@ -13,5 +13,5 @@ cd /src/pkg/standard/${FOLDERNAME}
 
 # Install Glib
 ./configure --prefix=/usr --with-pcre=system &&
-make
-make install
+make $MAKEFLAGS
+make $MAKEFLAGS install

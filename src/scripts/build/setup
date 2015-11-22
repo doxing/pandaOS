@@ -93,8 +93,212 @@ cleanupBuild() {
     displayMsg OK "Done ..."
 }
 
+setupBashStartup() {
+    cat > /etc/profile << "EOF"
+# Begin /etc/profile
+# System wide environment variables and startup programs.
+
+# System wide aliases and functions should go in /etc/bashrc.  Personal
+# environment variables and startup programs should go into
+# ~/.bash_profile.  Personal aliases and functions should go into
+# ~/.bashrc.
+
+# Functions to help us manage paths.  Second argument is the name of the
+# path variable to be modified (default: PATH)
+pathremove () {
+        local IFS=':'
+        local NEWPATH
+        local DIR
+        local PATHVARIABLE=${2:-PATH}
+        for DIR in ${!PATHVARIABLE} ; do
+                if [ "$DIR" != "$1" ] ; then
+                  NEWPATH=${NEWPATH:+$NEWPATH:}$DIR
+                fi
+        done
+        export $PATHVARIABLE="$NEWPATH"
+}
+
+pathprepend () {
+        pathremove $1 $2
+        local PATHVARIABLE=${2:-PATH}
+        export $PATHVARIABLE="$1${!PATHVARIABLE:+:${!PATHVARIABLE}}"
+}
+
+pathappend () {
+        pathremove $1 $2
+        local PATHVARIABLE=${2:-PATH}
+        export $PATHVARIABLE="${!PATHVARIABLE:+${!PATHVARIABLE}:}$1"
+}
+
+export -f pathremove pathprepend pathappend
+
+# Set the initial path
+export PATH=/bin:/usr/bin
+
+if [ $EUID -eq 0 ] ; then
+        pathappend /sbin:/usr/sbin
+        unset HISTFILE
+fi
+
+# Setup some environment variables.
+export HISTSIZE=1000
+export HISTIGNORE="&:[bf]g:exit"
+
+# Set some defaults for graphical systems
+export XDG_DATA_DIRS=/usr/share/
+export XDG_CONFIG_DIRS=/etc/xdg/
+
+# Setup a red prompt for root and a green one for users.
+NORMAL="\[\e[0m\]"
+RED="\[\e[1;31m\]"
+GREEN="\[\e[1;32m\]"
+if [[ $EUID == 0 ]] ; then
+  PS1="$RED\u [$NORMAL\w$RED]# $NORMAL"
+else
+  PS1="$GREEN\u [$NORMAL\w$GREEN]\$ $NORMAL"
+fi
+
+for script in /etc/profile.d/*.sh ; do
+        if [ -r $script ] ; then
+                . $script
+        fi
+done
+
+unset script RED GREEN NORMAL
+
+# End /etc/profile
+EOF
+
+    # Create the /etc/profile.d directory, where the individual initialization scripts are placed
+    install --directory --mode=0755 --owner=root --group=root /etc/profile.d
+    
+    cat > /etc/profile.d/dircolors.sh << "EOF"
+# Setup for /bin/ls and /bin/grep to support color, the alias is in /etc/bashrc.
+if [ -f "/etc/dircolors" ] ; then
+        eval $(dircolors -b /etc/dircolors)
+fi
+
+if [ -f "$HOME/.dircolors" ] ; then
+        eval $(dircolors -b $HOME/.dircolors)
+fi
+
+alias ls='ls --color=auto'
+alias grep='grep --color=auto'
+EOF
+
+    cat > /etc/profile.d/extrapaths.sh << "EOF"
+if [ -d /usr/local/lib/pkgconfig ] ; then
+        pathappend /usr/local/lib/pkgconfig PKG_CONFIG_PATH
+fi
+if [ -d /usr/local/bin ]; then
+        pathprepend /usr/local/bin
+fi
+if [ -d /usr/local/sbin -a $EUID -eq 0 ]; then
+        pathprepend /usr/local/sbin
+fi
+
+# Set some defaults before other applications add to these paths.
+pathappend /usr/share/man  MANPATH
+pathappend /usr/share/info INFOPATH
+EOF
+
+    cat > /etc/profile.d/readline.sh << "EOF"
+# Setup the INPUTRC environment variable.
+if [ -z "$INPUTRC" -a ! -f "$HOME/.inputrc" ] ; then
+        INPUTRC=/etc/inputrc
+fi
+export INPUTRC
+EOF
+
+    cat > /etc/profile.d/umask.sh << "EOF"
+# By default, the umask should be set.
+if [ "$(id -gn)" = "$(id -un)" -a $EUID -gt 99 ] ; then
+  umask 002
+else
+  umask 022
+fi
+EOF
+
+    cat > /etc/bashrc << "EOF"
+# Begin /etc/bashrc
+# System wide aliases and functions.
+
+# System wide environment variables and startup programs should go into
+# /etc/profile.  Personal environment variables and startup programs
+# should go into ~/.bash_profile.  Personal aliases and functions should
+# go into ~/.bashrc
+
+# Provides colored /bin/ls and /bin/grep commands.  Used in conjunction
+# with code in /etc/profile.
+
+alias ls='ls --color=auto'
+alias grep='grep --color=auto'
+
+# Provides prompt for non-login shells, specifically shells started
+# in the X environment. [Review the LFS archive thread titled
+# PS1 Environment Variable for a great case study behind this script
+# addendum.]
+
+NORMAL="\[\e[0m\]"
+RED="\[\e[1;31m\]"
+GREEN="\[\e[1;32m\]"
+if [[ $EUID == 0 ]] ; then
+  PS1="$RED\u [$NORMAL\w$RED]# $NORMAL"
+else
+  PS1="$GREEN\u [$NORMAL\w$GREEN]\$ $NORMAL"
+fi
+
+unset RED GREEN NORMAL
+
+# End /etc/bashrc
+EOF
+
+    cat > ~/.bash_profile << "EOF"
+# Begin ~/.bash_profile
+# Personal environment variables and startup programs.
+
+# Personal aliases and functions should go in ~/.bashrc.  System wide
+# environment variables and startup programs are in /etc/profile.
+# System wide aliases and functions are in /etc/bashrc.
+
+if [ -f "$HOME/.bashrc" ] ; then
+  source $HOME/.bashrc
+fi
+
+if [ -d "$HOME/bin" ] ; then
+  pathprepend $HOME/bin
+fi
+
+# Having . in the PATH is dangerous
+#if [ $EUID -gt 99 ]; then
+#  pathappend .
+#fi
+
+# End ~/.bash_profile
+EOF
+
+    cat > ~/.bashrc << "EOF"
+# Begin ~/.bashrc
+# Personal aliases and functions.
+
+# Personal environment variables and startup programs should go in
+# ~/.bash_profile.  System wide environment variables and startup
+# programs are in /etc/profile.  System wide aliases and functions are
+# in /etc/bashrc.
+
+if [ -f "/etc/bashrc" ] ; then
+  source /etc/bashrc
+fi
+
+# End ~/.bashrc
+EOF
+
+    dircolors -p > /etc/dircolors
+}
+
 certificate-authority-certificates() {
-    # Create a script to reformat a certificate into a form needed by openssl
+    cd /src/pkg/standard
+    
     cat > /usr/bin/make-cert.pl << "EOF"
 #!/usr/bin/perl -w
 
@@ -148,8 +352,7 @@ while ( <IN> )
 EOF
 
     chmod +x /usr/bin/make-cert.pl
-
-    # Following script creates the certificates and a bundle of all the certificates
+    
     cat > /usr/bin/make-ca.sh << "EOF"
 #!/bin/sh
 # Begin make-ca.sh
@@ -250,7 +453,6 @@ EOF
 
     chmod +x /usr/bin/make-ca.sh
     
-    # Add a short script to remove expired certificates from a directory
     cat > /usr/sbin/remove-expired-certs.sh << "EOF"
 #!/bin/sh
 # Begin /usr/sbin/remove-expired-certs.sh
@@ -309,11 +511,7 @@ EOF
 
     chmod u+x /usr/sbin/remove-expired-certs.sh
     
-    # Fetch the certificates and convert them to the correct format
-    cp -v /src/pkg/standard/certdata.txt /
-    
     make-ca.sh
-    
     SSLDIR=/etc/ssl                                              &&
     remove-expired-certs.sh certs                                &&
     install -d ${SSLDIR}/certs                                   &&
@@ -322,664 +520,288 @@ EOF
     install BLFS-ca-bundle*.crt ${SSLDIR}/ca-bundle.crt          &&
     ln -sfv ../ca-bundle.crt ${SSLDIR}/certs/ca-certificates.crt &&
     unset SSLDIR
-    
     rm -r certs BLFS-ca-bundle*
 }
 
-# Intel Microcode for the CPU
-BUILD microcode STD
-
-# Bash Shell startup files
-cat > /etc/profile << "EOF"
-# Begin /etc/profile
-# System wide environment variables and startup programs.
-
-# System wide aliases and functions should go in /etc/bashrc.  Personal
-# environment variables and startup programs should go into
-# ~/.bash_profile.  Personal aliases and functions should go into
-# ~/.bashrc.
-
-# Functions to help us manage paths.  Second argument is the name of the
-# path variable to be modified (default: PATH)
-pathremove () {
-        local IFS=':'
-        local NEWPATH
-        local DIR
-        local PATHVARIABLE=${2:-PATH}
-        for DIR in ${!PATHVARIABLE} ; do
-                if [ "$DIR" != "$1" ] ; then
-                  NEWPATH=${NEWPATH:+$NEWPATH:}$DIR
-                fi
-        done
-        export $PATHVARIABLE="$NEWPATH"
+buildXorgReqLibs() {
+    BUILD libffi STD
+    BUILD python2 STD
+    BUILD pcre STD
+    BUILD glib STD
+    BUILD harfbuzz STD
+    BUILD freetype STD
+    BUILD fontconfig STD
+    BUILD util-macros STD
+    BUILD libdrm STD
+    BUILD elfutils STD
+    BUILD libvdpau STD
+    BUILD llvm STD
+    BUILD libpng STD
+    BUILD pixman STD
+    BUILD libgpg-error STD
+    BUILD libgcrypt STD
+    BUILD libepoxy STD
+    
+    cleanupBuild
 }
 
-pathprepend () {
-        pathremove $1 $2
-        local PATHVARIABLE=${2:-PATH}
-        export $PATHVARIABLE="$1${!PATHVARIABLE:+:${!PATHVARIABLE}}"
+buildXorgProtocolHeaders(){
+    BUILD bigreqsproto STD
+    BUILD compositeproto STD
+    BUILD damageproto STD
+    BUILD dmxproto STD
+    BUILD dri2proto STD
+    BUILD dri3proto STD
+    BUILD fixesproto STD
+    BUILD fontsproto STD
+    BUILD glproto STD
+    BUILD inputproto STD
+    BUILD kbproto STD
+    BUILD presentproto STD
+    BUILD randrproto STD
+    BUILD recordproto STD
+    BUILD renderproto STD
+    BUILD resourceproto STD
+    BUILD scrnsaverproto STD
+    BUILD videoproto STD
+    BUILD xcmiscproto STD
+    BUILD xextproto STD
+    BUILD xf86bigfontproto STD
+    BUILD xf86dgaproto STD
+    BUILD xf86driproto STD
+    BUILD xf86vidmodeproto STD
+    BUILD xineramaproto STD
+    BUILD xproto STD
+    
+    cleanupBuild
 }
 
-pathappend () {
-        pathremove $1 $2
-        local PATHVARIABLE=${2:-PATH}
-        export $PATHVARIABLE="${!PATHVARIABLE:+${!PATHVARIABLE}:}$1"
+buildXorgLibraries(){
+    BUILD libxcb STD
+    BUILD xtrans STD
+    BUILD libX11 STD
+    BUILD libXext STD
+    BUILD libFS STD
+    BUILD libICE STD
+    BUILD libSM STD
+    BUILD libXScrnSaver STD
+    BUILD libXt STD
+    BUILD libXmu STD
+    BUILD libXpm STD
+    BUILD libXaw STD
+    BUILD libXfixes STD
+    BUILD libXcomposite STD
+    BUILD libXrender STD
+    BUILD libXcursor STD
+    BUILD libXdamage STD
+    BUILD libfontenc STD
+    BUILD libXfont STD
+    BUILD libXft STD
+    BUILD libXi STD
+    BUILD libXinerama STD
+    BUILD libXrandr STD
+    BUILD libXres STD
+    BUILD libXtst STD
+    BUILD libXv STD
+    BUILD libXvMC STD
+    BUILD libXxf86dga STD
+    BUILD libXxf86vm STD
+    BUILD libdmx STD
+    BUILD libpciaccess STD
+    BUILD libxkbfile STD
+    BUILD libxshmfence STD
+    
+    cleanupBuild
 }
 
-export -f pathremove pathprepend pathappend
+buildXorgApplications() {
+    BUILD bdftopcf STD
+    BUILD iceauth STD
+    BUILD luit STD
+    BUILD mkfontdir STD
+    BUILD mkfontscale STD
+    BUILD sessreg STD
+    BUILD setxkbmap STD
+    BUILD smproxy STD
+    BUILD x11perf STD
+    BUILD xauth STD
+    BUILD xbacklight STD
+    BUILD xcmsdb STD
+    BUILD xcursorgen STD
+    BUILD xdpyinfo STD
+    BUILD xdriinfo STD
+    BUILD xev STD
+    BUILD xgamma STD
+    BUILD xhost STD
+    BUILD xinput STD
+    BUILD xkbcomp STD
+    BUILD xkbevd STD
+    BUILD xkbutils STD
+    BUILD xkill STD
+    BUILD xlsatoms STD
+    BUILD xlsclients STD
+    BUILD xmessage STD
+    BUILD xmodmap STD
+    BUILD xpr STD
+    BUILD xprop STD
+    BUILD xrandr STD
+    BUILD xrdb STD
+    BUILD xrefresh STD
+    BUILD xset STD
+    BUILD xsetroot STD
+    BUILD xvinfo STD
+    BUILD xwd STD
+    BUILD xwininfo STD
+    BUILD xwud STD
+    
+    cleanupBuild
+}
 
-# Set the initial path
-export PATH=/bin:/usr/bin
+buildXorgFonts() {
+    BUILD xcursor-themes STD
+    BUILD font-util STD
+    BUILD encodings STD
+    BUILD font-adobe-100dpi STD
+    BUILD font-adobe-75dpi STD
+    BUILD font-adobe-utopia-100dpi STD
+    BUILD font-adobe-utopia-75dpi STD
+    BUILD font-adobe-utopia-type1 STD
+    BUILD font-alias STD
+    BUILD font-arabic-misc STD
+    BUILD font-bh-100dpi STD
+    BUILD font-bh-75dpi STD
+    BUILD font-bh-lucidatypewriter-100dpi STD
+    BUILD font-bh-lucidatypewriter-75dpi STD
+    BUILD font-bh-ttf STD
+    BUILD font-bh-type1 STD
+    BUILD font-bitstream-100dpi STD
+    BUILD font-bitstream-75dpi STD
+    BUILD font-bitstream-type1 STD
+    BUILD font-cronyx-cyrillic STD
+    BUILD font-cursor-misc STD
+    BUILD font-daewoo-misc STD
+    BUILD font-dec-misc STD
+    BUILD font-ibm-type1 STD
+    BUILD font-isas-misc STD
+    BUILD font-jis-misc STD
+    BUILD font-micro-misc STD
+    BUILD font-misc-cyrillic STD
+    BUILD font-misc-ethiopic STD
+    BUILD font-misc-meltho STD
+    BUILD font-misc-misc STD
+    BUILD font-mutt-misc STD
+    BUILD font-schumacher-misc STD
+    BUILD font-screen-cyrillic STD
+    BUILD font-sony-misc STD
+    BUILD font-sun-misc STD
+    BUILD font-winitzki-cyrillic STD
+    BUILD font-xfree86-type1 STD
+    
+    cleanupBuild
+}
 
-if [ $EUID -eq 0 ] ; then
-        pathappend /sbin:/usr/sbin
-        unset HISTFILE
-fi
-
-# Setup some environment variables.
-export HISTSIZE=1000
-export HISTIGNORE="&:[bf]g:exit"
-
-# Set some defaults for graphical systems
-export XDG_DATA_DIRS=/usr/share/
-export XDG_CONFIG_DIRS=/etc/xdg/
-
-# Setup a red prompt for root and a green one for users.
-NORMAL="\[\e[0m\]"
-RED="\[\e[1;31m\]"
-GREEN="\[\e[1;32m\]"
-if [[ $EUID == 0 ]] ; then
-  PS1="$RED\u [$NORMAL\w$RED]# $NORMAL"
-else
-  PS1="$GREEN\u [$NORMAL\w$GREEN]\$ $NORMAL"
-fi
-
-for script in /etc/profile.d/*.sh ; do
-        if [ -r $script ] ; then
-                . $script
-        fi
-done
-
-unset script RED GREEN NORMAL
-
-# End /etc/profile
-EOF
-
-# Create the /etc/profile.d directory, where the individual
-# initialization scripts are placed
-install --directory --mode=0755 --owner=root --group=root /etc/profile.d
-
-# The following script uses the ~/.dircolors and /etc/dircolors
-# files to control the colors of file names in a directory listing.
-# They control colorized output of things like ls --color
-cat > /etc/profile.d/dircolors.sh << "EOF"
-# Setup for /bin/ls and /bin/grep to support color, the alias is in /etc/bashrc.
-if [ -f "/etc/dircolors" ] ; then
-        eval $(dircolors -b /etc/dircolors)
-fi
-
-if [ -f "$HOME/.dircolors" ] ; then
-        eval $(dircolors -b $HOME/.dircolors)
-fi
-
-alias ls='ls --color=auto'
-alias grep='grep --color=auto'
-EOF
-
-# The following script adds some useful paths to the PATH and can be
-# used to customize other PATH related environment variables
-# (e.g. LD_LIBRARY_PATH, etc) that may be needed for all users.
-cat > /etc/profile.d/extrapaths.sh << "EOF"
-if [ -d /usr/local/lib/pkgconfig ] ; then
-        pathappend /usr/local/lib/pkgconfig PKG_CONFIG_PATH
-fi
-if [ -d /usr/local/bin ]; then
-        pathprepend /usr/local/bin
-fi
-if [ -d /usr/local/sbin -a $EUID -eq 0 ]; then
-        pathprepend /usr/local/sbin
-fi
-
-# Set some defaults before other applications add to these paths.
-pathappend /usr/share/man  MANPATH
-pathappend /usr/share/info INFOPATH
-EOF
-
-# The following script sets up the default inputrc configuration file.
-# If the user does not have individual settings, it uses the global file.
-cat > /etc/profile.d/readline.sh << "EOF"
-# Setup the INPUTRC environment variable.
-if [ -z "$INPUTRC" -a ! -f "$HOME/.inputrc" ] ; then
-        INPUTRC=/etc/inputrc
-fi
-export INPUTRC
-EOF
-
-# Setting the umask value is important for security. Here the default
-# group write permissions are turned off for system users and when the
-# user name and group name are not the same.
-cat > /etc/profile.d/umask.sh << "EOF"
-# By default, the umask should be set.
-if [ "$(id -gn)" = "$(id -un)" -a $EUID -gt 99 ] ; then
-  umask 002
-else
-  umask 022
-fi
-EOF
-
-# Base /etc/bashrc
-cat > /etc/bashrc << "EOF"
-# Begin /etc/bashrc
-# System wide aliases and functions.
-
-# System wide environment variables and startup programs should go into
-# /etc/profile.  Personal environment variables and startup programs
-# should go into ~/.bash_profile.  Personal aliases and functions should
-# go into ~/.bashrc
-
-# Provides colored /bin/ls and /bin/grep commands.  Used in conjunction
-# with code in /etc/profile.
-
-alias ls='ls --color=auto'
-alias grep='grep --color=auto'
-
-# Provides prompt for non-login shells, specifically shells started
-# in the X environment.
-
-NORMAL="\[\e[0m\]"
-RED="\[\e[1;31m\]"
-GREEN="\[\e[1;32m\]"
-if [[ $EUID == 0 ]] ; then
-  PS1="$RED\u [$NORMAL\w$RED]# $NORMAL"
-else
-  PS1="$GREEN\u [$NORMAL\w$GREEN]\$ $NORMAL"
-fi
-
-unset RED GREEN NORMAL
-
-# End /etc/bashrc
-EOF
-
-# Base ~/.bash_profile
-cat > ~/.bash_profile << "EOF"
-# Begin ~/.bash_profile
-# Personal environment variables and startup programs.
-
-# Personal aliases and functions should go in ~/.bashrc.  System wide
-# environment variables and startup programs are in /etc/profile.
-# System wide aliases and functions are in /etc/bashrc.
-
-if [ -f "$HOME/.bashrc" ] ; then
-  source $HOME/.bashrc
-fi
-
-if [ -d "$HOME/bin" ] ; then
-  pathprepend $HOME/bin
-fi
-
-# End ~/.bash_profile
-EOF
-
-# Base ~/.bashrc
-cat > ~/.bashrc << "EOF"
-# Begin ~/.bashrc
-# Personal aliases and functions.
-
-# Personal environment variables and startup programs should go in
-# ~/.bash_profile.  System wide environment variables and startup
-# programs are in /etc/profile.  System wide aliases and functions are
-# in /etc/bashrc.
-
-if [ -f "/etc/bashrc" ] ; then
-  source /etc/bashrc
-fi
-
-# End ~/.bashrc
-EOF
-
-# Base ~/.bash_logout
-cat > ~/.bash_logout << "EOF"
-# Begin ~/.bash_logout
-# Personal items to perform on logout.
-
-# End ~/.bash_logout
-EOF
-
-# Use the dircolors capability
-dircolors -p > /etc/dircolors
-
-# Base /etc/issue
-cat > /etc/issue << "EOF"
-__________                    .___        .____    .__                     
-\______   \_____    ____    __| _/____    |    |   |__| ____  __ _____  ___
- |     ___/\__  \  /    \  / __ |\__  \   |    |   |  |/    \|  |  \  \/  /
- |    |     / __ \|   |  \/ /_/ | / __ \_ |    |___|  |   |  \  |  />    < 
- |____|    (______/___|  /\____ |(______/ |_______ \__|___|  /____//__/\__\
-EOF
-
-# Install Packages
-BUILD random-number-gen STD
-BUILD lsb-release STD
-BUILD cracklib STD
-BUILD haveged STD
-BUILD iptables STD
-BUILD linux-pam
-BUILD shadow BASIC
-BUILD libcap BASIC
-BUILD sudo STD
-BUILD nano STD
-BUILD boost STD
-BUILD keyutils STD
-BUILD libsigsegv STD
-BUILD libstatgrab STD
-BUILD libusb STD
-BUILD libusb-compat STD
-
-# Clean up files
-cleanupBuild
+buildXorgDrivers() {
+    BUILD libevdev STD
+    BUILD xorg-evdev-driver STD
+    BUILD xorg-synaptics-driver STD
+    BUILD xorg-ati-driver STD
+    BUILD xorg-fbdev-driver STD
+    BUILD xorg-intel-driver STD
+    BUILD xorg-nouveau-driver STD
+    BUILD libva STD
+    
+    cleanupBuild
+}
 
 
-######################################################################################################
-
-# Set the XORG_PREFIX variable
-export XORG_PREFIX="/usr"
-# Create the XORG_CONFIG variable to use for this parameter substitution
-export XORG_CONFIG="--prefix=$XORG_PREFIX --sysconfdir=/etc \
+buildXorg() {
+    export XORG_PREFIX="/usr"
+    export XORG_CONFIG="--prefix=$XORG_PREFIX --sysconfdir=/etc \
     --localstatedir=/var --disable-static"
-# Create an /etc/profile.d/xorg.sh configuration file containing these variables
-cat > /etc/profile.d/xorg.sh << "EOF"
-XORG_PREFIX="<PREFIX>"
+
+    cat > /etc/profile.d/xorg.sh << "EOF"
+XORG_PREFIX="/usr"
 XORG_CONFIG="--prefix=$XORG_PREFIX --sysconfdir=/etc --localstatedir=/var --disable-static"
 export XORG_PREFIX XORG_CONFIG
 EOF
 chmod 644 /etc/profile.d/xorg.sh
 
-BUILD util-macros STD
-# Xorg Protocol Headers
-BUILD bigreqsproto STD
-BUILD compositeproto STD
-BUILD damageproto STD
-BUILD dmxproto STD
-BUILD dri2proto STD
-BUILD dri3proto STD
-BUILD fixesproto STD
-BUILD fontsproto STD
-BUILD glproto STD
-BUILD inputproto STD
-BUILD kbproto STD
-BUILD presentproto STD
-BUILD randrproto STD
-BUILD recordproto STD
-BUILD renderproto STD
-BUILD resourceproto STD
-BUILD scrnsaverproto STD
-BUILD videoproto STD
-BUILD xcmiscproto STD
-BUILD xextproto STD
-BUILD xf86bigfontproto STD
-BUILD xf86dgaproto STD
-BUILD xf86driproto STD
-BUILD xf86vidmodeproto STD
-BUILD xineramaproto STD
-BUILD xproto STD
+    buildXorgReqLibs
+    buildXorgProtocolHeaders
+    
+    BUILD libxau STD
+    BUILD libxdmcp STD
+    BUILD xcb-proto STD
+    
+    buildXorgLibraries
+    
+    ln -sv $XORG_PREFIX/lib/X11 /usr/lib/X11 &&
+    ln -sv $XORG_PREFIX/include/X11 /usr/include/X11
+    
+    BUILD xcb-util STD
+    BUILD xcb-util-image STD
+    BUILD xcb-util-keysyms STD
+    BUILD xcb-util-renderutil STD
+    BUILD xcb-util-wm STD
+    BUILD mesalib STD
+    BUILD xbitmaps STD
+    
+    buildXorgApplications
+    
+    rm -f $XORG_PREFIX/bin/xkeystone
+    
+    buildXorgFonts
+    
+    install -v -d -m755 /usr/share/fonts                               &&
+    ln -svfn $XORG_PREFIX/share/fonts/X11/OTF /usr/share/fonts/X11-OTF &&
+    ln -svfn $XORG_PREFIX/share/fonts/X11/TTF /usr/share/fonts/X11-TTF
+    
+    BUILD xkeyboardConfig STD
+    BUILD xorgServer STD
+    
+    buildXorgDrivers
+   
+    BUILD twm STD
+    BUILD xterm STD
+    BUILD xclock STD
+    BUILD xinit STD
+    
+    cleanupBuild
+}
 
-# Clean up files
-cleanupBuild
+buildQt5() {
+    BUILD dbus STD
+    BUILD gobject-introspection STD
+    BUILD gstreamer STD
+    BUILD gst-plugins-base STD
+    BUILD sqlite STD
+    BUILD ruby STD
+    BUILD qt STD
+    
+    cleanupBuild
+}
 
-BUILD libxau STD
-BUILD libxdmcp STD
-BUILD python2 STD
-BUILD xcb-proto STD
-BUILD libxcb STD
-BUILD freetype STD
-BUILD fontconfig STD
-BUILD xtrans STD
-BUILD libX11 STD
-BUILD libXext STD
-BUILD libFS STD
-BUILD libICE STD
-BUILD libSM STD
-BUILD libXScrnSaver STD
-BUILD libXt STD
-BUILD libXmu STD
-BUILD libXpm STD
-BUILD libXaw STD
-BUILD libXfixes STD
-BUILD libXcomposite STD
-BUILD libXrender STD
-BUILD libXdamage STD
-BUILD libfontenc STD
-BUILD libXft STD
-BUILD libXi STD
-BUILD libXinerama STD
-BUILD libXrandr STD
-BUILD libXres STD
-BUILD libXtst STD
-BUILD libXv STD
-BUILD libXvMC STD
-BUILD libXxf86dga STD
-BUILD libXxf86vm STD
-BUILD libdmx STD
-BUILD libpciaccess STD
-BUILD libxkbfile STD
-BUILD libxshmfence STD
-BUILD xcb-util STD
-BUILD xcb-util-image STD
-BUILD xcb-util-keysyms STD
-BUILD xcb-util-renderutil STD
-BUILD xcb-util-wm STD
-BUILD libdrm STD
-BUILD libffi STD
-BUILD llvm STD
-BUILD elfutils STD
-BUILD libvdpau STD
-BUILD mesalib STD
-BUILD xbitmaps STD
-BUILD libpng STD
-BUILD bdftopcf STD
-BUILD iceauth STD
-BUILD luit STD
-BUILD mkfontdir STD
-BUILD mkfontscale STD
-BUILD sessreg STD
-BUILD setxkbmap STD
-BUILD smproxy STD
-BUILD x11perf STD
-BUILD xauth STD
-BUILD xbacklight STD
-BUILD xcmsdb STD
-BUILD xcursorgen STD
-BUILD xdpyinfo STD
-BUILD xdriinfo STD
-BUILD xev STD
-BUILD xgamma STD
-BUILD xhost STD
-BUILD xinput STD
-BUILD xkbcomp STD
-BUILD xkbevd STD
-BUILD xkbutils STD
-BUILD xkill STD
-BUILD xlsatoms STD
-BUILD xlsclients STD
-BUILD xmessage STD
-BUILD xmodmap STD
-BUILD xpr STD
-BUILD xprop STD
-BUILD xrandr STD
-BUILD xrdb STD
-BUILD xrefresh STD
-BUILD xset STD
-BUILD xsetroot STD
-BUILD xvinfo STD
-BUILD xwd STD
-BUILD xwininfo STD
-BUILD xwud STD
+buildKde4() {
+    BUILD openssl STD
+    certificate-authority-certificates
+    BUILD curl STD
+    BUILD libarchive STD
+    BUILD cmake STD
+    BUILD sddm STD
+    
+    cleanupBuild
+}
 
-# Clean up files
-cleanupBuild
+export MAKEFLAGS="-j $(cat /proc/cpuinfo | grep processor | wc -l)"
 
-# Remove an undocumented script which is reported to
-# be broken (xkeystone provided by the xrandr package).
-rm -f $XORG_PREFIX/bin/xkeystone
+#BUILD random-number-gen STD
+#BUILD lsb-release STD
+#BUILD iptables STD
+#BUILD shadow STD
+#BUILD sudo STD
+#BUILD nano STD
+#buildXorg
+buildQt5
+#buildKde4
 
-BUILD xcursor-themes STD
-
-# Xorg Fonts
-BUILD font-util STD
-BUILD encodings STD
-BUILD font-adobe-100dpi STD
-BUILD font-adobe-75dpi STD
-BUILD font-adobe-utopia-100dpi STD
-BUILD font-adobe-utopia-75dpi STD
-BUILD font-adobe-utopia-type1 STD
-BUILD font-alias STD
-BUILD font-arabic-misc STD
-BUILD font-bh-100dpi STD
-BUILD font-bh-75dpi STD
-BUILD font-bh-lucidatypewriter-100dpi STD
-BUILD font-bh-lucidatypewriter-75dpi STD
-BUILD font-bh-type1 STD
-BUILD font-bitstream-100dpi STD
-BUILD font-bitstream-75dpi STD
-BUILD font-bitstream-type1 STD
-BUILD font-cronyx-cyrillic STD
-BUILD font-cursor-misc STD
-BUILD font-daewoo-misc STD
-BUILD font-dec-misc STD
-BUILD font-ibm-type1 STD
-BUILD font-isas-misc STD
-BUILD font-jis-misc STD
-BUILD font-micro-misc STD
-BUILD font-misc-cyrillic STD
-BUILD font-misc-ethiopic STD
-BUILD font-misc-meltho STD
-BUILD font-misc-misc STD
-BUILD font-mutt-misc STD
-BUILD font-schumacher-misc STD
-BUILD font-screen-cyrillic STD
-BUILD font-sony-misc STD
-BUILD font-sun-misc STD
-BUILD font-winitzki-cyrillic STD
-BUILD font-xfree86-type1 STD
-
-# Clean up files
-cleanupBuild
-
-# The system must be configured so that Fontconfig can find the
-# TrueType fonts since they are outside of the default search
-# path of /usr/share/fonts. Make symlinks to the Xorg TrueType
-# font directories
-install -v -d -m755 /usr/share/fonts                               &&
-ln -svfn $XORG_PREFIX/share/fonts/X11/OTF /usr/share/fonts/X11-OTF &&
-ln -svfn $XORG_PREFIX/share/fonts/X11/TTF /usr/share/fonts/X11-TTF
-
-BUILD xkeyboardConfig STD
-BUILD openssl STD
-BUILD pixman STD
-BUILD libepoxy STD
-BUILD xorgServer STD
-
-# Install Xorg Drivers
-BUILD libevdev STD
-BUILD xorg-evdev-driver STD
-BUILD xorg-synaptics-driver STD
-BUILD xorg-ati-driver STD
-BUILD xorg-fbdev-driver STD
-BUILD xorg-intel-driver STD
-BUILD xorg-nouveau-driver STD
-BUILD libva STD
-BUILD libva-intel-driver STD
-
-# Clean up files
-cleanupBuild
-
-# Minimal Window Manager
-#BUILD twm STD
-#BUILD xterm STD
-#BUILD xclock STD
-#BUILD xinit STD
-
-# Display Manager
-BUILD sqlite STD
-BUILD qt STD
-BUILD curl STD
-BUILD libarchive STD
-BUILD cmake STD
-BUILD sddm STD
-#BUILD fluxbox STD
-
-# Clean up files
-cleanupBuild
-
-# KDE 5 - Part I
-#########################################################
-BUILD pcre STD
-BUILD glib STD
-BUILD desktop-file-utils STD
-BUILD phonon STD
-BUILD libxml2 STD
-BUILD gobject-introspection STD
-BUILD gstreamer STD
-BUILD gst-plugins-base STD
-BUILD gst-plugins-good STD
-BUILD phonon-backend-gstreamer STD
-BUILD nspr STD
-BUILD zip STD
-BUILD js STD
-BUILD polkit STD
-BUILD polkit-qt STD
-BUILD libdbusmenu-qt STD
-BUILD extra-cmake-modules STD
-########################################################
-# KDE 5 - Part II
-# Add the following variables to the system profiles
-cat >> /etc/profile.d/qt5.sh << "EOF"
-# Begin kf5 extention for /etc/profile.d/qt5.sh
-
-pathappend /usr/lib/qt5/plugins    QT_PLUGIN_PATH
-pathappend /usr/lib/qt5/qml        QML_IMPORT_PATH
-pathappend /usr/lib/qt5/qml        QML2_IMPORT_PATH
-
-# End extention for /etc/profile.d/qt5.sh
-EOF
-
-cat > /etc/profile.d/kf5.sh << "EOF"
-# Begin /etc/profile.d/kf5.sh
-
-export KF5_PREFIX=/usr
-
-# End /etc/profile.d/kf5.sh
-EOF
-########################################################
-
-# Clean up files
-cleanupBuild
-
-# KDE 5 - Part III
-BUILD sgml-common STD
-BUILD unzip STD
-BUILD docbook-xml STD
-BUILD docbook-xsl STD
-BUILD giflib STD
-BUILD libgpg-error STD
-BUILD libgcrypt STD
-BUILD nasm STD
-BUILD libjpeg-turbo STD
-BUILD libpng STD
-BUILD libxslt STD
-BUILD shared-mime-info STD
-BUILD uri STD
-BUILD nettle STD
-BUILD libtasn STD
-BUILD unbound STD
-certificate-authority-certificates
-BUILD p11-kit STD
-BUILD gnu-tls STD
-BUILD wget STD
-BUILD which STD
-BUILD aspell STD
-BUILD dbus STD
-BUILD at-spi2-core STD
-BUILD atk STD
-BUILD at-spi2-atk STD
-BUILD cairo STD
-BUILD cairomm STD
-BUILD libtiff STD
-BUILD harfbuzz STD
-BUILD freetype STD
-BUILD fontconfig STD
-BUILD pango STD
-BUILD gdk-pixbuf STD
-BUILD gtk3 STD
-BUILD gtk2 STD
-BUILD libdaemon STD
-BUILD avahi STD
-BUILD libical STD
-BUILD bluez STD
-BUILD nss STD
-BUILD libnl STD
-BUILD libndp STD
-BUILD libgudev STD
-BUILD dbus-glib STD
-BUILD s-lang STD
-BUILD gpm STD
-BUILD popt STD
-BUILD libnewt STD
-BUILD network-manager STD
-BUILD attica STD
-BUILD kapidox STD
-BUILD karchive STD
-BUILD kcodecs STD
-BUILD kconfig STD
-BUILD kcoreaddons STD
-BUILD kdbusaddons STD
-BUILD kdnssd STD
-BUILD kguiaddons STD
-BUILD ki18n STD
-BUILD kidletime STD
-BUILD kimageformats STD
-BUILD kitemmodels STD
-BUILD kitemviews STD
-BUILD kplotting STD
-BUILD kwidgetsaddons STD
-BUILD kwindowsystem STD
-BUILD networkmanager-qt STD
-BUILD solid STD
-BUILD sonnet STD
-BUILD threadweaver STD
-BUILD kauth STD
-BUILD kcompletion STD
-BUILD kcrash STD
-BUILD kdoctools STD
-BUILD kpty STD
-BUILD kunitconversion STD
-BUILD kconfigwidgets STD
-BUILD kglobalaccel STD
-BUILD kpackage STD
-BUILD kservice0 STD
-BUILD kservice1 STD
-BUILD kservice2 STD
-BUILD kservice3 STD
-BUILD kdesu STD
-BUILD kemoticons STD
-BUILD kiconthemes STD
-BUILD kjobwidgets STD
-BUILD knotifications STD
-BUILD ktextwidgets STD
-BUILD kwallet STD
-BUILD kxmlgui STD
-BUILD kbookmarks STD
-BUILD kio STD
-BUILD kdeclarative
-BUILD kcmutils STD
-BUILD frameworkintegration STD
-BUILD kinit STD
-BUILD knewstuff STD
-BUILD knotifyconfig STD
-BUILD kparts STD
-BUILD kactivities STD
-BUILD kded STD
-BUILD kdewebkit STD
-BUILD ktexteditor STD
-BUILD kdesignerplugin STD
-BUILD plasma-framework STD
-#BUILD modemmanager-qt STD
-BUILD kpeople STD
-BUILD kxmlrpcclient STD
-BUILD bluez-qt STD
-BUILD kfilemetadata STD
-#BUILD baloo STD
-BUILD kjs STD
-BUILD kdelibs4support STD
-BUILD khtml STD
-BUILD kjsembed STD
-BUILD kmediaplayer STD
-BUILD kross STD
-BUILD krunner STD
-
-mv -v /opt/kf5 /opt/kf5-5.14.0
-ln -sfvn kf5-5.14.0 /opt/kf5
-
-reconfigureKernel
-# Clean up files
 cleanupBuild

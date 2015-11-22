@@ -12,5 +12,5 @@ cd /src/pkg/standard/${FOLDERNAME}
 
 # Install GStreamer
 ./configure --prefix=/usr &&
-make
-make install
+make $MAKEFLAGS
+make $MAKEFLAGS install
