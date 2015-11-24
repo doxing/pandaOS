@@ -528,6 +528,7 @@ buildXorgReqLibs() {
     BUILD python2 STD
     BUILD pcre STD
     BUILD glib STD
+    BUILD freetype-without-harfbuzz STD
     BUILD harfbuzz STD
     BUILD freetype STD
     BUILD fontconfig STD
@@ -540,7 +541,6 @@ buildXorgReqLibs() {
     BUILD pixman STD
     BUILD libgpg-error STD
     BUILD libgcrypt STD
-    BUILD libepoxy STD
     
     cleanupBuild
 }
@@ -744,11 +744,12 @@ chmod 644 /etc/profile.d/xorg.sh
     BUILD xcb-util-renderutil STD
     BUILD xcb-util-wm STD
     BUILD mesalib STD
+    BUILD libepoxy STD
     BUILD xbitmaps STD
     
     buildXorgApplications
     
-    rm -f $XORG_PREFIX/bin/xkeystone
+    rm -fv $XORG_PREFIX/bin/xkeystone
     
     buildXorgFonts
     
@@ -769,39 +770,51 @@ chmod 644 /etc/profile.d/xorg.sh
     cleanupBuild
 }
 
-buildQt5() {
+buildQt() {
     BUILD dbus STD
     BUILD gobject-introspection STD
     BUILD gstreamer STD
     BUILD gst-plugins-base STD
+    BUILD gst-plugins-good STD
     BUILD sqlite STD
     BUILD ruby STD
+    BUILD openssl STD
+    BUILD libtiff STD
+    BUILD little-cms STD
+    BUILD libmng STD
+    BUILD yasm STD
+    BUILD libjpeg-turbo STD
     BUILD qt STD
     
     cleanupBuild
 }
 
 buildKde4() {
-    BUILD openssl STD
+    buildQt
     certificate-authority-certificates
     BUILD curl STD
     BUILD libarchive STD
     BUILD cmake STD
-    BUILD sddm STD
+    BUILD nspr STD
+    BUILD zip STD
+    BUILD js STD
+    BUILD polkit STD
+    BUILD polkit-qt STD
+    BUILD libdbusmenu-qt STD
     
     cleanupBuild
 }
 
 export MAKEFLAGS="-j $(cat /proc/cpuinfo | grep processor | wc -l)"
 
-#BUILD random-number-gen STD
-#BUILD lsb-release STD
-#BUILD iptables STD
-#BUILD shadow STD
-#BUILD sudo STD
-#BUILD nano STD
-#buildXorg
-buildQt5
-#buildKde4
+setupBashStartup
+BUILD random-number-gen STD
+BUILD lsb-release STD
+BUILD iptables STD
+BUILD shadow STD
+BUILD sudo STD
+BUILD nano STD
+buildXorg
+buildKde4
 
 cleanupBuild
