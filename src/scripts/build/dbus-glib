@@ -12,5 +12,5 @@ cd /src/pkg/standard/${FOLDERNAME}
 ./configure --prefix=/usr     \
             --sysconfdir=/etc \
             --disable-static &&
-make
-make install
+make $MAKEFLAGS
+make $MAKEFLAGS install

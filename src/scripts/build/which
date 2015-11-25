@@ -10,5 +10,5 @@ cd /src/pkg/standard/${FOLDERNAME}
 
 # Install which
 ./configure --prefix=/usr &&
-make
-make install
+make $MAKEFLAGS
+make $MAKEFLAGS install

@@ -84,7 +84,7 @@ PRETTY_NAME="Panda Linux v0.3"
 EOF
 
 # Create /etc/lfs-release for compatibility with non systemd branch
-echo 0.1a > /etc/panda-release
+echo 0.3a > /etc/panda-release
 
 # Create a file to show the status of your new system with respect
 # to the Linux Standards Base (LSB)

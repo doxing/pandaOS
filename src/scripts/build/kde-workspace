@@ -1,0 +1,29 @@
+#!/bin/bash
+
+FOLDERNAME="kde-workspace-4.11.21"
+FILENAME="kde-workspace-4.11.21.tar.xz"
+
+# The Kde-workspace package contains components that are central to providing the KDE desktop environment. Of particular importance are KWin, the KDE window manager, and Plasma, which provides the workspace interface.
+
+# Change directory
+cd /src/pkg/standard/${FOLDERNAME}
+
+# Install
+groupadd -g 37 kdm &&
+useradd -c "KDM Daemon Owner" -d /var/lib/kdm -g kdm \
+        -u 37 -s /bin/false kdm &&
+install -o kdm -g kdm -dm755 /var/lib/kdm
+
+mkdir build &&
+cd    build &&
+
+cmake -DCMAKE_INSTALL_PREFIX=$KDE_PREFIX           \
+      -DSYSCONF_INSTALL_DIR=/etc                   \
+      -DCMAKE_BUILD_TYPE=Release                   \
+      -DINSTALL_PYTHON_FILES_IN_PYTHON_PREFIX=TRUE \
+      -Wno-dev .. &&    
+make $MAKEFLAGS
+make $MAKEFLAGS install         &&
+mkdir -p /usr/share/xsessions   &&
+ln -sf $KDE_PREFIX/share/apps/kdm/sessions/kde-plasma.desktop \
+       /usr/share/xsessions/kde-plasma.desktop

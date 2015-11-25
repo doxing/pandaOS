@@ -10,7 +10,7 @@ cd /src/pkg/standard/${FOLDERNAME}
 
 # Install
 ./configure --prefix=/usr --with-x11 --without-libjpeg &&
-make
-make install
+make $MAKEFLAGS
+make $MAKEFLAGS install
 
 gdk-pixbuf-query-loaders --update-cache

@@ -1,0 +1,54 @@
+#!/bin/bash
+
+FOLDERNAME="openldap-2.4.42"
+FILENAME="openldap-2.4.42.tgz"
+
+# The OpenLDAP package provides an open source implementation of the Lightweight Directory Access Protocol.
+
+# Change directory
+cd /src/pkg/standard/${FOLDERNAME}
+
+# Install
+groupadd -g 83 ldap &&
+useradd  -c "OpenLDAP Daemon Owner" \
+         -d /var/lib/openldap -u 83 \
+         -g ldap -s /bin/false ldap
+         
+patch -Np1 -i ../openldap-2.4.42-consolidated-1.patch &&
+autoconf &&
+
+./configure --prefix=/usr         \
+            --sysconfdir=/etc     \
+            --localstatedir=/var  \
+            --libexecdir=/usr/lib \
+            --disable-static      \
+            --disable-debug       \
+            --with-tls=openssl    \
+            --with-cyrus-sasl     \
+            --enable-dynamic      \
+            --enable-crypt        \
+            --enable-spasswd      \
+            --enable-slapd        \
+            --enable-modules      \
+            --enable-backends=mod \
+            --disable-ndb         \
+            --disable-sql         \
+            --disable-shell       \
+            --disable-bdb         \
+            --disable-hdb         \
+            --enable-overlays=mod &&
+
+make depend &&
+make $MAKEFLAGS
+make $MAKEFLAGS install &&
+
+install -v -dm700 -o ldap -g ldap /var/lib/openldap     &&
+install -v -dm700 -o ldap -g ldap /etc/openldap/slapd.d &&
+chmod   -v    640     /etc/openldap/slapd.{conf,ldif}   &&
+chown   -v  root:ldap /etc/openldap/slapd.{conf,ldif}   &&
+
+install -v -dm755 /usr/share/doc/openldap-2.4.42 &&
+cp      -vfr      doc/{drafts,rfc,guide} \
+                  /usr/share/doc/openldap-2.4.42
+
+/sbin/ldconfig

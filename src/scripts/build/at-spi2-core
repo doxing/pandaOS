@@ -11,5 +11,5 @@ cd /src/pkg/standard/${FOLDERNAME}
 # Install at spi2 core
 ./configure --prefix=/usr \
             --sysconfdir=/etc &&
-make
-make install
+make $MAKEFLAGS
+make $MAKEFLAGS install

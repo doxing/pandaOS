@@ -30,5 +30,5 @@ cd /src/pkg/standard
 tar xf aspell6-en-2015.04.24-0.tar.bz2
 cd aspell6-en-2015.04.24-0
 ./configure &&
-make
-make install
+make $MAKEFLAGS
+make $MAKEFLAGS install

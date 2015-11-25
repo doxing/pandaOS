@@ -1,0 +1,19 @@
+#!/bin/bash
+
+FOLDERNAME="polkit-kde-agent-1-0.99.0"
+FILENAME="polkit-kde-agent-1-0.99.0.tar.bz2"
+
+# Polkit-kde-agent provides a graphical authentication prompt so non-priviledged users can authenticate themselves for performing administrative tasks in KDE.
+
+# Change directory
+cd /src/pkg/standard/${FOLDERNAME}
+
+# Install
+patch -Np1 -i ../polkit-kde-agent-1-0.99.0-remember_password-1.patch &&
+
+mkdir build &&
+cd    build &&
+
+cmake -DCMAKE_INSTALL_PREFIX=$KDE_PREFIX -Wno-dev .. &&
+make $MAKEFLAGS
+make $MAKEFLAGS install

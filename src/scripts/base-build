@@ -43,6 +43,7 @@ basebuild3() {
     BUILD texinfo BASIC
     BUILD util-linux BASIC
     BUILD xz BASIC
+    BUILD check BASIC
     
     # Clean up extracted pakages
     cleanupBuild

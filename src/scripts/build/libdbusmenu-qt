@@ -15,7 +15,8 @@ cd    build &&
 
 cmake -DCMAKE_INSTALL_PREFIX=/usr \
       -DCMAKE_BUILD_TYPE=Release  \
+      -DUSE_QT4=TRUE              \
       -DWITH_DOC=OFF              \
       -Wno-dev .. &&
-make
-make install
+make $MAKEFLAGS
+make $MAKEFLAGS install

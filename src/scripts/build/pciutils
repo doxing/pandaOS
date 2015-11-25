@@ -1,0 +1,20 @@
+#!/bin/bash
+
+FOLDERNAME="pciutils-3.4.0"
+FILENAME="pciutils-3.4.0.tar.xz"
+
+# The PCI Utils package contains a set of programs for listing PCI devices, inspecting their status and setting their configuration registers.
+
+# Change directory
+cd /src/pkg/standard/${FOLDERNAME}
+
+# Install
+make PREFIX=/usr              \
+     SHAREDIR=/usr/share/misc \
+     SHARED=yes
+make PREFIX=/usr              \
+     SHAREDIR=/usr/share/misc \
+     SHARED=yes               \
+     install install-lib      &&
+
+chmod -v 755 /usr/lib/libpci.so

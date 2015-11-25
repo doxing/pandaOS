@@ -23,8 +23,7 @@ cd    build
 
 cmake -DCMAKE_INSTALL_PREFIX=/usr \
       -DCMAKE_BUILD_TYPE=Release  \
-      -DENABLE_JOURNALD=OFF       \
-      -DDBUS_CONFIG_FILENAME=sddm_org.freedesktop.DisplayManager.conf \
+      -DENABLE_JOURNALD=ON        \
       -Wno-dev .. &&
 make $MAKEFLAGS
 make $MAKEFLAGS install &&
@@ -49,7 +48,7 @@ sed -e 's/\"none\"/\"off\"/' \
 cd ../
 tar xf blfs-bootscripts-20150924.tar.bz2
 cd blfs-bootscripts-20150924
-make install-sddm
+make $MAKEFLAGS install-sddm
 
 # Start sddm
 /etc/rc.d/init.d/sddm start

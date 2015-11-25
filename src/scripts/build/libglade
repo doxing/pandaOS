@@ -1,0 +1,15 @@
+#!/bin/bash
+
+FOLDERNAME="libglade-2.6.4"
+FILENAME="libglade-2.6.4.tar.bz2"
+
+# The libglade package contains libglade libraries. These are useful for loading Glade interface files in a program at runtime.
+
+# Change directory
+cd /src/pkg/standard/${FOLDERNAME}
+
+# Install
+sed -i '/DG_DISABLE_DEPRECATED/d' glade/Makefile.in &&
+./configure --prefix=/usr --disable-static &&
+make $MAKEFLAGS
+make $MAKEFLAGS install

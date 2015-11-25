@@ -18,8 +18,6 @@ useradd -c "D-Bus Message Daemon User" -d /var/run/dbus \
             --disable-doxygen-docs         \
             --disable-xml-docs             \
             --disable-static               \
-            --disable-systemd              \
-            --without-systemdsystemunitdir \
             --with-console-auth-dir=/run/console/ \
             --docdir=/usr/share/doc/dbus-1.10.0   &&
 make $MAKEFLAGS

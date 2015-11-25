@@ -1,0 +1,15 @@
+#!/bin/bash
+
+FOLDERNAME="xapian-core-1.2.21"
+FILENAME="xapian-core-1.2.21.tar.xz"
+
+# Xapian is an open source search engine library.
+
+# Change directory
+cd /src/pkg/standard/${FOLDERNAME}
+
+# Install
+./configure --prefix=/usr --disable-static             \
+            --docdir=/usr/share/doc/xapian-core-1.2.21 &&
+make $MAKEFLAGS
+make $MAKEFLAGS install

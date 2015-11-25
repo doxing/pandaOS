@@ -10,5 +10,5 @@ cd /src/pkg/standard/${FOLDERNAME}
 
 # Install
 ./configure --prefix=/usr --disable-static &&
-make
-make docdir=/usr/share/doc/libdaemon-0.14 install
+make $MAKEFLAGS
+make $MAKEFLAGS docdir=/usr/share/doc/libdaemon-0.14 install

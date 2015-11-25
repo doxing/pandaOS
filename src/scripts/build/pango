@@ -10,7 +10,7 @@ cd /src/pkg/standard/${FOLDERNAME}
 
 # Install at pango
 ./configure --prefix=/usr --sysconfdir=/etc &&
-make
-make install
+make $MAKEFLAGS
+make $MAKEFLAGS install
 
 pango-querymodules --update-cache

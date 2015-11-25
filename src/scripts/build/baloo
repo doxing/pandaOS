@@ -1,24 +1,19 @@
 #!/bin/bash
 
-FOLDERNAME="baloo-5.14.0"
-FILENAME="baloo-5.14.0.tar.xz"
+FOLDERNAME="baloo-4.14.3"
+FILENAME="baloo-4.14.3.tar.xz"
+
+# Baloo is a framework for searching and managing metadata.
 
 # Change directory
 cd /src/pkg/standard/${FOLDERNAME}
 
 # Install
-mkdir build
-cd    build
+mkdir build &&
+cd    build &&
 
-export XDG_DATA_DIRS=/opt/kf5/share
-
-cmake   -DCMAKE_INSTALL_PREFIX=/opt/kf5    \
-        -DCMAKE_PREFIX_PATH=/usr           \
-        -DCMAKE_BUILD_TYPE=Release         \
-        -DLIB_INSTALL_DIR=lib              \
-        -DBUILD_TESTING=OFF                \
-        -Wno-dev .. &&
-make
-make install
-
-/sbin/ldconfig
+cmake -DCMAKE_INSTALL_PREFIX=$KDE_PREFIX \
+      -DCMAKE_BUILD_TYPE=Release         \
+      -Wno-dev .. &&
+make $MAKEFLAGS
+make $MAKEFLAGS install

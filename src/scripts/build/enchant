@@ -1,0 +1,14 @@
+#!/bin/bash
+
+FOLDERNAME="enchant-1.6.0"
+FILENAME="enchant-1.6.0.tar.gz"
+
+# The enchant package provide a generic interface into various existing spell checking libraries.
+
+# Change directory
+cd /src/pkg/standard/${FOLDERNAME}
+
+# Install
+./configure --prefix=/usr --disable-static &&
+make $MAKEFLAGS
+make $MAKEFLAGS install

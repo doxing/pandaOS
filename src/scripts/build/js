@@ -18,8 +18,8 @@ sed -i 's/(defined\((@TEMPLATE_FILE)\))/\1/' config/milestone.pl &&
             --enable-threadsafe \
             --with-system-ffi   \
             --with-system-nspr &&
-make
-make install &&
+make $MAKEFLAGS
+make $MAKEFLAGS install &&
 
 find /usr/include/js-17.0/            \
      /usr/lib/libmozjs-17.0.a         \

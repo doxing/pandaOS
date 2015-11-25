@@ -76,10 +76,80 @@ reconfigureKernel() {
     make defconfig
     make
     make modules_install
-    cp -v arch/x86/boot/bzImage /boot/vmlinuz-0.2-panda-linux
+    # The path to the kernel image may vary depending on the platform being
+    # used. The filename below can be changed to suit your taste, but the
+    # stem of the filename should be vmlinuz to be compatible with the
+    # automatic setup of the boot process
+    cp -v arch/x86/boot/bzImage /boot/vmlinuz-0.3-panda-linux
+
+    # System.map is a symbol file for the kernel. It maps the function entry
+    # points of every function in the kernel API, as well as the addresses of
+    # the kernel data structures for the running kernel. It is used as a
+    # resource when investigating kernel problems. Issue the following command
+    # to install the map file
     cp -v System.map /boot/System.map-0.1
+
+    # Install the documentation for the Linux kernel
     install -d /usr/share/doc/linux-4.2
     cp -r Documentation/* /usr/share/doc/linux-4.2
+
+    #######################################
+    # Configuring Linux Module Load Order #
+    #######################################
+
+    # Create a new file /etc/modprobe.d/usb.conf
+    install -v -m755 -d /etc/modprobe.d
+    cat > /etc/modprobe.d/usb.conf << "EOF"
+# Begin /etc/modprobe.d/usb.conf
+
+install ohci_hcd /sbin/modprobe ehci_hcd ; /sbin/modprobe -i ohci_hcd ; true
+install uhci_hcd /sbin/modprobe ehci_hcd ; /sbin/modprobe -i uhci_hcd ; true
+
+# End /etc/modprobe.d/usb.conf
+EOF
+
+    ###########################
+    # GRUB configuration file #
+    ###########################
+
+    # Generate /boot/grub/grub.cfg
+    mkdir -v /boot/grub
+    cat > /boot/grub/grub.cfg << "EOF"
+# Begin /boot/grub/grub.cfg
+set default=0
+set timeout=10
+
+insmod ext4
+set root=(hd0,10)
+
+menuentry "Panda Linux" {
+        linux   /boot/vmlinuz-0.3-panda-linux root=/dev/sda10 ro
+}
+EOF
+
+    ###############
+    # Final Touch #
+    ###############
+
+    # Create an /etc/os-release file required by systemd
+    cat > /etc/os-release << "EOF"
+NAME="Panda Linux"
+VERSION="0.3"
+ID=panda
+PRETTY_NAME="Panda Linux v0.3"
+EOF
+
+    # Create /etc/lfs-release for compatibility with non systemd branch
+    echo 0.3a > /etc/panda-release
+
+    # Create a file to show the status of your new system with respect
+    # to the Linux Standards Base (LSB)
+    cat > /etc/lsb-release << "EOF"
+DISTRIB_ID="Panda Linux"
+DISTRIB_RELEASE="v0.3a"
+DISTRIB_CODENAME="panda"
+DISTRIB_DESCRIPTION="Panda Linux"
+EOF
 }
 
 cleanupBuild() {
@@ -781,16 +851,65 @@ buildQt() {
     BUILD openssl STD
     BUILD libtiff STD
     BUILD little-cms STD
-    BUILD libmng STD
-    BUILD yasm STD
     BUILD libjpeg-turbo STD
+    BUILD libmng STD
+    BUILD yasm STD    
     BUILD qt STD
     
     cleanupBuild
 }
 
+kde4PreinstallConfig() {
+    export KDE_PREFIX=/opt/kde
+    
+    cat > /etc/profile.d/kde.sh << 'EOF'
+# Begin /etc/profile.d/kde.sh
+
+KDE_PREFIX=/opt/kde
+KDEDIR=$KDE_PREFIX
+
+pathappend $KDE_PREFIX/bin             PATH
+pathappend $KDE_PREFIX/lib/pkgconfig   PKG_CONFIG_PATH
+pathappend $KDE_PREFIX/share/pkgconfig PKG_CONFIG_PATH
+pathappend $KDE_PREFIX/share           XDG_DATA_DIRS
+pathappend $KDE_PREFIX/share/man       MANPATH
+pathappend /etc/kde/xdg                XDG_CONFIG_DIRS
+
+export KDE_PREFIX KDEDIR
+
+# End /etc/profile.d/kde.sh
+EOF
+
+    cat >> /etc/ld.so.conf << EOF
+# Begin kde addition
+
+/opt/kde/lib
+
+# End kde addition
+EOF
+
+    install -d $KDE_PREFIX/share &&
+    ln -svf /usr/share/dbus-1 $KDE_PREFIX/share &&
+    ln -svf /usr/share/polkit-1 $KDE_PREFIX/share
+    
+    
+}
+
+kde4PostinstallConfig() {
+    cat > ~/.xinitrc << "EOF"
+ck-launch-session dbus-launch --exit-with-session startkde
+EOF
+    
+    cat >> /etc/inittab << EOF
+kd:5:respawn:/opt/kde/bin/kdm
+EOF
+
+    sed -i 's#id:3:initdefault:#id:5:initdefault:#' /etc/inittab
+}
+
 buildKde4() {
-    buildQt
+#    buildQt
+    BUILD openssl STD
     certificate-authority-certificates
     BUILD curl STD
     BUILD libarchive STD
@@ -801,20 +920,69 @@ buildKde4() {
     BUILD polkit STD
     BUILD polkit-qt STD
     BUILD libdbusmenu-qt STD
+    kde4PreinstallConfig
+    BUILD automoc STD
+    BUILD boost STD
+    BUILD libxml2 STD
+    BUILD shared-mime-info STD
+    BUILD libxslt STD
+    BUILD akonadi STD
+    BUILD attica STD
+    BUILD qimageblitz STD
+#    BUILD oxygen-icons STD
+    BUILD libatasmart STD
+    BUILD libgudev STD
+    BUILD udisks STD
+    BUILD libusb STD
+    BUILD pm-utils STD
+    BUILD strigi STD
+    BUILD phonon STD
+    BUILD giflib STD
+    BUILD docbook-xsl STD
+    BUILD sgml-common STD
+    BUILD unzip STD
+    BUILD docbook-xml STD
+    BUILD which STD
+    BUILD qca STD
+    BUILD dbus-glib STD
+    BUILD upower STD
+    BUILD kdelibs STD
+    BUILD kfilemetadata STD
+    BUILD qjson STD
+    BUILD cyrus-sasl STD
+    BUILD libical STD
+    BUILD open-ldap STD
+    BUILD libassuan STD
+    BUILD gpgme STD
+    BUILD kdepimlibs STD
+    BUILD xapian STD
+    BUILD baloo STD
+    BUILD baloo-widgets STD
+    BUILD polkit-kde-agent STD
+    BUILD kactivities STD
+    BUILD kde-runtime STD
+    BUILD kde-baseapps STD
+    BUILD kde-base-artwork STD
+    BUILD console-kit STD
+    BUILD pciutils STD
+    BUILD kde-workspace STD
+    kde4PostinstallConfig
     
     cleanupBuild
 }
 
 export MAKEFLAGS="-j $(cat /proc/cpuinfo | grep processor | wc -l)"
 
-setupBashStartup
-BUILD random-number-gen STD
-BUILD lsb-release STD
-BUILD iptables STD
-BUILD shadow STD
-BUILD sudo STD
-BUILD nano STD
-buildXorg
+#setupBashStartup
+#BUILD random-number-gen STD
+#BUILD lsb-release STD
+#BUILD iptables STD
+#BUILD shadow STD
+#BUILD sudo STD
+#BUILD nano STD
+#buildXorg
 buildKde4
 
-cleanupBuild
+#reconfigureKernel
+
+#cleanupBuild

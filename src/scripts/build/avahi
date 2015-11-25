@@ -33,5 +33,5 @@ sed -e 's/-DG_DISABLE_DEPRECATED=1//' \
             --enable-core-docs   \
             --with-distro=none   \
             --with-systemdsystemunitdir=no &&
-make
-make install
+make $MAKEFLAGS
+make $MAKEFLAGS install

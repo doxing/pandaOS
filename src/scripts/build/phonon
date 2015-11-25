@@ -10,17 +10,38 @@ FILENAME="phonon-4.8.3.tar.xz"
 cd /src/pkg/standard/${FOLDERNAME}
 
 # Install Phonon
+pathremove () {
+        local IFS=':'
+        local NEWPATH
+        local DIR
+        local PATHVARIABLE=${2:-PATH}
+        for DIR in ${!PATHVARIABLE} ; do
+                if [ "$DIR" != "$1" ] ; then
+                  NEWPATH=${NEWPATH:+$NEWPATH:}$DIR
+                fi
+        done
+        export $PATHVARIABLE="$NEWPATH"
+}
+
+pathprepend () {
+        pathremove $1 $2
+        local PATHVARIABLE=${2:-PATH}
+        export $PATHVARIABLE="$1${!PATHVARIABLE:+:${!PATHVARIABLE}}"
+}
+
+source /usr/bin/setqt4 &&
+
 sed -i "s:BSD_SOURCE:DEFAULT_SOURCE:g" cmake/FindPhononInternal.cmake &&
 
 mkdir build &&
 cd    build &&
 
-cmake -DCMAKE_INSTALL_PREFIX=/usr    \
-      -DCMAKE_BUILD_TYPE=Release     \
-      -DCMAKE_INSTALL_LIBDIR=lib     \
-      -DPHONON_BUILD_PHONON4QT5=ON   \
-      -D__KDE_HAVE_GCC_VISIBILITY=NO \
+cmake -DCMAKE_INSTALL_PREFIX=/usr                                \
+      -DCMAKE_BUILD_TYPE=Release                                 \
+      -DCMAKE_INSTALL_LIBDIR=lib                                 \
+      -DPHONON_INSTALL_QT_EXTENSIONS_INTO_SYSTEM_QT=FALSE        \
+      -DDBUS_INTERFACES_INSTALL_DIR=/usr/share/dbus-1/interfaces \
       -Wno-dev .. &&
-make
+make $MAKEFLAGS
 
-make install
+make $MAKEFLAGS install

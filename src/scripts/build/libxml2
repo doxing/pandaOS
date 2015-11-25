@@ -23,5 +23,5 @@ sed -e  "/The id is/{N;
 
 # Install libxml2
 ./configure --prefix=/usr --disable-static --with-history &&
-make
-make install
+make $MAKEFLAGS
+make $MAKEFLAGS install
