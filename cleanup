@@ -9,7 +9,7 @@ cleanup() {
     
     # Update Grub
     displayMsg OK "... Updating GRUB ..."
-#    sudo bash $(which update-grub)
+    sudo bash $(which update-grub)
     displayMsg OK "... Done ..."
     
     # Unmount the filesystem

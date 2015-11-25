@@ -908,7 +908,7 @@ EOF
 }
 
 buildKde4() {
-#    buildQt
+    buildQt
     BUILD openssl STD
     certificate-authority-certificates
     BUILD curl STD
@@ -929,7 +929,7 @@ buildKde4() {
     BUILD akonadi STD
     BUILD attica STD
     BUILD qimageblitz STD
-#    BUILD oxygen-icons STD
+    BUILD oxygen-icons STD
     BUILD libatasmart STD
     BUILD libgudev STD
     BUILD udisks STD
@@ -973,16 +973,16 @@ buildKde4() {
 
 export MAKEFLAGS="-j $(cat /proc/cpuinfo | grep processor | wc -l)"
 
-#setupBashStartup
-#BUILD random-number-gen STD
-#BUILD lsb-release STD
-#BUILD iptables STD
-#BUILD shadow STD
-#BUILD sudo STD
-#BUILD nano STD
-#buildXorg
+setupBashStartup
+BUILD random-number-gen STD
+BUILD lsb-release STD
+BUILD iptables STD
+BUILD shadow STD
+BUILD sudo STD
+BUILD nano STD
+buildXorg
 buildKde4
 
-#reconfigureKernel
+reconfigureKernel
 
-#cleanupBuild
+cleanupBuild
