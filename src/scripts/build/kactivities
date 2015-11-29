@@ -1,0 +1,19 @@
+#!/bin/bash
+
+FOLDERNAME="kactivities-4.13.3"
+FILENAME="kactivities-4.13.3.tar.xz"
+
+# This package provides the activitymanager for KDE.
+
+# Change directory
+cd /src/pkg/standard/${FOLDERNAME}
+
+# Install
+mkdir build &&
+cd    build &&
+
+cmake -DCMAKE_INSTALL_PREFIX=$KDE_PREFIX \
+      -DCMAKE_BUILD_TYPE=Release         \
+      -Wno-dev .. &&
+make $MAKEFLAGS
+make $MAKEFLAGS install

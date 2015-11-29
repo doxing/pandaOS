@@ -1,0 +1,14 @@
+#!/bin/bash
+
+FOLDERNAME="libatasmart-0.19"
+FILENAME="libatasmart-0.19.tar.xz"
+
+# The libatasmart package is a disk reporting library. It only supports a subset of the ATA S.M.A.R.T. functionality.
+
+# Change directory
+cd /src/pkg/standard/${FOLDERNAME}
+
+# Install libatasmart
+./configure --prefix=/usr --disable-static &&
+make $MAKEFLAGS
+make $MAKEFLAGS docdir=/usr/share/doc/libatasmart-0.19 install

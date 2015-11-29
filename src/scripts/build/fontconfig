@@ -15,8 +15,8 @@ cd /src/pkg/standard/${FOLDERNAME}
             --localstatedir=/var \
             --disable-docs       \
             --docdir=/usr/share/doc/fontconfig-2.11.1 &&
-make
-make install
+make $MAKEFLAGS
+make $MAKEFLAGS install
 
 install -v -dm755 \
         /usr/share/{man/man{3,5},doc/fontconfig-2.11.1/fontconfig-devel} &&

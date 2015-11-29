@@ -1,0 +1,21 @@
+#!/bin/bash
+
+FOLDERNAME="qca-2.1.0"
+FILENAME="qca-2.1.0.tar.gz"
+
+# Qca aims to provide a straightforward and cross-platform crypto API, using Qt datatypes and conventions. Qca separates the API from the implementation, using plugins known as Providers.
+
+# Change directory
+cd /src/pkg/standard/${FOLDERNAME}
+
+# Install Qca
+mkdir build &&
+cd    build &&
+
+cmake -DCMAKE_INSTALL_PREFIX=$QT4DIR            \
+      -DCMAKE_BUILD_TYPE=Release                \
+      -DQT4_BUILD=ON                            \
+      -DQCA_MAN_INSTALL_DIR:PATH=/usr/share/man \
+      ..                                        &&
+make $MAKEFLAGS
+make $MAKEFLAGS install

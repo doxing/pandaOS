@@ -11,5 +11,5 @@ cd /src/pkg/standard/${FOLDERNAME}
 
 # Install libusb
 ./configure --prefix=/usr --disable-static &&
-make
-make install
+make $MAKEFLAGS
+make $MAKEFLAGS install

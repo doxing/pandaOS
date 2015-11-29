@@ -15,9 +15,9 @@ cd /src/pkg/standard/${FOLDERNAME}
             --sbindir=/sbin \
             --enable-libipq \
             --with-xtlibdir=/lib/xtables &&
-make
+make $MAKEFLAGS
 
-make install &&
+make $MAKEFLAGS install &&
 ln -sfv ../../../../sbin/xtables-multi /usr/bin/iptables-xml &&
 
 for file in ip4tc ip6tc ipq iptc xtables
@@ -28,7 +28,7 @@ done
 
 # Configure Iptables
 cd ../blfs-bootscripts-20150924
-make install-iptables
+make $MAKEFLAGS install-iptables
 
 # A Personal Firewall is designed to let you access all
 # the services offered on the Internet, but keep your

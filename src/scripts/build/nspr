@@ -1,0 +1,22 @@
+#!/bin/bash
+
+FOLDERNAME="nspr-4.10.9"
+FILENAME="nspr-4.10.9.tar.gz"
+
+# Netscape Portable Runtime (NSPR) provides a platform-neutral
+# API for system level and libc like functions.
+
+# Change directory
+cd /src/pkg/standard/${FOLDERNAME}
+
+# Install Netscape Portable Runtime
+cd nspr                                                     &&
+sed -ri 's#^(RELEASE_BINS =).*#\1#' pr/src/misc/Makefile.in &&
+sed -i 's#$(LIBRARY) ##' config/rules.mk                    &&
+
+./configure --prefix=/usr \
+            --with-mozilla \
+            --with-pthreads \
+            $([ $(uname -m) = x86_64 ] && echo --enable-64bit) &&
+make $MAKEFLAGS
+make $MAKEFLAGS install

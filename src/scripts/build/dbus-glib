@@ -1,0 +1,16 @@
+#!/bin/bash
+
+FOLDERNAME="dbus-glib-0.104"
+FILENAME="dbus-glib-0.104.tar.gz"
+
+# The D-Bus GLib package contains GLib interfaces to the D-Bus API.
+
+# Change directory
+cd /src/pkg/standard/${FOLDERNAME}
+
+# Install
+./configure --prefix=/usr     \
+            --sysconfdir=/etc \
+            --disable-static &&
+make $MAKEFLAGS
+make $MAKEFLAGS install

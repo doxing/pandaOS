@@ -1,0 +1,22 @@
+#!/bin/bash
+
+FOLDERNAME="ConsoleKit2-1.0.0"
+FILENAME="ConsoleKit2-1.0.0.tar.bz2"
+
+# The ConsoleKit package is a framework for keeping track of the various users, sessions, and seats present on a system. It provides a mechanism for software to react to changes of any of these items or of any of the metadata associated with them.
+
+# Change directory
+cd /src/pkg/standard/${FOLDERNAME}
+
+# Install
+./configure --prefix=/usr        \
+            --sysconfdir=/etc    \
+            --localstatedir=/var \
+            --enable-udev-acl    \
+            --enable-polkit      \
+            --with-xinitrc-dir=/etc/X11/app-defaults/xinitrc.d \
+            --docdir=/usr/share/doc/ConsoleKit-1.0.0           \
+            --with-systemdsystemunitdir=yes                    &&
+make $MAKEFLAGS
+make $MAKEFLAGS install &&
+mv -v /etc/X11/app-defaults/xinitrc.d/90-consolekit{,.sh}

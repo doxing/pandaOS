@@ -1,0 +1,21 @@
+#!/bin/bash
+
+FOLDERNAME="jasper-1.900.1"
+FILENAME="jasper-1.900.1.zip"
+
+# The JasPer Project is an open-source initiative to provide a free software-based reference implementation of the JPEG-2000 codec.
+
+# Change directory
+cd /src/pkg/standard/${FOLDERNAME}
+
+# Install
+patch -Np1 -i ../jasper-1.900.1-security_fixes-2.patch &&
+./configure --prefix=/usr    \
+            --enable-shared  \
+            --disable-static \
+            --mandir=/usr/share/man &&
+make $MAKEFLAGS
+make $MAKEFLAGS install
+
+install -v -m755 -d /usr/share/doc/jasper-1.900.1 &&
+install -v -m644 doc/*.pdf /usr/share/doc/jasper-1.900.1

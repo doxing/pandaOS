@@ -1,0 +1,47 @@
+#!/bin/bash
+
+FOLDERNAME="phonon-4.8.3"
+FILENAME="phonon-4.8.3.tar.xz"
+
+# Phonon is the multimedia API for KDE. It replaces the old
+# aRts package. Phonon needs either the GStreamer or VLC backend.
+
+# Change directory
+cd /src/pkg/standard/${FOLDERNAME}
+
+# Install Phonon
+pathremove () {
+        local IFS=':'
+        local NEWPATH
+        local DIR
+        local PATHVARIABLE=${2:-PATH}
+        for DIR in ${!PATHVARIABLE} ; do
+                if [ "$DIR" != "$1" ] ; then
+                  NEWPATH=${NEWPATH:+$NEWPATH:}$DIR
+                fi
+        done
+        export $PATHVARIABLE="$NEWPATH"
+}
+
+pathprepend () {
+        pathremove $1 $2
+        local PATHVARIABLE=${2:-PATH}
+        export $PATHVARIABLE="$1${!PATHVARIABLE:+:${!PATHVARIABLE}}"
+}
+
+source /usr/bin/setqt4 &&
+
+sed -i "s:BSD_SOURCE:DEFAULT_SOURCE:g" cmake/FindPhononInternal.cmake &&
+
+mkdir build &&
+cd    build &&
+
+cmake -DCMAKE_INSTALL_PREFIX=/usr                                \
+      -DCMAKE_BUILD_TYPE=Release                                 \
+      -DCMAKE_INSTALL_LIBDIR=lib                                 \
+      -DPHONON_INSTALL_QT_EXTENSIONS_INTO_SYSTEM_QT=FALSE        \
+      -DDBUS_INTERFACES_INSTALL_DIR=/usr/share/dbus-1/interfaces \
+      -Wno-dev .. &&
+make $MAKEFLAGS
+
+make $MAKEFLAGS install

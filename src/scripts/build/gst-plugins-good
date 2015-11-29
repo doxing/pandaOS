@@ -1,0 +1,18 @@
+#!/bin/bash
+
+FOLDERNAME="gst-plugins-good-1.4.5"
+FILENAME="gst-plugins-good-1.4.5.tar.xz"
+
+# The GStreamer Good Plug-ins is a set of plug-ins considered by the
+# GStreamer developers to have good quality code, correct functionality,
+# and the preferred license (LGPL for the plug-in code, LGPL or
+# LGPL-compatible for the supporting library). A wide range of video and
+# audio decoders, encoders, and filters are included.
+
+# Change directory
+cd /src/pkg/standard/${FOLDERNAME}
+
+# Install gst plugins good
+./configure --prefix=/usr &&
+make
+make install

@@ -1,0 +1,14 @@
+#!/bin/bash
+
+FOLDERNAME="shared-mime-info-1.4"
+FILENAME="shared-mime-info-1.4.tar.xz"
+
+# The Shared Mime Info package contains a MIME database. This allows central updates of MIME information for all supporting applications.
+
+# Change directory
+cd /src/pkg/standard/${FOLDERNAME}
+
+# Install shared mime info
+./configure --prefix=/usr &&
+make $MAKEFLAGS
+make $MAKEFLAGS install

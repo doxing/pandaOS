@@ -1,0 +1,22 @@
+#!/bin/bash
+
+FOLDERNAME="attica-0.4.2"
+FILENAME="attica-0.4.2.tar.bz2"
+
+# Attica is a library to access "Open Collaboration Service" providers
+
+# Change directory
+cd /src/pkg/standard/${FOLDERNAME}
+
+# Install
+mkdir build
+cd    build
+
+cmake -DCMAKE_INSTALL_PREFIX=$KDE_PREFIX \
+      -DCMAKE_BUILD_TYPE=Release         \
+      -DQT4_BUILD=ON                     \
+      -Wno-dev .. &&
+make $MAKEFLAGS
+make $MAKEFLAGS install
+
+/sbin/ldconfig

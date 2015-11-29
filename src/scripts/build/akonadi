@@ -1,0 +1,21 @@
+#!/bin/bash
+
+FOLDERNAME="akonadi-1.13.0"
+FILENAME="akonadi-1.13.0.tar.bz2"
+
+# Akonadi is an extensible cross-desktop storage service for PIM data and metadata providing concurrent read, write, and query access. It provides unique desktop-wide object identification and retrieval.
+
+# Change directory
+cd /src/pkg/standard/${FOLDERNAME}
+
+# Install akonadi
+mkdir build &&
+cd    build &&
+
+cmake -DCMAKE_INSTALL_PREFIX=$KDE_PREFIX  \
+      -DCMAKE_BUILD_TYPE=Release          \
+      -DDATABASE_BACKEND=SQLITE           \
+      -DINSTALL_QSQLITE_IN_QT_PREFIX=TRUE \
+      -Wno-dev .. &&
+make $MAKEFLAGS
+make $MAKEFLAGS install

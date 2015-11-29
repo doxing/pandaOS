@@ -1,0 +1,16 @@
+#!/bin/bash
+
+FOLDERNAME="ruby-2.2.3"
+FILENAME="ruby-2.2.3.tar.xz"
+
+# The Ruby package contains the Ruby development environment. This is useful for object-oriented scripting.
+
+# Change directory
+cd /src/pkg/standard/${FOLDERNAME}
+
+# Install Ruby
+./configure --prefix=/usr   \
+            --enable-shared \
+            --docdir=/usr/share/doc/ruby-2.2.3 &&
+make $MAKEFLAGS capi
+make $MAKEFLAGS install

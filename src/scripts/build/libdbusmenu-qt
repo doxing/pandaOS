@@ -1,0 +1,22 @@
+#!/bin/bash
+
+FOLDERNAME="libdbusmenu-qt-0.9.3+15.10.20150604"
+FILENAME="libdbusmenu-qt-0.9.3+15.10.20150604.tar.xz"
+
+# This library provides a Qt implementation of the DBusMenu
+# specification that exposes menus via DBus.
+
+# Change directory
+cd /src/pkg/standard/${FOLDERNAME}
+
+# Install libdbusmenu-qt
+mkdir build &&
+cd    build &&
+
+cmake -DCMAKE_INSTALL_PREFIX=/usr \
+      -DCMAKE_BUILD_TYPE=Release  \
+      -DUSE_QT4=TRUE              \
+      -DWITH_DOC=OFF              \
+      -Wno-dev .. &&
+make $MAKEFLAGS
+make $MAKEFLAGS install

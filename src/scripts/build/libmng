@@ -1,0 +1,17 @@
+#!/bin/bash
+
+FOLDERNAME="libmng-2.0.3"
+FILENAME="libmng-2.0.3.tar.xz"
+
+# The libmng libraries are used by programs wanting to read and write Multiple-image Network Graphics (MNG) files which are the animation equivalents to PNG files.
+
+# Change directory
+cd /src/pkg/standard/${FOLDERNAME}
+
+# Install
+./configure --prefix=/usr --disable-static &&
+make $MAKEFLAGS
+make $MAKEFLAGS install &&
+
+install -v -m755 -d        /usr/share/doc/libmng-2.0.3 &&
+install -v -m644 doc/*.txt /usr/share/doc/libmng-2.0.3

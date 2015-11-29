@@ -1,0 +1,42 @@
+#!/bin/bash
+
+FOLDERNAME="gpm-1.20.7"
+FILENAME="gpm-1.20.7.tar.bz2"
+
+# The GPM (General Purpose Mouse daemon) package contains a mouse server for the console and xterm. It not only provides cut and paste support generally, but its library component is used by various software such as Links to provide mouse support to the application. It is useful on desktops, especially if following (Beyond) Linux From Scratch instructions; it's often much easier (and less error prone) to cut and paste between two console windows than to type everything by hand!
+
+# Change directory
+cd /src/pkg/standard/${FOLDERNAME}
+
+# Install
+./autogen.sh                                &&
+./configure --prefix=/usr --sysconfdir=/etc &&
+make
+make install                                          &&
+
+install-info --dir-file=/usr/share/info/dir           \
+             /usr/share/info/gpm.info                 &&
+
+ln -sfv libgpm.so.2.1.0 /usr/lib/libgpm.so            &&
+install -v -m644 conf/gpm-root.conf /etc              &&
+
+install -v -m755 -d /usr/share/doc/gpm-1.20.7/support &&
+install -v -m644    doc/support/*                     \
+                    /usr/share/doc/gpm-1.20.7/support &&
+install -v -m644    doc/{FAQ,HACK_GPM,README*}        \
+                    /usr/share/doc/gpm-1.20.7
+                    
+cd /src/pkg/standard
+tar xf blfs-bootscripts-20150924.tar.bz2
+cd blfs-bootscripts-20150924
+make install-gpm
+
+cat > /etc/sysconfig/mouse << "EOF"
+# Begin /etc/sysconfig/mouse
+
+MDEVICE="<yourdevice>"
+PROTOCOL="<yourprotocol>"
+GPMOPTS="<additional options>"
+
+# End /etc/sysconfig/mouse
+EOF

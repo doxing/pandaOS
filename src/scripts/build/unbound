@@ -1,0 +1,35 @@
+#!/bin/bash
+
+FOLDERNAME="unbound-1.5.4"
+FILENAME="unbound-1.5.4.tar.gz"
+
+# Unbound is a validating, recursive, and caching DNS resolver.
+
+# Change directory
+cd /src/pkg/standard/${FOLDERNAME}
+
+# Install unbound
+groupadd -g 88 unbound &&
+useradd -c "Unbound DNS resolver" -d /var/lib/unbound -u 88 \
+        -g unbound -s /bin/false unbound
+        
+./configure --prefix=/usr     \
+            --sysconfdir=/etc \
+            --disable-static  \
+            --with-pidfile=/run/unbound.pid &&
+make
+
+make install &&
+mv -v /usr/sbin/unbound-host /usr/bin/
+
+# Configuration Information
+echo "nameserver 127.0.0.1" > /etc/resolv.conf
+sed -i '/request /i\supersede domain-name-servers 127.0.0.1;' \
+       /etc/dhcp/dhclient.conf
+
+unbound-anchor
+
+cd ../
+tar xf blfs-bootscripts-20150924.tar.bz2
+cd blfs-bootscripts-20150924
+make install-unbound

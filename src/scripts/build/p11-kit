@@ -1,0 +1,14 @@
+#!/bin/bash
+
+FOLDERNAME="p11-kit-0.23.1"
+FILENAME="p11-kit-0.23.1.tar.gz"
+
+# The p11-kit package Provides a way to load and enumerate PKCS #11 (a Cryptographic Token Interface Standard) modules.
+
+# Change directory
+cd /src/pkg/standard/${FOLDERNAME}
+
+# Install p11-kit
+./configure --prefix=/usr --sysconfdir=/etc &&
+make
+make install

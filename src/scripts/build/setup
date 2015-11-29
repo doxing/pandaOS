@@ -34,7 +34,7 @@ extractPkg() {
 
 # Checks if a filename is an archive that can be extracted.
 isArchive() {
-  for ext in \\.zip \\.tar\\.bz2 \\.tar\\.gz \\.tar\\.xz \\.tgz \\.tar \\.tar\\.lzma; do
+  for ext in \\.zip \\.tar\\.bz2 \\.tar\\.gz \\.tar\\.xz \\.tgz \\.tar \\.tar\\.lzma \\.tgz; do
     if [ "$(echo ${1} | grep ${ext}\$)" ]; then
       echo "true"
       return
@@ -76,10 +76,80 @@ reconfigureKernel() {
     make defconfig
     make
     make modules_install
-    cp -v arch/x86/boot/bzImage /boot/vmlinuz-0.2-panda-linux
+    # The path to the kernel image may vary depending on the platform being
+    # used. The filename below can be changed to suit your taste, but the
+    # stem of the filename should be vmlinuz to be compatible with the
+    # automatic setup of the boot process
+    cp -v arch/x86/boot/bzImage /boot/vmlinuz-0.3-panda-linux
+
+    # System.map is a symbol file for the kernel. It maps the function entry
+    # points of every function in the kernel API, as well as the addresses of
+    # the kernel data structures for the running kernel. It is used as a
+    # resource when investigating kernel problems. Issue the following command
+    # to install the map file
     cp -v System.map /boot/System.map-0.1
+
+    # Install the documentation for the Linux kernel
     install -d /usr/share/doc/linux-4.2
     cp -r Documentation/* /usr/share/doc/linux-4.2
+
+    #######################################
+    # Configuring Linux Module Load Order #
+    #######################################
+
+    # Create a new file /etc/modprobe.d/usb.conf
+    install -v -m755 -d /etc/modprobe.d
+    cat > /etc/modprobe.d/usb.conf << "EOF"
+# Begin /etc/modprobe.d/usb.conf
+
+install ohci_hcd /sbin/modprobe ehci_hcd ; /sbin/modprobe -i ohci_hcd ; true
+install uhci_hcd /sbin/modprobe ehci_hcd ; /sbin/modprobe -i uhci_hcd ; true
+
+# End /etc/modprobe.d/usb.conf
+EOF
+
+    ###########################
+    # GRUB configuration file #
+    ###########################
+
+    # Generate /boot/grub/grub.cfg
+    mkdir -v /boot/grub
+    cat > /boot/grub/grub.cfg << "EOF"
+# Begin /boot/grub/grub.cfg
+set default=0
+set timeout=10
+
+insmod ext4
+set root=(hd0,10)
+
+menuentry "Panda Linux" {
+        linux   /boot/vmlinuz-0.3-panda-linux root=/dev/sda10 ro
+}
+EOF
+
+    ###############
+    # Final Touch #
+    ###############
+
+    # Create an /etc/os-release file required by systemd
+    cat > /etc/os-release << "EOF"
+NAME="Panda Linux"
+VERSION="0.3"
+ID=panda
+PRETTY_NAME="Panda Linux v0.3"
+EOF
+
+    # Create /etc/lfs-release for compatibility with non systemd branch
+    echo 0.3a > /etc/panda-release
+
+    # Create a file to show the status of your new system with respect
+    # to the Linux Standards Base (LSB)
+    cat > /etc/lsb-release << "EOF"
+DISTRIB_ID="Panda Linux"
+DISTRIB_RELEASE="v0.3a"
+DISTRIB_CODENAME="panda"
+DISTRIB_DESCRIPTION="Panda Linux"
+EOF
 }
 
 cleanupBuild() {
@@ -93,11 +163,8 @@ cleanupBuild() {
     displayMsg OK "Done ..."
 }
 
-# Intel Microcode for the CPU
-BUILD microcode STD
-
-# Bash Shell startup files
-cat > /etc/profile << "EOF"
+setupBashStartup() {
+    cat > /etc/profile << "EOF"
 # Begin /etc/profile
 # System wide environment variables and startup programs.
 
@@ -172,14 +239,10 @@ unset script RED GREEN NORMAL
 # End /etc/profile
 EOF
 
-# Create the /etc/profile.d directory, where the individual
-# initialization scripts are placed
-install --directory --mode=0755 --owner=root --group=root /etc/profile.d
-
-# The following script uses the ~/.dircolors and /etc/dircolors
-# files to control the colors of file names in a directory listing.
-# They control colorized output of things like ls --color
-cat > /etc/profile.d/dircolors.sh << "EOF"
+    # Create the /etc/profile.d directory, where the individual initialization scripts are placed
+    install --directory --mode=0755 --owner=root --group=root /etc/profile.d
+    
+    cat > /etc/profile.d/dircolors.sh << "EOF"
 # Setup for /bin/ls and /bin/grep to support color, the alias is in /etc/bashrc.
 if [ -f "/etc/dircolors" ] ; then
         eval $(dircolors -b /etc/dircolors)
@@ -193,10 +256,7 @@ alias ls='ls --color=auto'
 alias grep='grep --color=auto'
 EOF
 
-# The following script adds some useful paths to the PATH and can be
-# used to customize other PATH related environment variables
-# (e.g. LD_LIBRARY_PATH, etc) that may be needed for all users.
-cat > /etc/profile.d/extrapaths.sh << "EOF"
+    cat > /etc/profile.d/extrapaths.sh << "EOF"
 if [ -d /usr/local/lib/pkgconfig ] ; then
         pathappend /usr/local/lib/pkgconfig PKG_CONFIG_PATH
 fi
@@ -212,9 +272,7 @@ pathappend /usr/share/man  MANPATH
 pathappend /usr/share/info INFOPATH
 EOF
 
-# The following script sets up the default inputrc configuration file.
-# If the user does not have individual settings, it uses the global file.
-cat > /etc/profile.d/readline.sh << "EOF"
+    cat > /etc/profile.d/readline.sh << "EOF"
 # Setup the INPUTRC environment variable.
 if [ -z "$INPUTRC" -a ! -f "$HOME/.inputrc" ] ; then
         INPUTRC=/etc/inputrc
@@ -222,10 +280,7 @@ fi
 export INPUTRC
 EOF
 
-# Setting the umask value is important for security. Here the default
-# group write permissions are turned off for system users and when the
-# user name and group name are not the same.
-cat > /etc/profile.d/umask.sh << "EOF"
+    cat > /etc/profile.d/umask.sh << "EOF"
 # By default, the umask should be set.
 if [ "$(id -gn)" = "$(id -un)" -a $EUID -gt 99 ] ; then
   umask 002
@@ -234,8 +289,7 @@ else
 fi
 EOF
 
-# Base /etc/bashrc
-cat > /etc/bashrc << "EOF"
+    cat > /etc/bashrc << "EOF"
 # Begin /etc/bashrc
 # System wide aliases and functions.
 
@@ -251,7 +305,9 @@ alias ls='ls --color=auto'
 alias grep='grep --color=auto'
 
 # Provides prompt for non-login shells, specifically shells started
-# in the X environment.
+# in the X environment. [Review the LFS archive thread titled
+# PS1 Environment Variable for a great case study behind this script
+# addendum.]
 
 NORMAL="\[\e[0m\]"
 RED="\[\e[1;31m\]"
@@ -267,8 +323,7 @@ unset RED GREEN NORMAL
 # End /etc/bashrc
 EOF
 
-# Base ~/.bash_profile
-cat > ~/.bash_profile << "EOF"
+    cat > ~/.bash_profile << "EOF"
 # Begin ~/.bash_profile
 # Personal environment variables and startup programs.
 
@@ -284,11 +339,15 @@ if [ -d "$HOME/bin" ] ; then
   pathprepend $HOME/bin
 fi
 
+# Having . in the PATH is dangerous
+#if [ $EUID -gt 99 ]; then
+#  pathappend .
+#fi
+
 # End ~/.bash_profile
 EOF
 
-# Base ~/.bashrc
-cat > ~/.bashrc << "EOF"
+    cat > ~/.bashrc << "EOF"
 # Begin ~/.bashrc
 # Personal aliases and functions.
 
@@ -304,264 +363,626 @@ fi
 # End ~/.bashrc
 EOF
 
-# Base ~/.bash_logout
-cat > ~/.bash_logout << "EOF"
-# Begin ~/.bash_logout
-# Personal items to perform on logout.
+    dircolors -p > /etc/dircolors
+}
 
-# End ~/.bash_logout
+certificate-authority-certificates() {
+    cd /src/pkg/standard
+    
+    cat > /usr/bin/make-cert.pl << "EOF"
+#!/usr/bin/perl -w
+
+# Used to generate PEM encoded files from Mozilla certdata.txt.
+# Run as ./make-cert.pl > certificate.crt
+#
+# Parts of this script courtesy of RedHat (mkcabundle.pl)
+#
+# This script modified for use with single file data (tempfile.cer) extracted
+# from certdata.txt, taken from the latest version in the Mozilla NSS source.
+# mozilla/security/nss/lib/ckfw/builtins/certdata.txt
+#
+# Authors: DJ Lucas
+#          Bruce Dubbs
+#
+# Version 20120211
+
+my $certdata = './tempfile.cer';
+
+open( IN, "cat $certdata|" )
+    || die "could not open $certdata";
+
+my $incert = 0;
+
+while ( <IN> )
+{
+    if ( /^CKA_VALUE MULTILINE_OCTAL/ )
+    {
+        $incert = 1;
+        open( OUT, "|openssl x509 -text -inform DER -fingerprint" )
+            || die "could not pipe to openssl x509";
+    }
+
+    elsif ( /^END/ && $incert )
+    {
+        close( OUT );
+        $incert = 0;
+        print "\n\n";
+    }
+
+    elsif ($incert)
+    {
+        my @bs = split( /\\/ );
+        foreach my $b (@bs)
+        {
+            chomp $b;
+            printf( OUT "%c", oct($b) ) unless $b eq '';
+        }
+    }
+}
 EOF
 
-# Use the dircolors capability
-dircolors -p > /etc/dircolors
+    chmod +x /usr/bin/make-cert.pl
+    
+    cat > /usr/bin/make-ca.sh << "EOF"
+#!/bin/sh
+# Begin make-ca.sh
+# Script to populate OpenSSL's CApath from a bundle of PEM formatted CAs
+#
+# The file certdata.txt must exist in the local directory
+# Version number is obtained from the version of the data.
+#
+# Authors: DJ Lucas
+#          Bruce Dubbs
+#
+# Version 20120211
 
-# Base /etc/issue
-cat > /etc/issue << "EOF"
-__________                    .___        .____    .__                     
-\______   \_____    ____    __| _/____    |    |   |__| ____  __ _____  ___
- |     ___/\__  \  /    \  / __ |\__  \   |    |   |  |/    \|  |  \  \/  /
- |    |     / __ \|   |  \/ /_/ | / __ \_ |    |___|  |   |  \  |  />    < 
- |____|    (______/___|  /\____ |(______/ |_______ \__|___|  /____//__/\__\
+certdata="certdata.txt"
+
+if [ ! -r $certdata ]; then
+  echo "$certdata must be in the local directory"
+  exit 1
+fi
+
+REVISION=$(grep CVS_ID $certdata | cut -f4 -d'$')
+
+if [ -z "${REVISION}" ]; then
+  echo "$certfile has no 'Revision' in CVS_ID"
+  exit 1
+fi
+
+VERSION=$(echo $REVISION | cut -f2 -d" ")
+
+TEMPDIR=$(mktemp -d)
+TRUSTATTRIBUTES="CKA_TRUST_SERVER_AUTH"
+BUNDLE="BLFS-ca-bundle-${VERSION}.crt"
+CONVERTSCRIPT="/usr/bin/make-cert.pl"
+SSLDIR="/etc/ssl"
+
+mkdir "${TEMPDIR}/certs"
+
+# Get a list of starting lines for each cert
+CERTBEGINLIST=$(grep -n "^# Certificate" "${certdata}" | cut -d ":" -f1)
+
+# Get a list of ending lines for each cert
+CERTENDLIST=`grep -n "^CKA_TRUST_STEP_UP_APPROVED" "${certdata}" | cut -d ":" -f 1`
+
+# Start a loop
+for certbegin in ${CERTBEGINLIST}; do
+  for certend in ${CERTENDLIST}; do
+    if test "${certend}" -gt "${certbegin}"; then
+      break
+    fi
+  done
+
+  # Dump to a temp file with the name of the file as the beginning line number
+  sed -n "${certbegin},${certend}p" "${certdata}" > "${TEMPDIR}/certs/${certbegin}.tmp"
+done
+
+unset CERTBEGINLIST CERTDATA CERTENDLIST certbegin certend
+
+mkdir -p certs
+rm -f certs/*      # Make sure the directory is clean
+
+for tempfile in ${TEMPDIR}/certs/*.tmp; do
+  # Make sure that the cert is trusted...
+  grep "CKA_TRUST_SERVER_AUTH" "${tempfile}" | \
+    egrep "TRUST_UNKNOWN|NOT_TRUSTED" > /dev/null
+
+  if test "${?}" = "0"; then
+    # Throw a meaningful error and remove the file
+    cp "${tempfile}" tempfile.cer
+    perl ${CONVERTSCRIPT} > tempfile.crt
+    keyhash=$(openssl x509 -noout -in tempfile.crt -hash)
+    echo "Certificate ${keyhash} is not trusted!  Removing..."
+    rm -f tempfile.cer tempfile.crt "${tempfile}"
+    continue
+  fi
+
+  # If execution made it to here in the loop, the temp cert is trusted
+  # Find the cert data and generate a cert file for it
+
+  cp "${tempfile}" tempfile.cer
+  perl ${CONVERTSCRIPT} > tempfile.crt
+  keyhash=$(openssl x509 -noout -in tempfile.crt -hash)
+  mv tempfile.crt "certs/${keyhash}.pem"
+  rm -f tempfile.cer "${tempfile}"
+  echo "Created ${keyhash}.pem"
+done
+
+# Remove blacklisted files
+# MD5 Collision Proof of Concept CA
+if test -f certs/8f111d69.pem; then
+  echo "Certificate 8f111d69 is not trusted!  Removing..."
+  rm -f certs/8f111d69.pem
+fi
+
+# Finally, generate the bundle and clean up.
+cat certs/*.pem >  ${BUNDLE}
+rm -r "${TEMPDIR}"
 EOF
 
-# Install Packages
-BUILD random-number-gen STD
-BUILD lsb-release STD
-BUILD cracklib STD
-BUILD haveged STD
-BUILD iptables STD
-BUILD linux-pam
-BUILD shadow BASIC
-BUILD libcap BASIC
-BUILD sudo STD
-BUILD nano STD
-BUILD boost STD
-BUILD keyutils STD
-BUILD libsigsegv STD
-BUILD libstatgrab STD
-BUILD libusb STD
-BUILD libusb-compat STD
+    chmod +x /usr/bin/make-ca.sh
+    
+    cat > /usr/sbin/remove-expired-certs.sh << "EOF"
+#!/bin/sh
+# Begin /usr/sbin/remove-expired-certs.sh
+#
+# Version 20120211
+
+# Make sure the date is parsed correctly on all systems
+mydate()
+{
+  local y=$( echo $1 | cut -d" " -f4 )
+  local M=$( echo $1 | cut -d" " -f1 )
+  local d=$( echo $1 | cut -d" " -f2 )
+  local m
+
+  if [ ${d} -lt 10 ]; then d="0${d}"; fi
+
+  case $M in
+    Jan) m="01";;
+    Feb) m="02";;
+    Mar) m="03";;
+    Apr) m="04";;
+    May) m="05";;
+    Jun) m="06";;
+    Jul) m="07";;
+    Aug) m="08";;
+    Sep) m="09";;
+    Oct) m="10";;
+    Nov) m="11";;
+    Dec) m="12";;
+  esac
+
+  certdate="${y}${m}${d}"
+}
+
+OPENSSL=/usr/bin/openssl
+DIR=/etc/ssl/certs
+
+if [ $# -gt 0 ]; then
+  DIR="$1"
+fi
+
+certs=$( find ${DIR} -type f -name "*.pem" -o -name "*.crt" )
+today=$( date +%Y%m%d )
+
+for cert in $certs; do
+  notafter=$( $OPENSSL x509 -enddate -in "${cert}" -noout )
+  date=$( echo ${notafter} |  sed 's/^notAfter=//' )
+  mydate "$date"
+
+  if [ ${certdate} -lt ${today} ]; then
+     echo "${cert} expired on ${certdate}! Removing..."
+     rm -f "${cert}"
+  fi
+done
+EOF
+
+    chmod u+x /usr/sbin/remove-expired-certs.sh
+    
+    make-ca.sh
+    SSLDIR=/etc/ssl                                              &&
+    remove-expired-certs.sh certs                                &&
+    install -d ${SSLDIR}/certs                                   &&
+    cp -v certs/*.pem ${SSLDIR}/certs                            &&
+    c_rehash                                                     &&
+    install BLFS-ca-bundle*.crt ${SSLDIR}/ca-bundle.crt          &&
+    ln -sfv ../ca-bundle.crt ${SSLDIR}/certs/ca-certificates.crt &&
+    unset SSLDIR
+    rm -r certs BLFS-ca-bundle*
+}
+
+buildXorgReqLibs() {
+    BUILD libffi STD
+    BUILD python2 STD
+    BUILD pcre STD
+    BUILD glib STD
+    BUILD freetype-without-harfbuzz STD
+    BUILD harfbuzz STD
+    BUILD freetype STD
+    BUILD fontconfig STD
+    BUILD util-macros STD
+    BUILD libdrm STD
+    BUILD elfutils STD
+    BUILD libvdpau STD
+    BUILD llvm STD
+    BUILD libpng STD
+    BUILD pixman STD
+    BUILD libgpg-error STD
+    BUILD libgcrypt STD
+    
+    cleanupBuild
+}
+
+buildXorgProtocolHeaders(){
+    BUILD bigreqsproto STD
+    BUILD compositeproto STD
+    BUILD damageproto STD
+    BUILD dmxproto STD
+    BUILD dri2proto STD
+    BUILD dri3proto STD
+    BUILD fixesproto STD
+    BUILD fontsproto STD
+    BUILD glproto STD
+    BUILD inputproto STD
+    BUILD kbproto STD
+    BUILD presentproto STD
+    BUILD randrproto STD
+    BUILD recordproto STD
+    BUILD renderproto STD
+    BUILD resourceproto STD
+    BUILD scrnsaverproto STD
+    BUILD videoproto STD
+    BUILD xcmiscproto STD
+    BUILD xextproto STD
+    BUILD xf86bigfontproto STD
+    BUILD xf86dgaproto STD
+    BUILD xf86driproto STD
+    BUILD xf86vidmodeproto STD
+    BUILD xineramaproto STD
+    BUILD xproto STD
+    
+    cleanupBuild
+}
+
+buildXorgLibraries(){
+    BUILD libxcb STD
+    BUILD xtrans STD
+    BUILD libX11 STD
+    BUILD libXext STD
+    BUILD libFS STD
+    BUILD libICE STD
+    BUILD libSM STD
+    BUILD libXScrnSaver STD
+    BUILD libXt STD
+    BUILD libXmu STD
+    BUILD libXpm STD
+    BUILD libXaw STD
+    BUILD libXfixes STD
+    BUILD libXcomposite STD
+    BUILD libXrender STD
+    BUILD libXcursor STD
+    BUILD libXdamage STD
+    BUILD libfontenc STD
+    BUILD libXfont STD
+    BUILD libXft STD
+    BUILD libXi STD
+    BUILD libXinerama STD
+    BUILD libXrandr STD
+    BUILD libXres STD
+    BUILD libXtst STD
+    BUILD libXv STD
+    BUILD libXvMC STD
+    BUILD libXxf86dga STD
+    BUILD libXxf86vm STD
+    BUILD libdmx STD
+    BUILD libpciaccess STD
+    BUILD libxkbfile STD
+    BUILD libxshmfence STD
+    
+    cleanupBuild
+}
+
+buildXorgApplications() {
+    BUILD bdftopcf STD
+    BUILD iceauth STD
+    BUILD luit STD
+    BUILD mkfontdir STD
+    BUILD mkfontscale STD
+    BUILD sessreg STD
+    BUILD setxkbmap STD
+    BUILD smproxy STD
+    BUILD x11perf STD
+    BUILD xauth STD
+    BUILD xbacklight STD
+    BUILD xcmsdb STD
+    BUILD xcursorgen STD
+    BUILD xdpyinfo STD
+    BUILD xdriinfo STD
+    BUILD xev STD
+    BUILD xgamma STD
+    BUILD xhost STD
+    BUILD xinput STD
+    BUILD xkbcomp STD
+    BUILD xkbevd STD
+    BUILD xkbutils STD
+    BUILD xkill STD
+    BUILD xlsatoms STD
+    BUILD xlsclients STD
+    BUILD xmessage STD
+    BUILD xmodmap STD
+    BUILD xpr STD
+    BUILD xprop STD
+    BUILD xrandr STD
+    BUILD xrdb STD
+    BUILD xrefresh STD
+    BUILD xset STD
+    BUILD xsetroot STD
+    BUILD xvinfo STD
+    BUILD xwd STD
+    BUILD xwininfo STD
+    BUILD xwud STD
+    
+    cleanupBuild
+}
+
+buildXorgFonts() {
+    BUILD xcursor-themes STD
+    BUILD font-util STD
+    BUILD encodings STD
+    BUILD font-adobe-100dpi STD
+    BUILD font-adobe-75dpi STD
+    BUILD font-adobe-utopia-100dpi STD
+    BUILD font-adobe-utopia-75dpi STD
+    BUILD font-adobe-utopia-type1 STD
+    BUILD font-alias STD
+    BUILD font-arabic-misc STD
+    BUILD font-bh-100dpi STD
+    BUILD font-bh-75dpi STD
+    BUILD font-bh-lucidatypewriter-100dpi STD
+    BUILD font-bh-lucidatypewriter-75dpi STD
+    BUILD font-bh-ttf STD
+    BUILD font-bh-type1 STD
+    BUILD font-bitstream-100dpi STD
+    BUILD font-bitstream-75dpi STD
+    BUILD font-bitstream-type1 STD
+    BUILD font-cronyx-cyrillic STD
+    BUILD font-cursor-misc STD
+    BUILD font-daewoo-misc STD
+    BUILD font-dec-misc STD
+    BUILD font-ibm-type1 STD
+    BUILD font-isas-misc STD
+    BUILD font-jis-misc STD
+    BUILD font-micro-misc STD
+    BUILD font-misc-cyrillic STD
+    BUILD font-misc-ethiopic STD
+    BUILD font-misc-meltho STD
+    BUILD font-misc-misc STD
+    BUILD font-mutt-misc STD
+    BUILD font-schumacher-misc STD
+    BUILD font-screen-cyrillic STD
+    BUILD font-sony-misc STD
+    BUILD font-sun-misc STD
+    BUILD font-winitzki-cyrillic STD
+    BUILD font-xfree86-type1 STD
+    
+    cleanupBuild
+}
+
+buildXorgDrivers() {
+    BUILD libevdev STD
+    BUILD xorg-evdev-driver STD
+    BUILD xorg-synaptics-driver STD
+    BUILD xorg-ati-driver STD
+    BUILD xorg-fbdev-driver STD
+    BUILD xorg-intel-driver STD
+    BUILD xorg-nouveau-driver STD
+    BUILD libva STD
+    
+    cleanupBuild
+}
 
 
-######################################################################################################
-
-# Set the XORG_PREFIX variable
-export XORG_PREFIX="/usr"
-# Create the XORG_CONFIG variable to use for this parameter substitution
-export XORG_CONFIG="--prefix=$XORG_PREFIX --sysconfdir=/etc \
+buildXorg() {
+    export XORG_PREFIX="/usr"
+    export XORG_CONFIG="--prefix=$XORG_PREFIX --sysconfdir=/etc \
     --localstatedir=/var --disable-static"
-# Create an /etc/profile.d/xorg.sh configuration file containing these variables
-cat > /etc/profile.d/xorg.sh << "EOF"
-XORG_PREFIX="<PREFIX>"
+
+    cat > /etc/profile.d/xorg.sh << "EOF"
+XORG_PREFIX="/usr"
 XORG_CONFIG="--prefix=$XORG_PREFIX --sysconfdir=/etc --localstatedir=/var --disable-static"
 export XORG_PREFIX XORG_CONFIG
 EOF
 chmod 644 /etc/profile.d/xorg.sh
 
-BUILD util-macros STD
-# Xorg Protocol Headers
-BUILD bigreqsproto STD
-BUILD compositeproto STD
-BUILD damageproto STD
-BUILD dmxproto STD
-BUILD dri2proto STD
-BUILD dri3proto STD
-BUILD fixesproto STD
-BUILD fontsproto STD
-BUILD glproto STD
-BUILD inputproto STD
-BUILD kbproto STD
-BUILD presentproto STD
-BUILD randrproto STD
-BUILD recordproto STD
-BUILD renderproto STD
-BUILD resourceproto STD
-BUILD scrnsaverproto STD
-BUILD videoproto STD
-BUILD xcmiscproto STD
-BUILD xextproto STD
-BUILD xf86bigfontproto STD
-BUILD xf86dgaproto STD
-BUILD xf86driproto STD
-BUILD xf86vidmodeproto STD
-BUILD xineramaproto STD
-BUILD xproto STD
+    buildXorgReqLibs
+    buildXorgProtocolHeaders
+    
+    BUILD libxau STD
+    BUILD libxdmcp STD
+    BUILD xcb-proto STD
+    
+    buildXorgLibraries
+    
+    ln -sv $XORG_PREFIX/lib/X11 /usr/lib/X11 &&
+    ln -sv $XORG_PREFIX/include/X11 /usr/include/X11
+    
+    BUILD xcb-util STD
+    BUILD xcb-util-image STD
+    BUILD xcb-util-keysyms STD
+    BUILD xcb-util-renderutil STD
+    BUILD xcb-util-wm STD
+    BUILD mesalib STD
+    BUILD libepoxy STD
+    BUILD xbitmaps STD
+    
+    buildXorgApplications
+    
+    rm -fv $XORG_PREFIX/bin/xkeystone
+    
+    buildXorgFonts
+    
+    install -v -d -m755 /usr/share/fonts                               &&
+    ln -svfn $XORG_PREFIX/share/fonts/X11/OTF /usr/share/fonts/X11-OTF &&
+    ln -svfn $XORG_PREFIX/share/fonts/X11/TTF /usr/share/fonts/X11-TTF
+    
+    BUILD xkeyboardConfig STD
+    BUILD xorgServer STD
+    
+    buildXorgDrivers
+   
+    BUILD twm STD
+    BUILD xterm STD
+    BUILD xclock STD
+    BUILD xinit STD
+    
+    cleanupBuild
+}
 
-BUILD libxau STD
-BUILD libxdmcp STD
-BUILD python2 STD
-BUILD xcb-proto STD
-BUILD libxcb STD
-BUILD freetype STD
-BUILD fontconfig STD
-BUILD xtrans STD
-BUILD libX11 STD
-BUILD libXext STD
-BUILD libFS STD
-BUILD libICE STD
-BUILD libSM STD
-BUILD libXScrnSaver STD
-BUILD libXt STD
-BUILD libXmu STD
-BUILD libXpm STD
-BUILD libXaw STD
-BUILD libXfixes STD
-BUILD libXcomposite STD
-BUILD libXrender STD
-BUILD libXcursor STD
-BUILD libXdamage STD
-BUILD libfontenc STD
-BUILD libXfont STD
-BUILD libXft STD
-BUILD libXi STD
-BUILD libXinerama STD
-BUILD libXrandr STD
-BUILD libXres STD
-BUILD libXtst STD
-BUILD libXv STD
-BUILD libXvMC STD
-BUILD libXxf86dga STD
-BUILD libXxf86vm STD
-BUILD libdmx STD
-BUILD libpciaccess STD
-BUILD libxkbfile STD
-BUILD libxshmfence STD
-BUILD xcb-util STD
-BUILD xcb-util-image STD
-BUILD xcb-util-keysyms STD
-BUILD xcb-util-renderutil STD
-BUILD xcb-util-wm STD
-BUILD libdrm STD
-BUILD libffi STD
-BUILD llvm STD
-BUILD elfutils STD
-BUILD libvdpau STD
-BUILD mesalib STD
-BUILD xbitmaps STD
-BUILD libpng STD
-BUILD bdftopcf STD
-BUILD iceauth STD
-BUILD luit STD
-BUILD mkfontdir STD
-BUILD mkfontscale STD
-BUILD sessreg STD
-BUILD setxkbmap STD
-BUILD smproxy STD
-BUILD x11perf STD
-BUILD xauth STD
-BUILD xbacklight STD
-BUILD xcmsdb STD
-BUILD xcursorgen STD
-BUILD xdpyinfo STD
-BUILD xdriinfo STD
-BUILD xev STD
-BUILD xgamma STD
-BUILD xhost STD
-BUILD xinput STD
-BUILD xkbcomp STD
-BUILD xkbevd STD
-BUILD xkbutils STD
-BUILD xkill STD
-BUILD xlsatoms STD
-BUILD xlsclients STD
-BUILD xmessage STD
-BUILD xmodmap STD
-BUILD xpr STD
-BUILD xprop STD
-BUILD xrandr STD
-BUILD xrdb STD
-BUILD xrefresh STD
-BUILD xset STD
-BUILD xsetroot STD
-BUILD xvinfo STD
-BUILD xwd STD
-BUILD xwininfo STD
-BUILD xwud STD
+buildQt() {
+    BUILD dbus STD
+    BUILD gobject-introspection STD
+    BUILD gstreamer STD
+    BUILD gst-plugins-base STD
+    BUILD gst-plugins-good STD
+    BUILD sqlite STD
+    BUILD ruby STD
+    BUILD openssl STD
+    BUILD libtiff STD
+    BUILD little-cms STD
+    BUILD libjpeg-turbo STD
+    BUILD libmng STD
+    BUILD yasm STD    
+    BUILD qt STD
+    
+    cleanupBuild
+}
 
-# Remove an undocumented script which is reported to
-# be broken (xkeystone provided by the xrandr package).
-rm -f $XORG_PREFIX/bin/xkeystone
+kde4PreinstallConfig() {
+    export KDE_PREFIX=/opt/kde
+    
+    cat > /etc/profile.d/kde.sh << 'EOF'
+# Begin /etc/profile.d/kde.sh
 
-BUILD xcursor-themes STD
+KDE_PREFIX=/opt/kde
+KDEDIR=$KDE_PREFIX
 
-# Xorg Fonts
-BUILD font-util STD
-BUILD encodings STD
-BUILD font-adobe-100dpi STD
-BUILD font-adobe-75dpi STD
-BUILD font-adobe-utopia-100dpi STD
-BUILD font-adobe-utopia-75dpi STD
-BUILD font-adobe-utopia-type1 STD
-BUILD font-alias STD
-BUILD font-arabic-misc STD
-BUILD font-bh-100dpi STD
-BUILD font-bh-75dpi STD
-BUILD font-bh-lucidatypewriter-100dpi STD
-BUILD font-bh-lucidatypewriter-75dpi STD
-BUILD font-bh-type1 STD
-BUILD font-bitstream-100dpi STD
-BUILD font-bitstream-75dpi STD
-BUILD font-bitstream-type1 STD
-BUILD font-cronyx-cyrillic STD
-BUILD font-cursor-misc STD
-BUILD font-daewoo-misc STD
-BUILD font-dec-misc STD
-BUILD font-ibm-type1 STD
-BUILD font-isas-misc STD
-BUILD font-jis-misc STD
-BUILD font-micro-misc STD
-BUILD font-misc-cyrillic STD
-BUILD font-misc-ethiopic STD
-BUILD font-misc-meltho STD
-BUILD font-misc-misc STD
-BUILD font-mutt-misc STD
-BUILD font-schumacher-misc STD
-BUILD font-screen-cyrillic STD
-BUILD font-sony-misc STD
-BUILD font-sun-misc STD
-BUILD font-winitzki-cyrillic STD
-BUILD font-xfree86-type1 STD
+pathappend $KDE_PREFIX/bin             PATH
+pathappend $KDE_PREFIX/lib/pkgconfig   PKG_CONFIG_PATH
+pathappend $KDE_PREFIX/share/pkgconfig PKG_CONFIG_PATH
+pathappend $KDE_PREFIX/share           XDG_DATA_DIRS
+pathappend $KDE_PREFIX/share/man       MANPATH
+pathappend /etc/kde/xdg                XDG_CONFIG_DIRS
 
-# The system must be configured so that Fontconfig can find the
-# TrueType fonts since they are outside of the default search
-# path of /usr/share/fonts. Make symlinks to the Xorg TrueType
-# font directories
-install -v -d -m755 /usr/share/fonts                               &&
-ln -svfn $XORG_PREFIX/share/fonts/X11/OTF /usr/share/fonts/X11-OTF &&
-ln -svfn $XORG_PREFIX/share/fonts/X11/TTF /usr/share/fonts/X11-TTF
+export KDE_PREFIX KDEDIR
 
-BUILD xkeyboardConfig STD
-BUILD openssl STD
-BUILD pixman STD
-BUILD libepoxy STD
-BUILD xorgServer STD
+# End /etc/profile.d/kde.sh
+EOF
 
-# Install Xorg Drivers
-BUILD libevdev STD
-BUILD xorg-evdev-driver STD
-BUILD xorg-synaptics-driver STD
-BUILD xorg-ati-driver STD
-BUILD xorg-fbdev-driver STD
-BUILD xorg-intel-driver STD
-BUILD xorg-nouveau-driver STD
-BUILD libva STD
-BUILD libva-intel-driver STD
+    cat >> /etc/ld.so.conf << EOF
+# Begin kde addition
 
-# Minimal Window Manager
-BUILD twm STD
-BUILD xterm STD
-BUILD xclock STD
-BUILD xinit STD
+/opt/kde/lib
 
-# Display Manager
-BUILD sqlite STD
-BUILD qt STD
-BUILD curl STD
-BUILD libarchive STD
-BUILD cmake STD
-BUILD sddm STD
-BUILD fluxbox STD
+# End kde addition
+EOF
+
+    install -d $KDE_PREFIX/share &&
+    ln -svf /usr/share/dbus-1 $KDE_PREFIX/share &&
+    ln -svf /usr/share/polkit-1 $KDE_PREFIX/share
+    
+    
+}
+
+kde4PostinstallConfig() {
+    cat > ~/.xinitrc << "EOF"
+ck-launch-session dbus-launch --exit-with-session startkde
+EOF
+    
+    cat >> /etc/inittab << EOF
+kd:5:respawn:/opt/kde/bin/kdm
+EOF
+
+    sed -i 's#id:3:initdefault:#id:5:initdefault:#' /etc/inittab
+}
+
+buildKde4() {
+    buildQt
+    BUILD openssl STD
+    certificate-authority-certificates
+    BUILD curl STD
+    BUILD libarchive STD
+    BUILD cmake STD
+    BUILD nspr STD
+    BUILD zip STD
+    BUILD js STD
+    BUILD polkit STD
+    BUILD polkit-qt STD
+    BUILD libdbusmenu-qt STD
+    kde4PreinstallConfig
+    BUILD automoc STD
+    BUILD boost STD
+    BUILD libxml2 STD
+    BUILD shared-mime-info STD
+    BUILD libxslt STD
+    BUILD akonadi STD
+    BUILD attica STD
+    BUILD qimageblitz STD
+    BUILD oxygen-icons STD
+    BUILD libatasmart STD
+    BUILD libgudev STD
+    BUILD udisks STD
+    BUILD libusb STD
+    BUILD pm-utils STD
+    BUILD strigi STD
+    BUILD phonon STD
+    BUILD giflib STD
+    BUILD docbook-xsl STD
+    BUILD sgml-common STD
+    BUILD unzip STD
+    BUILD docbook-xml STD
+    BUILD which STD
+    BUILD qca STD
+    BUILD dbus-glib STD
+    BUILD upower STD
+    BUILD kdelibs STD
+    BUILD kfilemetadata STD
+    BUILD qjson STD
+    BUILD cyrus-sasl STD
+    BUILD libical STD
+    BUILD open-ldap STD
+    BUILD libassuan STD
+    BUILD gpgme STD
+    BUILD kdepimlibs STD
+    BUILD xapian STD
+    BUILD baloo STD
+    BUILD baloo-widgets STD
+    BUILD polkit-kde-agent STD
+    BUILD kactivities STD
+    BUILD kde-runtime STD
+    BUILD kde-baseapps STD
+    BUILD kde-base-artwork STD
+    BUILD console-kit STD
+    BUILD pciutils STD
+    BUILD kde-workspace STD
+    kde4PostinstallConfig
+    
+    cleanupBuild
+}
+
+export MAKEFLAGS="-j $(cat /proc/cpuinfo | grep processor | wc -l)"
+
+setupBashStartup
+BUILD random-number-gen STD
+BUILD lsb-release STD
+BUILD iptables STD
+BUILD shadow STD
+BUILD sudo STD
+BUILD nano STD
+buildXorg
+buildKde4
 
 reconfigureKernel
-# Clean up files
+
 cleanupBuild

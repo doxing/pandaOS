@@ -1,0 +1,22 @@
+#!/bin/bash
+
+FOLDERNAME="kde-runtime-15.04.3"
+FILENAME="kde-runtime-15.04.3.tar.xz"
+
+# Kde-runtime contains runtime applications and libraries essential for KDE.
+
+# Change directory
+cd /src/pkg/standard/${FOLDERNAME}
+
+# Install
+mkdir build &&
+cd    build &&
+
+cmake -DCMAKE_INSTALL_PREFIX=$KDE_PREFIX         \
+      -DSYSCONF_INSTALL_DIR=/etc                  \
+      -DCMAKE_BUILD_TYPE=Release                  \
+      -DSAMBA_INCLUDE_DIR=/usr/include/samba-4.0 \
+      -Wno-dev .. &&
+make $MAKEFLAGS
+make $MAKEFLAGS install &&
+ln -sfv ../lib/kde4/libexec/kdesu $KDE_PREFIX/bin/kdesu

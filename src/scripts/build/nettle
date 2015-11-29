@@ -1,0 +1,18 @@
+#!/bin/bash
+
+FOLDERNAME="nettle-3.1.1"
+FILENAME="nettle-3.1.1.tar.gz"
+
+# The Nettle package contains the low-level cryptographic library that is designed to fit easily in many contexts.
+
+# Change directory
+cd /src/pkg/standard/${FOLDERNAME}
+
+# Install nettle
+./configure --prefix=/usr &&
+make
+sed -i '/^install-here/ s/ install-static//' Makefile
+make install &&
+chmod   -v   755 /usr/lib/lib{hogweed,nettle}.so &&
+install -v -m755 -d /usr/share/doc/nettle-3.1.1  &&
+install -v -m644 nettle.html /usr/share/doc/nettle-3.1.1    

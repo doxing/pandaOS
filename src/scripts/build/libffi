@@ -20,5 +20,5 @@ sed -e '/^includedir/ s/=.*$/=@includedir@/' \
     -i libffi.pc.in        &&
 
 ./configure --prefix=/usr --disable-static &&
-make
-make install
+make $MAKEFLAGS
+make $MAKEFLAGS install

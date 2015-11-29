@@ -20,5 +20,5 @@ autoreconf -fiv     &&
 ./configure --prefix=/usr \
             --enable-udev \
             --disable-valgrind &&
-make
-make install
+make $MAKEFLAGS
+make $MAKEFLAGS install

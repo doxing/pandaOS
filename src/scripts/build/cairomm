@@ -1,0 +1,14 @@
+#!/bin/bash
+
+FOLDERNAME="cairomm-1.10.0"
+FILENAME="cairomm-1.10.0.tar.gz"
+
+# The Cairomm package provides a C++ interface to Cairo.
+
+# Change directory
+cd /src/pkg/standard/${FOLDERNAME}
+
+# Install
+./configure --prefix=/usr &&
+make
+make install

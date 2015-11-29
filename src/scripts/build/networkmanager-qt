@@ -1,0 +1,22 @@
+#!/bin/bash
+
+FOLDERNAME="networkmanager-qt-5.14.0"
+FILENAME="networkmanager-qt-5.14.0.tar.xz"
+
+# Change directory
+cd /src/pkg/standard/${FOLDERNAME}
+
+# Install
+mkdir build
+cd    build
+
+cmake   -DCMAKE_INSTALL_PREFIX=/opt/kf5    \
+        -DCMAKE_PREFIX_PATH=/usr           \
+        -DCMAKE_BUILD_TYPE=Release         \
+        -DLIB_INSTALL_DIR=lib              \
+        -DBUILD_TESTING=OFF                \
+        -Wno-dev .. &&
+make
+make install
+
+/sbin/ldconfig

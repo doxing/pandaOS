@@ -1,0 +1,16 @@
+#!/bin/bash
+
+FOLDERNAME="cairo-1.14.2"
+FILENAME="cairo-1.14.2.tar.xz"
+
+# Cairo is a 2D graphics library with support for multiple output devices. Currently supported output targets include the X Window System, win32, image buffers, PostScript, PDF and SVG. Experimental backends include OpenGL, Quartz and XCB file output. Cairo is designed to produce consistent output on all output media while taking advantage of display hardware acceleration when available (e.g., through the X Render Extension). The Cairo API provides operations similar to the drawing operators of PostScript and PDF. Operations in Cairo include stroking and filling cubic Bézier splines, transforming and compositing translucent images, and antialiased text rendering. All drawing operations can be transformed by any affine transformation (scale, rotation, shear, etc.).
+
+# Change directory
+cd /src/pkg/standard/${FOLDERNAME}
+
+# Install
+./configure --prefix=/usr    \
+            --disable-static \
+            --enable-tee &&
+make $MAKEFLAGS
+make $MAKEFLAGS install

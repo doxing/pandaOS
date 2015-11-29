@@ -1,0 +1,28 @@
+#!/bin/bash
+
+FOLDERNAME="kdelibs-4.14.10"
+FILENAME="kdelibs-4.14.10.tar.xz"
+
+# This package includes programs and libraries that are central to development and execution of KDE programs.
+
+# Change directory
+cd /src/pkg/standard/${FOLDERNAME}
+
+# Install
+sed -i "s@{SYSCONF_INSTALL_DIR}/xdg/menus@& RENAME kde-applications.menu@" \
+        kded/CMakeLists.txt &&
+
+sed -i "s@applications.menu@kde-&@" \
+        kded/kbuildsycoca.cpp
+        
+mkdir build &&
+cd    build &&
+
+cmake -DCMAKE_INSTALL_PREFIX=$KDE_PREFIX \
+      -DSYSCONF_INSTALL_DIR=/etc         \
+      -DCMAKE_BUILD_TYPE=Release         \
+      -DDOCBOOKXML_CURRENTDTD_DIR=/usr/share/xml/docbook/xml-dtd-4.5 \
+      -DWITH_SOLID_UDISKS2=TRUE          \
+      -Wno-dev ..                        &&
+make $MAKEFLAGS
+make $MAKEFLAGS install

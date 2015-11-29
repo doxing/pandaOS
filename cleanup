@@ -19,10 +19,6 @@ cleanup() {
 
 cleanupBuild() {
     displayMsg ""
-
-    displayMsg OK "Creating backup of the system ..."
-    sudo cp -ru "${MOUNT_POINT}${TOOLS_DIR}" "${MOUNT_POINT}${BACKUP_DIR}"
-    displayMsg OK "Done ..."
     
     displayMsg OK "Cleaning up the mess ..."
     cd "${MOUNT_POINT}${BUILD_DIR}"

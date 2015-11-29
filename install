@@ -50,7 +50,7 @@ checkReq
 # Create necessary directories
 createReqDir
 # Start installing the basic packages
-initSetup
+#initSetup
 # Go Beyond
 buildSystem
 # Cleanup the system

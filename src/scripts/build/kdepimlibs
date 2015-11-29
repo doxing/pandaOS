@@ -1,0 +1,19 @@
+#!/bin/bash
+
+FOLDERNAME="kdepimlibs-4.14.10"
+FILENAME="kdepimlibs-4.14.10.tar.xz"
+
+# Kdepimlibs is the common library for KDE PIM applications like kmail, kalarm, etc.
+
+# Change directory
+cd /src/pkg/standard/${FOLDERNAME}
+
+# Install
+mkdir build &&
+cd    build &&
+
+cmake -DCMAKE_INSTALL_PREFIX=$KDE_PREFIX \
+      -DCMAKE_BUILD_TYPE=Release         \
+      -Wno-dev .. &&
+make $MAKEFLAGS
+make $MAKEFLAGS install

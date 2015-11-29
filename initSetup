@@ -8,11 +8,11 @@ initSetup() {
     export PATH="/tools/bin:/bin:/usr/bin"
 
     source "${MOUNT_POINT}${SCRIPT_DIR}/base-build"
+    
     basebuild1
     basebuild2
     basebuild3
     basebuild4
-    basebuildFinal
     
     displayMsg OK "Preparing virtual kernel filesystem ..."
     mkdir -p ${MOUNT_POINT}{dev,proc,sys,run}

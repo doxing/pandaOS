@@ -1,0 +1,14 @@
+#!/bin/bash
+
+FOLDERNAME="popt-1.16"
+FILENAME="popt-1.16.tar.gz"
+
+# The popt package contains the popt libraries which are used by some programs to parse command-line options.
+
+# Change directory
+cd /src/pkg/standard/${FOLDERNAME}
+
+# Install
+./configure --prefix=/usr --disable-static &&
+make
+make install

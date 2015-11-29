@@ -1,0 +1,17 @@
+#!/bin/bash
+
+FOLDERNAME="udisks-2.1.6"
+FILENAME="udisks-2.1.6.tar.bz2"
+
+# The UDisks package provides a daemon, tools and libraries to access and manipulate disks and storage devices.
+
+# Change directory
+cd /src/pkg/standard/${FOLDERNAME}
+
+# Install UDisks
+./configure --prefix=/usr        \
+            --sysconfdir=/etc    \
+            --localstatedir=/var \
+            --disable-static &&
+make $MAKEFLAGS
+make $MAKEFLAGS docdir=/usr/share/doc/libatasmart-0.19 install

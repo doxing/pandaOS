@@ -20,19 +20,8 @@ basebuild2() {
     # Clean up extracted pakages
     cleanupBuild
 }
-    
-basebuild3() {
-    # Test Suites
-    BUILD tcl BASIC
-    BUILD expect BASIC
-    BUILD dejagnu BASIC
-    BUILD check BASIC
-    
-    # Clean up extracted pakages
-    cleanupBuild
-}    
 
-basebuild4() {
+basebuild3() {
     # Prepare rest of the system
     BUILD ncurses BASIC
     BUILD bash BASIC
@@ -54,12 +43,13 @@ basebuild4() {
     BUILD texinfo BASIC
     BUILD util-linux BASIC
     BUILD xz BASIC
+    BUILD check BASIC
     
     # Clean up extracted pakages
     cleanupBuild
 }
 
-basebuildFinal() {
+basebuild4() {
     # Strip
     stripSymbols
     # Change ownership of MOUNT_POINT/tools to root
