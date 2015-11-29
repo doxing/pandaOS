@@ -1,0 +1,15 @@
+#!/bin/bash
+
+FOLDERNAME="xkeyboard-config-2.15"
+FILENAME="xkeyboard-config-2.15.tar.bz2"
+
+# The XKeyboardConfig package contains the keyboard configuration
+# database for the X Window System.
+
+# Change directory
+cd /src/pkg/standard/${FOLDERNAME}
+
+# Install XKeyboardConfig
+./configure $XORG_CONFIG --with-xkb-rules-symlink=xorg &&
+make
+make install

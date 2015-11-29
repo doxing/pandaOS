@@ -1,0 +1,23 @@
+#!/bin/bash
+
+FOLDERNAME="pkg-config-0.28"
+FILENAME="pkg-config-0.28.tar.gz"
+
+# The pkg-config package contains a tool for passing the
+# include path and/or library paths to build tools during
+# the configure and make file execution.
+    
+# Change directory
+cd /src/pkg/basic/${FOLDERNAME}
+
+# Prepare Pkg-config for compilation
+./configure --prefix=/usr        \
+            --with-internal-glib \
+            --disable-host-tool  \
+            --docdir=/usr/share/doc/pkg-config-0.28
+
+# Compile the package
+make
+
+# Install the package
+make install

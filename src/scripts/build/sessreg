@@ -1,0 +1,15 @@
+#!/bin/bash
+
+FOLDERNAME="sessreg-1.1.0"
+FILENAME="sessreg-1.1.0.tar.bz2"
+
+# Xorg Application
+
+# Change directory
+cd /src/pkg/standard/${FOLDERNAME}
+
+# Install
+sed -e 's/\$(CPP) \$(DEFS)/$(CPP) -P $(DEFS)/' -i man/Makefile.in
+./configure $XORG_CONFIG
+make
+make install

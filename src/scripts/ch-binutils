@@ -1,0 +1,23 @@
+#!/bin/bash
+
+FOLDERNAME="binutils-2.25.1"
+FILENAME="binutils-2.25.1.tar.bz2"
+
+# The Binutils package contains a linker, an assembler,
+# and other tools for handling object files.
+    
+# Change directory
+cd /src/build/ch-binutils
+    
+# FIXME: Verify expect output before running test suites
+
+# Prepare Binutils for compilation
+../../pkg/basic/${FOLDERNAME}/configure --prefix=/usr \
+        --enable-shared \
+        --disable-werror
+
+# Compile the package
+make tooldir=/usr
+
+# Install the package
+make tooldir=/usr install

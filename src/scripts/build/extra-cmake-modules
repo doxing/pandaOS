@@ -1,0 +1,18 @@
+#!/bin/bash
+
+FOLDERNAME="extra-cmake-modules-5.14.0"
+FILENAME="extra-cmake-modules-5.14.0.tar.xz"
+
+# The Extra Cmake Modules package contains extra CMake modules
+# used by KDE Frameworks 5 and other packages.
+
+# Change directory
+cd /src/pkg/standard/${FOLDERNAME}
+
+# Install Cmake
+mkdir build &&
+cd    build &&
+
+cmake -DCMAKE_INSTALL_PREFIX=/usr .. &&
+make $MAKEFLAGS
+make $MAKEFLAGS install

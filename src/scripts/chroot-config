@@ -1,0 +1,198 @@
+#!/bin/bash
+
+##############
+# NETWORKING #
+##############
+
+# Create a basic configuration file for Static IP setup
+cat > /etc/systemd/network/10-static-eth0.network << "EOF"
+[Match]
+Name=eth0
+
+[Network]
+Address=192.168.0.2/24
+Gateway=192.168.0.1
+DNS=192.168.0.1
+EOF
+
+# Create a basic configuration file for DHCP setup
+cat > /etc/systemd/network/10-dhcp-eth0.network << "EOF"
+[Match]
+Name=eth0
+
+[Network]
+DHCP=yes
+EOF
+
+# Create a static /etc/resolv.conf
+cat > /etc/resolv.conf << "EOF"
+# Begin /etc/resolv.conf
+
+domain 127.0.0.1
+nameserver 8.8.8.8
+nameserver 8.8.4.4
+
+# End /etc/resolv.conf
+EOF
+
+# When using systemd-networkd for network configuration,
+# another daemon, systemd-resolved, is responsible for
+# creating the /etc/resolv.conf file. It is, however,
+# placed in a non-standard location which is writable
+# since early boot, so it is necessary to create a symlink
+ln -sfv /run/systemd/resolve/resolv.conf /etc/resolv.conf
+
+# Create the /etc/hostname file and enter a hostname
+echo "panda-linux" > /etc/hostname
+
+# Create the /etc/hosts
+cat > /etc/hosts << "EOF"
+# Begin /etc/hosts (network card version)
+
+127.0.0.1 localhost
+::1       localhost
+
+# End /etc/hosts (network card version)
+EOF
+
+##################################
+# Dealing with duplicate devices #
+##################################
+
+# For video devices
+udevadm info -a -p /sys/class/video4linux/video0
+# Write rules that create the symlinks
+cat > /etc/udev/rules.d/83-duplicate_devs.rules << "EOF"
+
+# Persistent symlinks for webcam and tuner
+KERNEL=="video*", ATTRS{idProduct}=="1910", ATTRS{idVendor}=="0d81", \
+    SYMLINK+="webcam"
+KERNEL=="video*", ATTRS{device}=="0x036f", ATTRS{vendor}=="0x109e", \
+    SYMLINK+="tvtuner"
+
+EOF
+
+################
+# System Clock #
+################
+
+# Create the /etc/adjtime file if your hardware clock
+# is set to local time
+cat > /etc/adjtime << "EOF"
+0.0 0 0.0
+0
+LOCAL
+EOF
+
+###############################
+# Configure the System Locale #
+###############################
+
+# Create the /etc/locale.conf file
+cat > /etc/locale.conf << "EOF"
+LANG=en_US.utf8.UTF-8
+EOF
+
+################
+# InputRc File #
+################
+
+cat > /etc/inputrc << "EOF"
+# Begin /etc/inputrc
+# Modified by Chris Lynn <roryo@roryo.dynup.net>
+
+# Allow the command prompt to wrap to the next line
+set horizontal-scroll-mode Off
+
+# Enable 8bit input
+set meta-flag On
+set input-meta On
+
+# Turns off 8th bit stripping
+set convert-meta Off
+
+# Keep the 8th bit for display
+set output-meta On
+
+# none, visible or audible
+set bell-style none
+
+# All of the following map the escape sequence of the value
+# contained in the 1st argument to the readline specific functions
+"\eOd": backward-word
+"\eOc": forward-word
+
+# for linux console
+"\e[1~": beginning-of-line
+"\e[4~": end-of-line
+"\e[5~": beginning-of-history
+"\e[6~": end-of-history
+"\e[3~": delete-char
+"\e[2~": quoted-insert
+
+# for xterm
+"\eOH": beginning-of-line
+"\eOF": end-of-line
+
+# for Konsole
+"\e[H": beginning-of-line
+"\e[F": end-of-line
+
+# End /etc/inputrc
+EOF
+
+###############
+# Shells File #
+###############
+
+cat > /etc/shells << "EOF"
+# Begin /etc/shells
+
+/bin/sh
+/bin/bash
+
+# End /etc/shells
+EOF
+
+###################################
+# Systemd Usage and Configuration #
+###################################
+
+# Disable Screen Clearing at Boot Time
+mkdir -pv /etc/systemd/system/getty@tty1.service.d
+
+cat > /etc/systemd/system/getty@tty1.service.d/noclear.conf << EOF
+[Service]
+TTYVTDisallocate=no
+EOF
+
+# Disable tmpfs for /tmp
+ln -sfv /dev/null /etc/systemd/system/tmp.mount
+
+# Overriding Default Services Behavior
+mkdir -pv /etc/systemd/system/foobar.service.d
+
+cat > /etc/systemd/system/foobar.service.d/foobar.conf << EOF
+[Service]
+Restart=always
+RestartSec=30
+EOF
+
+##############################
+# Making the system bootable #
+##############################
+
+# The /etc/fstab file is used by some programs to determine
+# where file systems are to be mounted by default, in which
+# order, and which must be checked (for integrity errors)
+# prior to mounting. Create a new file systems table
+cat > /etc/fstab << "EOF"
+# Begin /etc/fstab
+
+# file system  mount-point  type     options             dump  fsck
+#                                                              order
+
+/dev/sda10     /            ext4     defaults            1     1
+
+# End /etc/fstab
+EOF

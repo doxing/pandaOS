@@ -1,0 +1,24 @@
+#!/bin/bash
+
+FOLDERNAME="iproute2-4.2.0"
+FILENAME="iproute2-4.2.0.tar.xz"
+
+# The IPRoute2 package contains programs for basic and
+# advanced IPV4-based networking.
+    
+# Change directory
+cd /src/pkg/basic/${FOLDERNAME}
+
+# The arpd binary included in this package is dependent
+# on Berkeley DB. Because arpd is not a very common
+# requirement on a base Linux system, remove the
+# dependency on Berkeley DB
+sed -i '/^TARGETS/s@arpd@@g' misc/Makefile
+sed -i /ARPD/d Makefile
+sed -i 's/arpd.8//' man/man8/Makefile
+
+# Compile the package
+make
+
+# Install the package
+make DOCDIR=/usr/share/doc/iproute2-4.2.0 install

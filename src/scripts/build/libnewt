@@ -1,0 +1,19 @@
+#!/bin/bash
+
+FOLDERNAME="newt-0.52.18"
+FILENAME="newt-0.52.18.tar.gz"
+
+# Newt is a programming library for color text mode, widget based user interfaces. It can be used to add stacked windows, entry widgets, checkboxes, radio buttons, labels, plain text fields, scrollbars, etc., to text mode user interfaces. Newt is based on the S-Lang library.
+
+# Change directory
+cd /src/pkg/standard/${FOLDERNAME}
+
+# Install
+sed -e 's/^LIBNEWT =/#&/' \
+    -e '/install -m 644 $(LIBNEWT)/ s/^/#/' \
+    -e 's/$(LIBNEWT)/$(LIBNEWTSONAME)/g' \
+    -i Makefile.in                           &&
+
+./configure --prefix=/usr --with-gpm-support &&
+make
+make install

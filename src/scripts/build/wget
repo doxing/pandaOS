@@ -1,0 +1,13 @@
+#!/bin/bash
+
+FOLDERNAME="wget-1.16.3"
+FILENAME="wget-1.16.3.tar.xz"
+
+# Change directory
+cd /src/pkg/standard/${FOLDERNAME}
+
+# Install wget
+./configure --prefix=/usr      \
+            --sysconfdir=/etc  &&
+make
+make install

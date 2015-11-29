@@ -1,0 +1,93 @@
+#!/bin/bash
+
+FOLDERNAME="gcc-5.2.0"
+FILENAME="gcc-5.2.0.tar.bz2"
+
+# The GCC package contains the GNU compiler collection, which
+# includes the C and C++ compilers.
+    
+# Change directory
+cd /src/build/ch-gcc
+
+# Prepare GCC for compilation
+SED=sed                                 \
+../../pkg/basic/${FOLDERNAME}/configure \
+     --prefix=/usr                      \
+     --enable-languages=c,c++           \
+     --disable-multilib                 \
+     --disable-bootstrap                \
+     --with-system-zlib
+
+# Compile the package
+make
+
+# Install the package
+make install
+
+# Some packages expect the C preprocessor to be installed
+# in the /lib directory.
+ln -sv ../../../../usr/bin/cpp /lib
+
+# Many packages use the name cc to call the C compiler.
+ln -s gcc /usr/bin/cc
+
+# Add a compatibility symlink to enable building
+# programs with Link Time Optimization (LTO)
+install -dm755 /usr/lib/bfd-plugins
+ln -sf ../../../../tools/libexec/gcc/$(gcc -dumpmachine)/5.2.0/liblto_plugin.so /usr/lib/bfd-plugins/
+
+# Perform Sanity check
+echo 'int main(){}' > dummy.c
+cc dummy.c -v -Wl,--verbose &> dummy.log
+if [ -n "$(readelf -l a.out | grep ': /lib')" ]
+then
+    echo readelf -l a.out | grep ': /lib'
+else
+    echo "Toolchain test failed at gcc."
+    exit 1
+fi
+
+# Make sure that we're setup to use the correct startfiles
+# FIXME: Verify result
+# Result: /usr/lib/gcc/i686-pc-linux-gnu/5.2.0/../../../crt1.o succeeded
+#         /usr/lib/gcc/i686-pc-linux-gnu/5.2.0/../../../crti.o succeeded
+#         /usr/lib/gcc/i686-pc-linux-gnu/5.2.0/../../../crtn.o succeeded
+grep -o '/usr/lib.*/crt[1in].*succeeded' dummy.log
+
+# Verify that the compiler is searching for the correct header file
+# FIXME: Verify result
+# Result: #include <...> search starts here:
+#        /usr/lib/gcc/i686-pc-linux-gnu/5.2.0/include
+#        /usr/local/include
+#        /usr/lib/gcc/i686-pc-linux-gnu/5.2.0/include-fixed
+#        /usr/include
+grep -B4 '^ /usr/include' dummy.log
+
+# Verify that the new linker is being used with the correct search paths
+# FIXME: Verify result
+# Result: SEARCH_DIR("/usr/x86_64-unknown-linux-gnu/lib64")
+#         SEARCH_DIR("/usr/local/lib64")
+#         SEARCH_DIR("/lib64")
+#         SEARCH_DIR("/usr/lib64")
+#         SEARCH_DIR("/usr/x86_64-unknown-linux-gnu/lib")
+#         SEARCH_DIR("/usr/local/lib")
+#         SEARCH_DIR("/lib")
+#         SEARCH_DIR("/usr/lib");
+grep 'SEARCH.*/usr/lib' dummy.log |sed 's|; |\n|g'
+
+# Make sure that we're using the correct libc
+# FIXME: Verify result
+# Result: attempt to open /lib/libc.so.6 succeeded
+grep "/lib.*/libc.so.6 " dummy.log
+
+# Make sure GCC is using the correct dynamic linker
+# FIXME: Verify result
+# Result: found ld-linux.so.2 at /lib/ld-linux.so.2
+grep found dummy.log
+
+# Clean up the test files
+rm -v dummy.c a.out dummy.log
+
+# Move a misplaced file
+mkdir -pv /usr/share/gdb/auto-load/usr/lib
+mv -v /usr/lib/*gdb.py /usr/share/gdb/auto-load/usr/lib

@@ -1,0 +1,16 @@
+#!/bin/bash
+
+FOLDERNAME="kde-base-artwork-15.04.3"
+FILENAME="kde-base-artwork-15.04.3.tar.xz"
+
+# This package provides the default splash screen for KDE.
+
+# Change directory
+cd /src/pkg/standard/${FOLDERNAME}
+
+# Install
+mkdir build &&
+cd    build &&
+
+cmake -DCMAKE_INSTALL_PREFIX=$KDE_PREFIX -Wno-dev ..
+make $MAKEFLAGS install

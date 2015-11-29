@@ -1,0 +1,20 @@
+#!/bin/bash
+
+FOLDERNAME="libjpeg-turbo-1.4.1"
+FILENAME="libjpeg-turbo-1.4.1.tar.gz"
+
+# libjpeg-turbo is a fork of the original IJG libjpeg which uses SIMD to accelerate baseline JPEG compression and decompression. libjpeg is a library that implements JPEG image encoding, decoding and transcoding.
+
+# Change directory
+cd /src/pkg/standard/${FOLDERNAME}
+
+# Install libjpeg-turbo
+sed -i -e '/^docdir/ s:$:/libjpeg-turbo-1.4.1:' Makefile.in &&
+
+./configure --prefix=/usr           \
+            --mandir=/usr/share/man \
+            --with-jpeg8            \
+            --disable-static &&
+make $MAKEFLAGS
+rm -f /usr/lib/libjpeg.so*
+make $MAKEFLAGS install

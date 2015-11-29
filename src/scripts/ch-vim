@@ -1,0 +1,55 @@
+#!/bin/bash
+
+FOLDERNAME="vim74"
+FILENAME="vim-7.4.tar.bz2"
+
+# The Vim package contains a powerful text editor.
+    
+# Change directory
+cd /src/pkg/basic/${FOLDERNAME}
+
+# Change the default location of the vimrc
+# configuration file to /etc
+echo '#define SYS_VIMRC_FILE "/etc/vimrc"' >> src/feature.h
+
+# Prepare Vim for compilation:
+./configure --prefix=/usr
+            
+# Compile the package
+make
+
+# Install the package
+make install
+
+# Many users are used to using vi instead of vim. To allow
+# execution of vim when users habitually enter vi, create
+# a symlink for both the binary and the man page in the
+# provided languages
+ln -sv vim /usr/bin/vi
+for L in  /usr/share/man/{,*/}man1/vim.1; do
+    ln -sv vim.1 $(dirname $L)/vi.1
+done
+
+# By default, Vim's documentation is installed in /usr/share/vim.
+# The following symlink allows the documentation to be accessed
+# via /usr/share/doc/vim-7.4, making it consistent with the
+# location of documentation for other packages:
+ln -sv /usr/share/vim/vim74/doc /usr/share/doc/vim-7.4
+
+#################
+# CONFIGURE VIM #
+#################
+
+# Create a default vim configuration file
+cat > /etc/vimrc << "EOF"
+" Begin /etc/vimrc
+
+set nocompatible
+set backspace=2
+syntax on
+if (&term == "iterm") || (&term == "putty")
+  set background=dark
+endif
+
+" End /etc/vimrc
+EOF

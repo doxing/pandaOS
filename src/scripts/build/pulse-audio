@@ -1,0 +1,21 @@
+#!/bin/bash
+
+FOLDERNAME="pulseaudio-7.1"
+FILENAME="pulseaudio-7.1.tar.xz"
+
+# PulseAudio is a sound system for POSIX OSes, meaning that it is a proxy for sound applications. It allows you to do advanced operations on your sound data as it passes between your application and your hardware. Things like transferring the audio to a different machine, changing the sample format or channel count and mixing several sounds into one are easily achieved using a sound server.
+
+# Change directory
+cd /src/pkg/standard/${FOLDERNAME}
+
+# Install
+sed -i "/seems to be moved/s/^/#/" build-aux/ltmain.sh
+
+./configure --prefix=/usr        \
+            --sysconfdir=/etc    \
+            --localstatedir=/var \
+            --disable-bluez4     \
+            --disable-rpath      &&
+make $MAKEFLAGS
+make $MAKEFLAGS install
+rm /etc/dbus-1/system.d/pulseaudio-system.conf

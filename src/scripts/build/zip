@@ -1,0 +1,14 @@
+#!/bin/bash
+
+FOLDERNAME="zip30"
+FILENAME="zip30.tgz"
+
+# The Zip package contains Zip utilities. These are useful
+# for compressing files into ZIP archives.
+
+# Change directory
+cd /src/pkg/standard/${FOLDERNAME}
+
+# Install Zip
+make $MAKEFLAGS -f unix/Makefile generic_gcc
+make $MAKEFLAGS prefix=/usr MANDIR=/usr/share/man/man1 -f unix/Makefile install

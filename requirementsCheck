@@ -1,0 +1,81 @@
+#!/bin/bash
+
+# Verifies minimum system requirements
+checkReq() {
+    displayMsg OK "Verifying requirements ..."
+    
+    # Sanity checks
+    if [ "$(whoami)" == "root" ]
+    then
+        displayMsg ERR "This script should not be run as root. Please invoke it with a regular"
+        displayMsg ERR "user account with sudo privileges."
+        exit 1
+    fi
+    
+    # Verify that enough memory is available. Builds have been successfull with
+    # 768 MiB of RAM, but it is better to be safe and always warn below 1 GiB.
+    local MEMREQ_MB="950" # 1 GiB, with some slack
+    
+    local MEMSIZE_KB="$(grep MemTotal /proc/meminfo | awk '{print $2}')"
+    local MEMSIZE_MB="$((${MEMSIZE_KB} / 1024))"
+    
+    if [ "${MEMSIZE_MB}" -lt "${MEMREQ_MB}" ]; then
+        displayMsg ERR "The system memory size (as reported by /proc/meminfo) is"
+        displayMsg ERR "${MEMSIZE_MB} MiB. This is less than the recommended"
+        displayMsg ERR "minimum of 1 GiB and *could* cause build failures in"
+        displayMsg ERR "large software (for example in the temporary build of"
+        displayMsg ERR "GCC) if it is significantly less."
+        exit 1
+    fi
+    
+    # Ability to compile
+    echo "int main(){}" > dummy.c && gcc -o dummy dummy.c
+    if [ ! -x dummy ]; then
+        displayMsg ERR "Couldn't compile basic c program"
+        exit 1
+    fi
+    
+    # Make sure there are no spaces in the current directory
+    if [ "$(echo ${PWD} | grep ' ' || echo -n '')" != "" ]; then
+        displayMsg ERR "Installer can't be run in a directory which contains spaces."
+        exit 1
+    fi
+    
+    rm dummy.c dummy
+    
+    displayMsg OK "All checks passed..."
+}
+
+# Creates necessary directories
+createReqDir() {
+    displayMsg OK "Creating temporary directories ..."
+    
+    # Change directory to the mount point
+    cd $MOUNT_POINT
+    
+    # Create BUILD_DIR
+    if [ ! -d "${MOUNT_POINT}${BUILD_DIR}" ]
+    then
+        mkdir -p "${MOUNT_POINT}${BUILD_DIR}"
+    fi
+    
+    # Create BACKUP_DIR
+    if [ ! -d "${MOUNT_POINT}${BACKUP_DIR}" ]
+    then
+        mkdir -p "${MOUNT_POINT}${BACKUP_DIR}"
+    fi
+    
+    # Create the /tools directory
+    mkdir -p ${MOUNT_POINT}$TOOLS_DIR
+    # Provide the full path to avoid errors
+    sudo ln -s ${MOUNT_POINT}$TOOLS_DIR /
+    
+    # Make sure BUILD_DIR is writable
+    if [ ! -w "${MOUNT_POINT}${BUILD_DIR}" ]
+    then
+        displayMsg ERR "Build directory is not writable."
+        exit 1
+    fi
+    
+    displayMsg OK "Done ..."
+}

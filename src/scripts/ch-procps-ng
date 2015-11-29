@@ -1,0 +1,29 @@
+#!/bin/bash
+
+FOLDERNAME="procps-ng-3.3.11"
+FILENAME="procps-ng-3.3.11.tar.xz"
+
+# The Procps-ng package contains programs for monitoring
+# processes.
+    
+# Change directory
+cd /src/pkg/basic/${FOLDERNAME}
+
+# Prepare Procps-ng for compilation
+./configure --prefix=/usr                            \
+            --exec-prefix=                           \
+            --libdir=/usr/lib                        \
+            --docdir=/usr/share/doc/procps-ng-3.3.11 \
+            --disable-static                         \
+            --disable-kill
+
+# Compile the package
+make
+
+# Install the package
+make install
+
+# Move essential libraries to a location that can be
+# found if /usr is not mounted
+mv -v /usr/lib/libprocps.so.* /lib
+ln -sfv ../../../../lib/$(readlink /usr/lib/libprocps.so) /usr/lib/libprocps.so

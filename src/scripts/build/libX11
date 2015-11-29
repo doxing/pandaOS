@@ -1,0 +1,15 @@
+#!/bin/bash
+
+FOLDERNAME="libX11-1.6.3"
+FILENAME="libX11-1.6.3.tar.bz2"
+
+# Xorg Library
+
+# Change directory
+cd /src/pkg/standard/${FOLDERNAME}
+
+# Install
+./configure $XORG_CONFIG
+make
+make install
+/sbin/ldconfig

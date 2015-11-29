@@ -1,0 +1,15 @@
+#!/bin/bash
+
+FOLDERNAME="libpciaccess-0.13.4"
+FILENAME="libpciaccess-0.13.4.tar.bz2"
+
+# Xorg Library
+
+# Change directory
+cd /src/pkg/standard/${FOLDERNAME}
+
+# Install
+./configure $XORG_CONFIG
+make
+make install
+/sbin/ldconfig

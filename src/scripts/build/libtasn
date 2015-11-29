@@ -1,0 +1,16 @@
+#!/bin/bash
+
+FOLDERNAME="libtasn1-4.6"
+FILENAME="libtasn1-4.6.tar.gz"
+
+# libtasn1 is a highly portable C library that encodes and decodes DER/BER data following an ASN.1 schema.
+
+# Change directory
+cd /src/pkg/standard/${FOLDERNAME}
+
+# Install libtasn1
+./configure --prefix=/usr --disable-static &&
+make
+make install
+
+make -C doc/reference install-data-local

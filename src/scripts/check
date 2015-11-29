@@ -1,0 +1,17 @@
+#!/bin/bash
+
+FOLDERNAME="check-0.10.0"
+FILENAME="check-0.10.0.tar.gz"
+
+# Check is a unit testing framework for C.
+
+cd ../../pkg/basic/${FOLDERNAME}
+
+# Prepare Check for compilation
+PKG_CONFIG= ./configure --prefix=/tools
+
+# Build the package
+make $MAKEFLAGS
+
+# Install the package
+make $MAKEFLAGS install

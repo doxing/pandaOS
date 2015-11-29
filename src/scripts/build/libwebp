@@ -1,0 +1,14 @@
+#!/bin/bash
+
+FOLDERNAME="libwebp-0.4.3"
+FILENAME="libwebp-0.4.3.tar.gz"
+
+# The libwebp package contains a library and support programs to encode and decode images in WebP format.
+
+# Change directory
+cd /src/pkg/standard/${FOLDERNAME}
+
+# Install
+./configure --prefix=/usr --disable-static &&
+make $MAKEFLAGS
+make $MAKEFLAGS install

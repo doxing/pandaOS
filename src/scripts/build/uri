@@ -1,0 +1,12 @@
+#!/bin/bash
+
+FOLDERNAME="URI-1.69"
+FILENAME="URI-1.69.tar.gz"
+
+# Change directory
+cd /src/pkg/standard/${FOLDERNAME}
+
+# Install URI
+perl Makefile.PL &&
+make &&
+make install

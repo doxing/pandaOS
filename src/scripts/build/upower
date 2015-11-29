@@ -1,0 +1,18 @@
+#!/bin/bash
+
+FOLDERNAME="upower-0.9.23"
+FILENAME="upower-0.9.23.tar.xz"
+
+# The UPower package provides an interface to enumerating power devices, listening to device events and querying history and statistics. Any application or service on the system can access the org.freedesktop.UPower service via the system message bus.
+
+# Change directory
+cd /src/pkg/standard/${FOLDERNAME}
+
+# Install UPower
+./configure --prefix=/usr        \
+            --sysconfdir=/etc    \
+            --localstatedir=/var \
+            --enable-deprecated  \
+            --disable-static     &&
+make $MAKEFLAGS
+make $MAKEFLAGS install

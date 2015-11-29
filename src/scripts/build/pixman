@@ -1,0 +1,16 @@
+#!/bin/bash
+
+FOLDERNAME="pixman-0.32.6"
+FILENAME="pixman-0.32.6.tar.gz"
+
+# The Pixman package contains a library that provides low-level pixel
+# manipulation features such as image compositing and trapezoid
+# rasterization.
+
+# Change directory
+cd /src/pkg/standard/${FOLDERNAME}
+
+# Install Pixman
+./configure --prefix=/usr --disable-static &&
+make $MAKEFLAGS
+make $MAKEFLAGS install

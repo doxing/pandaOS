@@ -1,0 +1,27 @@
+#!/bin/bash
+
+FOLDERNAME="expect5.45"
+FILENAME="expect5.45.tar.gz"
+
+# The Expect package contains a program for carrying out
+# scripted dialogues with other interactive programs.
+
+cd ../../pkg/basic/${FOLDERNAME}
+
+# Force Expect's configure script to use /bin/stty instead
+# of a /usr/local/bin/stty it may find on the host system.
+# This will ensure that our test suite tools remain sane
+# for the final builds of our toolchain
+cp configure{,.orig}
+sed 's:/usr/local/bin:/bin:' configure.orig > configure
+
+# Prepare Expect for compilation
+./configure --prefix=/tools       \
+            --with-tcl=/tools/lib \
+            --with-tclinclude=/tools/include
+
+# Build the package
+make $MAKEFLAGS
+
+# Install the package
+make $MAKEFLAGS SCRIPTS="" install

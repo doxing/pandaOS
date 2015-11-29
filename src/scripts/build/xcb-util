@@ -1,0 +1,16 @@
+#!/bin/bash
+
+FOLDERNAME="xcb-util-0.4.0"
+FILENAME="xcb-util-0.4.0.tar.bz2"
+
+# The xcb-util package provides additional extensions to
+# the XCB library, many that were previously found in Xlib,
+# but are not part of core X protocol.
+
+# Change directory
+cd /src/pkg/standard/${FOLDERNAME}
+
+# Install xcb-util
+./configure $XORG_CONFIG &&
+make
+make install

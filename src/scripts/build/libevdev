@@ -1,0 +1,15 @@
+#!/bin/bash
+
+FOLDERNAME="libevdev-1.4.4"
+FILENAME="libevdev-1.4.4.tar.xz"
+
+# The Libevdev package contains common functions for
+# Xorg input drivers.
+
+# Change directory
+cd /src/pkg/standard/${FOLDERNAME}
+
+# Install libevdev
+./configure $XORG_CONFIG &&
+make
+make install

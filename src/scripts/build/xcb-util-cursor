@@ -1,0 +1,14 @@
+#!/bin/bash
+
+FOLDERNAME="xcb-util-cursor-0.1.2"
+FILENAME="xcb-util-cursor-0.1.2.tar.bz2"
+
+# The xcb-util-cursor package provides a module that implements the XCB cursor library. It is a the XCB replacement for libXcursor.
+
+# Change directory
+cd /src/pkg/standard/${FOLDERNAME}
+
+# Install
+./configure $XORG_CONFIG &&
+make $MAKEFLAGS
+make $MAKEFLAGS install

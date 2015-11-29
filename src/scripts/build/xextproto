@@ -1,0 +1,13 @@
+#!/bin/bash
+
+FOLDERNAME="xextproto-7.3.0"
+FILENAME="xextproto-7.3.0.tar.bz2"
+
+# Xorg Protocol Headers
+
+# Change directory
+cd /src/pkg/standard/${FOLDERNAME}
+
+# Install bigreqsproto
+./configure $XORG_CONFIG
+make install

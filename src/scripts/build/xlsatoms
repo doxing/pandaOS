@@ -1,0 +1,14 @@
+#!/bin/bash
+
+FOLDERNAME="xlsatoms-1.1.2"
+FILENAME="xlsatoms-1.1.2.tar.bz2"
+
+# Xorg Application
+
+# Change directory
+cd /src/pkg/standard/${FOLDERNAME}
+
+# Install
+./configure $XORG_CONFIG
+make
+make install

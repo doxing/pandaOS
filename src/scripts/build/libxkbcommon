@@ -1,0 +1,15 @@
+#!/bin/bash
+
+FOLDERNAME="libxkbcommon-0.5.0"
+FILENAME="libxkbcommon-0.5.0.tar.xz"
+
+# libxkbcommon is a keymap compiler and support library which processes a reduced subset of keymaps as defined by the XKB specification.
+
+# Change directory
+cd /src/pkg/standard/${FOLDERNAME}
+
+# Install
+./configure $XORG_CONFIG     \
+            --docdir=/usr/share/doc/libxkbcommon-0.5.0 &&
+make $MAKEFLAGS
+make $MAKEFLAGS install

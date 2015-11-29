@@ -1,0 +1,27 @@
+#!/bin/bash
+
+FOLDERNAME="mozjs17.0.0"
+FILENAME="mozjs17.0.0.tar.gz"
+
+# JS is Mozilla's JavaScript engine written in C/C++.
+
+# Change directory
+cd /src/pkg/standard/${FOLDERNAME}
+
+# Install JS
+cd js/src &&
+
+sed -i 's/(defined\((@TEMPLATE_FILE)\))/\1/' config/milestone.pl &&
+
+./configure --prefix=/usr       \
+            --enable-readline   \
+            --enable-threadsafe \
+            --with-system-ffi   \
+            --with-system-nspr &&
+make $MAKEFLAGS
+make $MAKEFLAGS install &&
+
+find /usr/include/js-17.0/            \
+     /usr/lib/libmozjs-17.0.a         \
+     /usr/lib/pkgconfig/mozjs-17.0.pc \
+     -type f -exec chmod -v 644 {} \;

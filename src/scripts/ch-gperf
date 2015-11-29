@@ -1,0 +1,19 @@
+#!/bin/bash
+
+FOLDERNAME="gperf-3.0.4"
+FILENAME="gperf-3.0.4.tar.gz"
+
+# Gperf generates a perfect hash function from a key set.
+    
+# Change directory
+cd /src/pkg/basic/${FOLDERNAME}
+
+# Prepare Gperf for compilation
+./configure --prefix=/usr \
+            --docdir=/usr/share/doc/gperf-3.0.4
+
+# Compile the package
+make
+
+# Install the package
+make install

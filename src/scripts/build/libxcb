@@ -1,0 +1,22 @@
+#!/bin/bash
+
+FOLDERNAME="libxcb-1.11.1"
+FILENAME="libxcb-1.11.1.tar.bz2"
+
+# The libxcb package provides an interface to the X Window
+# System protocol, which replaces the current Xlib interface.
+# Xlib can also use XCB as a transport layer, allowing software
+# to make requests and receive responses with both.
+
+# Change directory
+cd /src/pkg/standard/${FOLDERNAME}
+
+# Install libxcb
+sed -i "s/pthread-stubs//" configure &&
+
+./configure $XORG_CONFIG      \
+            --enable-xinput   \
+            --without-doxygen \
+            --docdir='${datadir}'/doc/libxcb-1.11.1 &&
+make
+make install

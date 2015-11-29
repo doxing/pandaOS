@@ -1,0 +1,16 @@
+#!/bin/bash
+
+FOLDERNAME="wayland-1.9.0"
+FILENAME="wayland-1.9.0.tar.xz"
+
+# Wayland is a project to define a protocol for a compositor to talk to its clients as well as a library implementation of the protocol.
+
+# Change directory
+cd /src/pkg/standard/${FOLDERNAME}
+
+# Install
+./configure --prefix=/usr    \
+            --disable-static \
+            --disable-documentation &&
+make $MAKEFLAGS
+make $MAKEFLAGS install

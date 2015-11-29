@@ -1,0 +1,16 @@
+#!/bin/bash
+
+FOLDERNAME="libinput-1.1.1"
+FILENAME="libinput-1.1.1.tar.xz"
+
+# libinput is a library that handles input devices for display servers and other applications that need to directly deal with input devices.
+
+# Change directory
+cd /src/pkg/standard/${FOLDERNAME}
+
+# Install
+./configure --prefix=/usr    \
+            --disable-static \
+            --with-udev-dir=/lib/udev &&
+make $MAKEFLAGS
+make $MAKEFLAGS docdir=/usr/share/doc/libcanberra-0.30 install

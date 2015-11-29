@@ -1,0 +1,20 @@
+#!/bin/bash
+
+FOLDERNAME="libnl-3.2.25"
+FILENAME="libnl-3.2.25.tar.gz"
+
+# The libnl suite is a collection of libraries providing APIs to netlink protocol based Linux kernel interfaces.
+
+# Change directory
+cd /src/pkg/standard/${FOLDERNAME}
+
+# Install
+./configure --prefix=/usr     \
+            --sysconfdir=/etc \
+            --disable-static  &&
+make $MAKEFLAGS
+make $MAKEFLAGS install
+
+mkdir -vp /usr/share/doc/libnl-3.2.25 &&
+tar -xf ../libnl-doc-3.2.25.tar.gz --strip-components=1 --no-same-owner \
+        -C /usr/share/doc/libnl-3.2.25

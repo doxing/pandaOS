@@ -1,0 +1,17 @@
+#!/bin/bash
+
+FOLDERNAME="automoc4-0.9.88"
+FILENAME="automoc4-0.9.88.tar.bz2"
+
+# Automoc4 is a tool to add rules for generating Qt moc files automatically to projects that use CMake as the buildsystem.
+
+# Change directory
+cd /src/pkg/standard/${FOLDERNAME}
+
+# Install automoc4
+mkdir build &&
+cd    build &&
+
+cmake -DCMAKE_INSTALL_PREFIX=$KDE_PREFIX -Wno-dev .. &&
+make $MAKEFLAGS
+make $MAKEFLAGS install

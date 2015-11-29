@@ -1,0 +1,27 @@
+#!/bin/bash
+
+FOLDERNAME="polkit-0.113"
+FILENAME="polkit-0.113.tar.gz"
+
+# Polkit is a toolkit for defining and handling authorizations.
+# It is used for allowing unprivileged processes to communicate
+# with privileged processes.
+
+# Change directory
+cd /src/pkg/standard/${FOLDERNAME}
+
+# There should be a dedicated user and group to take control of
+# the polkitd daemon after it is started
+groupadd -fg 27 polkitd &&
+useradd -c "PolicyKit Daemon Owner" -d /etc/polkit-1 -u 27 \
+        -g polkitd -s /bin/false polkitd
+
+# Install Polkit
+./configure --prefix=/usr                \
+            --sysconfdir=/etc            \
+            --localstatedir=/var         \
+            --disable-static             \
+            --enable-libsystemd-login=yes \
+            --with-authfw=shadow         &&
+make $MAKEFLAGS
+make $MAKEFLAGS install

@@ -1,0 +1,26 @@
+#!/bin/bash
+
+FOLDERNAME="lm_sensors-3.4.0"
+FILENAME="lm_sensors-3.4.0.tar.bz2"
+
+# libinput is a library that handles input devices for display servers and other applications that need to directly deal with input devices.
+
+# Change directory
+cd /src/pkg/standard/${FOLDERNAME}
+
+# Install
+make $MAKEFLAGS         \
+     PREFIX=/usr        \
+     BUILD_STATIC_LIB=0 \
+     MANDIR=/usr/share/man
+     
+make $MAKEFLAGS         \
+     PREFIX=/usr        \
+     BUILD_STATIC_LIB=0 \
+     MANDIR=/usr/share/man install &&
+
+install -v -m755 -d /usr/share/doc/lm_sensors-3.4.0 &&
+cp -rv              README INSTALL doc/* \
+                    /usr/share/doc/lm_sensors-3.4.0
+                    
+sensors-detect

@@ -1,0 +1,21 @@
+#!/bin/bash
+
+FOLDERNAME="gwenview-4.14.3"
+FILENAME="gwenview-4.14.3.tar.xz"
+
+# Gwenview is a fast and easy-to-use image viewer for KDE.
+
+# Change directory
+cd /src/pkg/standard/${FOLDERNAME}
+
+# Install
+mkdir build &&
+cd    build &&
+
+cmake -DCMAKE_INSTALL_PREFIX=$KDE_PREFIX \
+      -DCMAKE_BUILD_TYPE=Release         \
+      -DKDCRAW_LOCAL_FOUND=$KDE_PREFIX/lib/libkdcraw.so \
+      -WITH_Kipi=OFF \
+      -Wno-dev .. &&
+make $MAKEFLAGS
+make $MAKEFLAGS install

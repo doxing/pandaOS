@@ -1,0 +1,22 @@
+#!/bin/bash
+
+FOLDERNAME="diffutils-3.3"
+FILENAME="diffutils-3.3.tar.xz"
+
+# The Diffutils package contains programs that show the
+# differences between files or directories.
+    
+# Change directory
+cd /src/pkg/basic/${FOLDERNAME}
+
+# Fix a file so locale files are installed
+sed -i 's:= @mkdir_p@:= /bin/mkdir -p:' po/Makefile.in.in
+
+# Prepare Diffutils for compilation
+./configure --prefix=/usr
+
+# Compile the package
+make
+
+# Install the package
+make install

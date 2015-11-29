@@ -1,0 +1,16 @@
+#!/bin/bash
+
+FOLDERNAME="xf86-video-ati-7.5.0"
+FILENAME="xf86-video-ati-7.5.0.tar.bz2"
+
+# The Xorg ATI Driver package contains the X.Org Video Driver
+# for ATI Radeon video cards including all chipsets ranging
+# from R100 to R900 and the newer RAxx chipsets. 
+
+# Change directory
+cd /src/pkg/standard/${FOLDERNAME}
+
+# Install libevdev
+./configure $XORG_CONFIG &&
+make
+make install

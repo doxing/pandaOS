@@ -1,0 +1,16 @@
+#!/bin/bash
+
+FOLDERNAME="libvorbis-1.3.5"
+FILENAME="libvorbis-1.3.5.tar.xz"
+
+# The libvorbis package contains a general purpose audio and music encoding format. This is useful for creating (encoding) and playing (decoding) sound in an open (patent free) format.
+
+# Change directory
+cd /src/pkg/standard/${FOLDERNAME}
+
+# Install
+sed -i '/components.png \\/{n;d}' doc/Makefile.in
+./configure --prefix=/usr --disable-static &&
+make $MAKEFLAGS
+make $MAKEFLAGS install &&
+install -v -m644 doc/Vorbis* /usr/share/doc/libvorbis-1.3.5

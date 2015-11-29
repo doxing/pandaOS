@@ -1,0 +1,27 @@
+#!/bin/bash
+
+FOLDERNAME="man-db-2.7.2"
+FILENAME="man-db-2.7.2.tar.xz"
+
+# The Man-DB package contains programs for finding and viewing man pages.
+    
+# Change directory
+cd /src/pkg/basic/${FOLDERNAME}
+
+# Prepare Man DB for compilation:
+./configure --prefix=/usr                        \
+            --docdir=/usr/share/doc/man-db-2.7.2 \
+            --sysconfdir=/etc                    \
+            --disable-setuid                     \
+            --with-browser=/usr/bin/lynx         \
+            --with-vgrind=/usr/bin/vgrind        \
+            --with-grap=/usr/bin/grap
+            
+# Compile the package
+make
+
+# Install the package
+make install
+
+# Remove a reference to a non-existent user
+sed -i "s:man root:root root:g" /usr/lib/tmpfiles.d/man-db.conf

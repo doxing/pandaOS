@@ -1,0 +1,57 @@
+#!/bin/bash
+
+#################################################
+#           Panda Linux installer               #
+#                                               #
+# Abhimanyu Saharan <desk.abhimanyu@gmail.com>  #
+#################################################
+
+source imports
+
+# Accept partition from the user
+PARTITION="${1}"
+
+# Verify existence of mount point
+if [ ! -d $MOUNT_POINT ]
+then
+    displayMsg OK "Creating Mount point ..."
+    mkdir -pv $MOUNT_POINT
+fi
+
+if [ "${PARTITION}" == "" ]
+then
+    displayMsg WARN "Usage: ./install <filesystem>"
+    exit 1
+fi
+
+# Prepare the filesystem
+displayMsg OK "Preparing the filesystem ..."
+sudo mount -t ext4 $PARTITION $MOUNT_POINT
+displayMsg OK "Done ..."
+
+displayMsg OK "------- PANDA LINUX -------"
+displayMsg ""
+
+# Get rights to build the system
+sudo chown $(whoami) $MOUNT_POINT
+
+#################################################################
+# Copy the data to the mount point                              #
+#################################################################
+
+displayMsg OK "Copying data ..."
+cp -ur ./* $MOUNT_POINT
+displayMsg OK "Done ..."
+
+#################################################################
+
+# Verify System Requirements
+checkReq
+# Create necessary directories
+createReqDir
+# Start installing the basic packages
+initSetup
+# Go Beyond
+buildSystem
+# Cleanup the system
+cleanup

@@ -1,0 +1,24 @@
+#!/bin/bash
+
+FOLDERNAME="psmisc-22.21"
+FILENAME="psmisc-22.21.tar.gz"
+
+# The Psmisc package contains programs for displaying
+# information about running processes.
+    
+# Change directory
+cd /src/pkg/basic/${FOLDERNAME}
+
+# Prepare Psmisc for compilation
+./configure --prefix=/usr
+
+# Compile the package
+make
+
+# Install the package
+make install
+
+# Move the killall and fuser programs to the location
+# specified by the FHS
+mv -v /usr/bin/fuser   /bin
+mv -v /usr/bin/killall /bin

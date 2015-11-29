@@ -1,0 +1,16 @@
+#!/bin/bash
+
+FOLDERNAME="libgpg-error-1.20"
+FILENAME="libgpg-error-1.20.tar.bz2"
+
+# The libgpg-error package contains a library that defines common error values for all GnuPG components.
+
+# Change directory
+cd /src/pkg/standard/${FOLDERNAME}
+
+# Install libgpg error
+./configure --prefix=/usr --disable-static &&
+make $MAKEFLAGS
+
+make $MAKEFLAGS install &&
+install -v -m644 -D README /usr/share/doc/libgpg-error-1.20/README

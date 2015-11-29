@@ -1,0 +1,19 @@
+#!/bin/bash
+
+FOLDERNAME="kmix-15.04.3"
+FILENAME="kmix-15.04.3.tar.xz"
+
+# This packages provides an audio mixer application for KDE.
+
+# Change directory
+cd /src/pkg/standard/${FOLDERNAME}
+
+# Install
+mkdir build &&
+cd    build &&
+
+cmake -DCMAKE_INSTALL_PREFIX=$KDE_PREFIX \
+      -DCMAKE_BUILD_TYPE=Release         \
+      -Wno-dev .. &&
+make $MAKEFLAGS
+make $MAKEFLAGS install

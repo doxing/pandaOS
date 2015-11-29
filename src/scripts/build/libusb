@@ -1,0 +1,15 @@
+#!/bin/bash
+
+FOLDERNAME="libusb-1.0.19"
+FILENAME="libusb-1.0.19.tar.bz2"
+
+# The libusb package contains a library used by some
+# applications for USB device access.
+
+# Change directory
+cd /src/pkg/standard/${FOLDERNAME}
+
+# Install libusb
+./configure --prefix=/usr --disable-static &&
+make $MAKEFLAGS
+make $MAKEFLAGS install

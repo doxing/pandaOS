@@ -1,0 +1,17 @@
+#!/bin/bash
+
+FOLDERNAME="libndp-1.5"
+FILENAME="libndp-1.5.tar.gz"
+
+# The libndp package provides a wrapper for IPv6 Neighbor Discovery Protocol. It also provides a tool named ndptool for sending and receiving NDP messages.
+
+# Change directory
+cd /src/pkg/standard/${FOLDERNAME}
+
+# Install
+./configure --prefix=/usr        \
+            --sysconfdir=/etc    \
+            --localstatedir=/var \
+            --disable-static     &&
+make $MAKEFLAGS
+make $MAKEFLAGS install

@@ -1,0 +1,13 @@
+#!/bin/bash
+
+FOLDERNAME="kbproto-1.0.7"
+FILENAME="kbproto-1.0.7.tar.bz2"
+
+# Xorg Protocol Headers
+
+# Change directory
+cd /src/pkg/standard/${FOLDERNAME}
+
+# Install bigreqsproto
+./configure $XORG_CONFIG
+make install

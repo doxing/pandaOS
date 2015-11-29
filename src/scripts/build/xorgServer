@@ -1,0 +1,26 @@
+#!/bin/bash
+
+FOLDERNAME="xorg-server-1.17.2"
+FILENAME="xorg-server-1.17.2.tar.bz2"
+
+# The Xorg Server is the core of the X Window system.
+
+# Change directory
+cd /src/pkg/standard/${FOLDERNAME}
+
+# Install Xorg Server
+patch -Np1 -i ../xorg-server-1.17.2-add_prime_support-1.patch
+
+./configure $XORG_CONFIG            \
+           --enable-glamor          \
+           --enable-install-setuid  \
+           --enable-suid-wrapper    \
+           --disable-systemd-logind \
+           --with-xkb-output=/var/lib/xkb &&
+make
+make install &&
+mkdir -pv /etc/X11/xorg.conf.d &&
+cat >> /etc/sysconfig/createfiles << "EOF"
+/tmp/.ICE-unix dir 1777 root root
+/tmp/.X11-unix dir 1777 root root
+EOF

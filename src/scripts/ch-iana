@@ -1,0 +1,17 @@
+#!/bin/bash
+
+FOLDERNAME="iana-etc-2.30"
+FILENAME="iana-etc-2.30.tar.bz2"
+
+# The Iana-Etc package provides data for network services
+# and protocols.
+    
+# Change directory
+cd /src/pkg/basic/${FOLDERNAME}
+
+# Convert the raw data provided by IANA into the correct
+# formats for the /etc/protocols and /etc/services data files
+make
+
+# Install the package
+make install

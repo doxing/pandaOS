@@ -1,0 +1,23 @@
+#!/bin/bash
+
+#!/bin/bash
+
+FOLDERNAME="nano-2.4.2"
+FILENAME="nano-2.4.2.tar.gz"
+
+# The Nano package contains a small, simple text editor which
+# aims to replace Pico, the default editor in the Pine package.
+
+# Change directory
+cd /src/pkg/standard/${FOLDERNAME}
+
+# Install Nano
+./configure --prefix=/usr     \
+            --sysconfdir=/etc \
+            --enable-utf8     \
+            --docdir=/usr/share/doc/nano-2.4.2 &&
+make $MAKEFLAGS
+
+make $MAKEFLAGS install                 &&
+install -v -m644 doc/nanorc.sample /etc &&
+install -v -m644 doc/texinfo/nano.html /usr/share/doc/nano-2.4.2s

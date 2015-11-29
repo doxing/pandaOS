@@ -1,0 +1,17 @@
+#!/bin/bash
+
+FOLDERNAME="tar-1.28"
+FILENAME="tar-1.28.tar.xz"
+
+# The Tar package contains an archiving program.
+
+cd ../../pkg/basic/${FOLDERNAME}
+
+# Prepare Tar for compilation
+./configure --prefix=/tools
+
+# Compile the package
+make $MAKEFLAGS
+
+# Install the package
+make $MAKEFLAGS install

@@ -1,0 +1,18 @@
+#!/bin/bash
+
+FOLDERNAME="dejagnu-1.5.3"
+FILENAME="dejagnu-1.5.3.tar.gz"
+
+# The DejaGNU package contains a framework for testing
+# other programs.
+
+cd ../../pkg/basic/${FOLDERNAME}
+
+# Prepare DejaGNU for compilation
+./configure --prefix=/tools
+
+# Build the package
+make $MAKEFLAGS
+
+# Install the package
+make $MAKEFLAGS install

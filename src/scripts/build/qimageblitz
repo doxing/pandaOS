@@ -1,0 +1,17 @@
+#!/bin/bash
+
+FOLDERNAME="qimageblitz-0.0.6"
+FILENAME="qimageblitz-0.0.6.tar.bz2"
+
+# QImageblitz is a graphical effect and filter library for KDE.
+
+# Change directory
+cd /src/pkg/standard/${FOLDERNAME}
+
+# Install QImageblitz
+mkdir build &&
+cd    build &&
+
+cmake -DCMAKE_INSTALL_PREFIX=$KDE_PREFIX -Wno-dev .. &&
+make $MAKEFLAGS
+make $MAKEFLAGS install

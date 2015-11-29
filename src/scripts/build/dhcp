@@ -1,0 +1,72 @@
+#!/bin/bash
+
+FOLDERNAME="dhcp-4.3.3"
+FILENAME="dhcp-4.3.3.tar.gz"
+
+# The ISC DHCP package contains both the client and server programs for DHCP. dhclient (the client) is used for connecting to a network which uses DHCP to assign network addresses. dhcpd (the server) is used for assigning network addresses on private networks.
+
+# Change directory
+cd /src/pkg/standard/${FOLDERNAME}
+
+# Install
+patch -Np1 -i ../dhcp-4.3.3-missing_ipv6-1.patch
+patch -Np1 -i ../dhcp-4.3.3-client_script-1.patch &&
+CFLAGS="-D_PATH_DHCLIENT_SCRIPT='\"/sbin/dhclient-script\"'         \
+        -D_PATH_DHCPD_CONF='\"/etc/dhcp/dhcpd.conf\"'               \
+        -D_PATH_DHCLIENT_CONF='\"/etc/dhcp/dhclient.conf\"'"        \
+./configure --prefix=/usr                                           \
+            --sysconfdir=/etc/dhcp                                  \
+            --localstatedir=/var                                    \
+            --with-srv-lease-file=/var/lib/dhcpd/dhcpd.leases       \
+            --with-srv6-lease-file=/var/lib/dhcpd/dhcpd6.leases     \
+            --with-cli-lease-file=/var/lib/dhclient/dhclient.leases \
+            --with-cli6-lease-file=/var/lib/dhclient/dhclient6.leases &&
+make -j1
+
+make -C client install         &&
+mv -v /usr/sbin/dhclient /sbin &&
+install -v -m755 client/scripts/linux /sbin/dhclient-script
+
+cat > /etc/dhcp/dhclient.conf << "EOF"
+# Begin /etc/dhcp/dhclient.conf
+#
+# Basic dhclient.conf(5)
+
+#prepend domain-name-servers 127.0.0.1;
+request subnet-mask, broadcast-address, time-offset, routers,
+        domain-name, domain-name-servers, domain-search, host-name,
+        netbios-name-servers, netbios-scope, interface-mtu,
+        ntp-servers;
+require subnet-mask, domain-name-servers;
+#timeout 60;
+#retry 60;
+#reboot 10;
+#select-timeout 5;
+#initial-interval 2;
+
+# End /etc/dhcp/dhclient.conf
+EOF
+
+install -v -dm 755 /var/lib/dhclient
+
+cd /src/pkg/standard
+tar xf blfs-bootscripts-20150924.tar.bz2
+cd blfs-bootscripts-20150924
+make $MAKEFLAGS install-service-dhclient
+cd /src/pkg/standard/${FOLDERNAME}
+
+cat > /etc/sysconfig/ifconfig.eth0 << "EOF"
+ONBOOT="yes"
+IFACE="eth0"
+SERVICE="dhclient"
+DHCP_START=""
+DHCP_STOP=""
+
+# Set PRINTIP="yes" to have the script print
+# the DHCP assigned IP address
+PRINTIP="no"
+
+# Set PRINTALL="yes" to print the DHCP assigned values for
+# IP, SM, DG, and 1st NS. This requires PRINTIP="yes".
+PRINTALL="no"
+EOF

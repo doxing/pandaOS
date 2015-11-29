@@ -1,0 +1,42 @@
+#!/bin/bash
+
+FOLDERNAME="e2fsprogs-1.42.13"
+FILENAME="e2fsprogs-1.42.13.tar.gz"
+
+# The E2fsprogs package contains the utilities for handling
+# the ext2 file system. It also supports the ext3 and ext4
+# journaling file systems.
+    
+# Change directory
+cd /src/build/ch-e2fsprogs
+
+# Prepare E2fsprogs for compilation
+LIBS=-L/tools/lib                                               \
+CFLAGS=-I/tools/include                                         \
+PKG_CONFIG_PATH=/tools/lib/pkgconfig                            \
+../../pkg/basic/${FOLDERNAME}/configure --prefix=/usr           \
+                                        --bindir=/bin           \
+                                        --with-root-prefix=""   \
+                                        --enable-elf-shlibs     \
+                                        --disable-libblkid      \
+                                        --disable-libuuid       \
+                                        --disable-uuidd         \
+                                        --disable-fsck
+
+# Compile the package
+make
+
+# Install the package
+make install
+# Install the static libraries and headers
+make install-libs
+
+# Make the installed static libraries writable so
+# debugging symbols can be removed later
+chmod -v u+w /usr/lib/{libcom_err,libe2p,libext2fs,libss}.a
+
+# This package installs a gzipped .info file but doesn't
+# update the system-wide dir file. Unzip this file and
+# then update the system dir file
+gunzip -v /usr/share/info/libext2fs.info.gz
+install-info --dir-file=/usr/share/info/dir /usr/share/info/libext2fs.info

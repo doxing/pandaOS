@@ -1,0 +1,10 @@
+#!/bin/bash
+
+source global
+source handleErrors
+source functions
+source requirementsCheck
+source cleanup
+source initSetup
+source chrootSetup
+source buildSystem

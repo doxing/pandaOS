@@ -1,0 +1,15 @@
+#!/bin/bash
+
+FOLDERNAME="libfontenc-1.1.3"
+FILENAME="libfontenc-1.1.3.tar.bz2"
+
+# Xorg Library
+
+# Change directory
+cd /src/pkg/standard/${FOLDERNAME}
+
+# Install
+./configure $XORG_CONFIG
+make
+make install
+/sbin/ldconfig

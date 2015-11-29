@@ -1,0 +1,41 @@
+#!/bin/bash
+
+FOLDERNAME="polkit-qt-1-0.112.0"
+FILENAME="polkit-qt-1-0.112.0.tar.bz2"
+
+# Polkit-Qt provides an API to PolicyKit in the Qt environment.
+
+# Change directory
+cd /src/pkg/standard/${FOLDERNAME}
+
+# Install PolicyKit
+pathprepend () {
+        pathremove $1 $2
+        local PATHVARIABLE=${2:-PATH}
+        export $PATHVARIABLE="$1${!PATHVARIABLE:+:${!PATHVARIABLE}}"
+}
+
+pathremove () {
+        local IFS=':'
+        local NEWPATH
+        local DIR
+        local PATHVARIABLE=${2:-PATH}
+        for DIR in ${!PATHVARIABLE} ; do
+                if [ "$DIR" != "$1" ] ; then
+                  NEWPATH=${NEWPATH:+$NEWPATH:}$DIR
+                fi
+        done
+        export $PATHVARIABLE="$NEWPATH"
+}
+
+source /usr/bin/setqt5 &&
+
+mkdir build &&
+cd    build &&
+
+cmake -DCMAKE_INSTALL_PREFIX=/usr \
+      -DCMAKE_BUILD_TYPE=Release  \
+      -DCMAKE_INSTALL_LIBDIR=lib  \
+      -Wno-dev .. &&
+make $MAKEFLAGS
+make $MAKEFLAGS install

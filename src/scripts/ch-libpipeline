@@ -1,0 +1,19 @@
+#!/bin/bash
+
+FOLDERNAME="libpipeline-1.4.1"
+FILENAME="libpipeline-1.4.1.tar.gz"
+
+# The Libpipeline package contains a library for manipulating
+# pipelines of subprocesses in a flexible and convenient way.
+    
+# Change directory
+cd /src/pkg/basic/${FOLDERNAME}
+
+# Prepare Libpipeline for compilation
+PKG_CONFIG_PATH=/tools/lib/pkgconfig ./configure --prefix=/usr
+
+# Compile the package
+make
+
+# Install the package
+make install

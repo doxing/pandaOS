@@ -1,0 +1,12 @@
+#!/bin/bash
+
+FOLDERNAME="man-pages-4.02"
+FILENAME="man-pages-4.02.tar.xz"
+
+# The Man-pages package contains over 2,200 man pages.
+    
+# Change directory
+cd /src/pkg/basic/${FOLDERNAME}
+    
+# Install Man-pages
+make install

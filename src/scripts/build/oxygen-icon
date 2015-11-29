@@ -1,0 +1,16 @@
+#!/bin/bash
+
+FOLDERNAME="oxygen-icons-15.04.3"
+FILENAME="oxygen-icons-15.04.3.tar.xz"
+
+# The Oxygen theme is a photo-realistic icon style, with a high standard of graphics quality.
+
+# Change directory
+cd /src/pkg/standard/${FOLDERNAME}
+
+# Install Oxygen theme
+mkdir build &&
+cd    build &&
+
+cmake -DCMAKE_INSTALL_PREFIX=/usr -Wno-dev ..
+make $MAKEFLAGS install

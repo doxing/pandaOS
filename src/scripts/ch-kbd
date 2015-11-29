@@ -1,0 +1,32 @@
+#!/bin/bash
+
+FOLDERNAME="kbd-2.0.3"
+FILENAME="kbd-2.0.3.tar.xz"
+
+# The Kbd package contains key-table files, console fonts,
+# and keyboard utilities.
+    
+# Change directory
+cd /src/pkg/basic/${FOLDERNAME}
+
+# The behaviour of the Backspace and Delete keys is not
+# consistent across the keymaps in the Kbd package. The
+# following patch fixes this issue for i386 keymaps
+patch -Np1 -i ../kbd-2.0.3-backspace-1.patch
+
+# Remove the redundant resizecons program (it requires
+# the defunct svgalib to provide the video mode files
+# - for normal use setfont sizes the console appropriately)
+# together with its manpage
+sed -i 's/\(RESIZECONS_PROGS=\)yes/\1no/g' configure
+sed -i 's/resizecons.8 //' docs/man/man8/Makefile.in
+
+# Prepare Kbd for compilation
+PKG_CONFIG_PATH=/tools/lib/pkgconfig ./configure --prefix=/usr \
+                                                 --disable-vlock
+
+# Compile the package
+make
+
+# Install the package
+make install

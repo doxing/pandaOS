@@ -1,0 +1,15 @@
+#!/bin/bash
+
+FOLDERNAME="giflib-5.1.1"
+FILENAME="giflib-5.1.1.tar.bz2"
+
+# The giflib package contains libraries for reading and writing
+# GIFs as well as programs for converting and working with GIF files.
+
+# Change directory
+cd /src/pkg/standard/${FOLDERNAME}
+
+# Install Gif lib
+./configure --prefix=/usr --disable-static &&
+make $MAKEFLAGS
+make $MAKEFLAGS install

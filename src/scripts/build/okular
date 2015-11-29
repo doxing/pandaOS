@@ -1,0 +1,19 @@
+#!/bin/bash
+
+FOLDERNAME="okular-15.04.3"
+FILENAME="okular-15.04.3.tar.xz"
+
+# Okular is a document viewer for KDE. It can view documents of many types including PDF, PostScript, TIFF, Microsoft CHM, DjVu, DVI, XPS and ePub.
+
+# Change directory
+cd /src/pkg/standard/${FOLDERNAME}
+
+# Install
+mkdir build &&
+cd    build &&
+
+cmake -DCMAKE_INSTALL_PREFIX=$KDE_PREFIX \
+      -DCMAKE_BUILD_TYPE=Release         \
+      -Wno-dev .. &&
+make $MAKEFLAGS
+make $MAKEFLAGS install

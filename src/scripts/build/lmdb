@@ -1,0 +1,15 @@
+#!/bin/bash
+
+FOLDERNAME="lmdb-LMDB_0.9.16"
+FILENAME="LMDB_0.9.16.tar.gz"
+
+# The lmdb package is a fast, compact, key-value embedded data store. It uses memory-mapped files, so it has the read performance of a pure in-memory database while still offering the persistence of standard disk-based databases, and is only limited to the size of the virtual address space
+
+# Change directory
+cd /src/pkg/standard/${FOLDERNAME}
+
+# Install
+cd libraries/liblmdb               &&
+sed -i 's|/man/|/share&|' Makefile &&
+make $MAKEFLAGS
+make $MAKEFLAGS prefix=/usr install

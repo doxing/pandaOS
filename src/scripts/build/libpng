@@ -1,0 +1,24 @@
+#!/bin/bash
+
+FOLDERNAME="libpng-1.6.18"
+FILENAME="libpng-1.6.18.tar.xz"
+
+# The libpng package contains libraries used by other
+# programs for reading and writing PNG files. The PNG
+# format was designed as a replacement for GIF and, to
+# a lesser extent, TIFF, with many improvements and
+# extensions and lack of patent problems.
+
+# Change directory
+cd /src/pkg/standard/${FOLDERNAME}
+
+# Patch libpng to support apng files
+gzip -cd ../libpng-1.6.18-apng.patch.gz | patch -p1
+
+# Install libpng
+./configure --prefix=/usr --disable-static &&
+make $MAKEFLAGS
+
+make $MAKEFLAGS install &&
+mkdir -v /usr/share/doc/libpng-1.6.18 &&
+cp -v README libpng-manual.txt /usr/share/doc/libpng-1.6.18

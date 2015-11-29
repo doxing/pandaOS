@@ -1,0 +1,44 @@
+#!/bin/bash
+
+FOLDERNAME="phonon-backend-gstreamer-4.8.2"
+FILENAME="phonon-backend-gstreamer-4.8.2.tar.xz"
+
+# This package provides a Phonon backend which utilizes the GStreamer
+# media framework.
+
+# Change directory
+cd /src/pkg/standard/${FOLDERNAME}
+
+# Install Phonon backend gstreamer
+pathremove () {
+        local IFS=':'
+        local NEWPATH
+        local DIR
+        local PATHVARIABLE=${2:-PATH}
+        for DIR in ${!PATHVARIABLE} ; do
+                if [ "$DIR" != "$1" ] ; then
+                  NEWPATH=${NEWPATH:+$NEWPATH:}$DIR
+                fi
+        done
+        export $PATHVARIABLE="$NEWPATH"
+}
+
+pathprepend () {
+        pathremove $1 $2
+        local PATHVARIABLE=${2:-PATH}
+        export $PATHVARIABLE="$1${!PATHVARIABLE:+:${!PATHVARIABLE}}"
+}
+
+source /usr/bin/setqt5 &&
+
+mkdir build &&
+cd    build &&
+
+cmake -DCMAKE_INSTALL_PREFIX=/usr    \
+      -DCMAKE_INSTALL_LIBDIR=lib     \
+      -DCMAKE_BUILD_TYPE=Release     \
+      -DPHONON_BUILD_PHONON4QT5=ON   \
+      -D__KDE_HAVE_GCC_VISIBILITY=NO \
+      -Wno-dev .. &&
+make $MAKEFLAGS
+make $MAKEFLAGS install

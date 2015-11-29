@@ -1,0 +1,25 @@
+#!/bin/bash
+
+FOLDERNAME="bash-4.3.30"
+FILENAME="bash-4.3.30.tar.gz"
+
+# The Bash package contains the Bourne-Again SHell.
+    
+# Change directory
+cd /src/pkg/basic/${FOLDERNAME}
+
+# Install some patches to fix various bugs
+patch -Np1 -i ../bash-4.3.30-upstream_fixes-2.patch
+
+# Prepare Bash for compilation
+./configure --prefix=/usr \
+            --bindir=/bin                       \
+            --docdir=/usr/share/doc/bash-4.3.30 \
+            --without-bash-malloc               \
+            --with-installed-readline
+
+# Compile the package
+make
+
+# Install the package
+make install

@@ -1,0 +1,19 @@
+#!/bin/bash
+
+FOLDERNAME="LibRaw-0.17.0"
+FILENAME="LibRaw-0.17.0.tar.gz"
+
+# Libraw is a library for reading RAW files obtained from digital photo cameras (CRW/CR2, NEF, RAF, DNG, and others).
+
+# Change directory
+cd /src/pkg/standard/${FOLDERNAME}
+
+# Install
+./configure --prefix=/usr    \
+            --enable-jpeg    \
+            --enable-jasper  \
+            --enable-lcms    \
+            --disable-static \
+            --docdir=/usr/share/doc/libraw-0.17.0 &&
+make $MAKEFLAGS
+make $MAKEFLAGS install

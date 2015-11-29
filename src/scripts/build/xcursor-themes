@@ -1,0 +1,15 @@
+#!/bin/bash
+
+FOLDERNAME="xcursor-themes-1.0.4"
+FILENAME="xcursor-themes-1.0.4.tar.bz2"
+
+# The xcursor-themes package contains the redglass and
+# whiteglass animated cursor themes.
+
+# Change directory
+cd /src/pkg/standard/${FOLDERNAME}
+
+# Install the xcursor-themes
+./configure $XORG_CONFIG &&
+make
+make install

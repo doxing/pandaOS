@@ -1,0 +1,26 @@
+#!/bin/bash
+
+FOLDERNAME="ncurses-6.0"
+FILENAME="ncurses-6.0.tar.gz"
+
+# The Ncurses package contains libraries for terminal
+# independent handling of character screens.
+
+cd ../../pkg/basic/${FOLDERNAME}
+
+# Ensure that gawk is found first during configuration
+sed -i s/mawk// configure
+
+# Prepare Ncurses for compilation
+./configure --prefix=/tools \
+            --with-shared   \
+            --without-debug \
+            --without-ada   \
+            --enable-widec  \
+            --enable-overwrite
+            
+# Compile the package
+make $MAKEFLAGS
+
+# Install the package
+make $MAKEFLAGS install

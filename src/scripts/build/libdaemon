@@ -1,0 +1,14 @@
+#!/bin/bash
+
+FOLDERNAME="libdaemon-0.14"
+FILENAME="libdaemon-0.14.tar.gz"
+
+# The libdaemon package is a lightweight C library that eases the writing of UNIX daemons.
+
+# Change directory
+cd /src/pkg/standard/${FOLDERNAME}
+
+# Install
+./configure --prefix=/usr --disable-static &&
+make $MAKEFLAGS
+make $MAKEFLAGS docdir=/usr/share/doc/libdaemon-0.14 install

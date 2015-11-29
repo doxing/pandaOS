@@ -1,0 +1,14 @@
+#!/bin/bash
+
+FOLDERNAME="xcb-util-image-0.4.0"
+FILENAME="xcb-util-image-0.4.0.tar.bz2"
+
+# The xcb-util-image package provides additional extensions to the XCB library.
+
+# Change directory
+cd /src/pkg/standard/${FOLDERNAME}
+
+# Install xcb-util-image
+./configure $XORG_CONFIG &&
+make
+make install

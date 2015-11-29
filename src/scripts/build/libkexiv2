@@ -1,0 +1,19 @@
+#!/bin/bash
+
+FOLDERNAME="libkexiv2-15.04.3"
+FILENAME="libkexiv2-15.04.3.tar.xz"
+
+# Libkexiv2 is a KDE wrapper around the Exiv2 library for manipulating image metadata.
+
+# Change directory
+cd /src/pkg/standard/${FOLDERNAME}
+
+# Install
+mkdir build &&
+cd    build &&
+
+cmake -DCMAKE_INSTALL_PREFIX=$KDE_PREFIX \
+      -DCMAKE_BUILD_TYPE=Release         \
+      -Wno-dev .. &&
+make $MAKEFLAGS
+make $MAKEFLAGS install

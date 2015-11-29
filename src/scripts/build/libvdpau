@@ -1,0 +1,15 @@
+#!/bin/bash
+
+FOLDERNAME="libvdpau-1.1.1"
+FILENAME="libvdpau-1.1.1.tar.bz2"
+
+# The libvdpau package contains a library which implements the VDPAU library.
+
+# Change directory
+cd /src/pkg/standard/${FOLDERNAME}
+
+# Install libvdpau
+./configure $XORG_CONFIG \
+            --docdir=/usr/share/doc/libvdpau-1.1.1 &&
+make $MAKEFLAGS
+make $MAKEFLAGS install

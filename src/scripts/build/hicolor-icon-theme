@@ -1,0 +1,13 @@
+#!/bin/bash
+
+FOLDERNAME="hicolor-icon-theme-0.15"
+FILENAME="hicolor-icon-theme-0.15.tar.xz"
+
+# The hicolor-icon-theme package contains a default fallback theme for implementations of the icon theme specification.
+
+# Change directory
+cd /src/pkg/standard/${FOLDERNAME}
+
+# Install Phonon
+./configure --prefix=/usr
+make $MAKEFLAGS install

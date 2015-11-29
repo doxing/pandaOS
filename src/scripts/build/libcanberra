@@ -1,0 +1,14 @@
+#!/bin/bash
+
+FOLDERNAME="libcanberra-0.30"
+FILENAME="libcanberra-0.30.tar.xz"
+
+# libcanberra is an implementation of the XDG Sound Theme and Name Specifications, for generating event sounds on free desktops, such as GNOME.
+
+# Change directory
+cd /src/pkg/standard/${FOLDERNAME}
+
+# Install
+./configure --prefix=/usr --disable-oss &&
+make $MAKEFLAGS
+make $MAKEFLAGS docdir=/usr/share/doc/libcanberra-0.30 install

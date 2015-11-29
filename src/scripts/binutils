@@ -1,0 +1,65 @@
+#!/bin/bash
+
+FOLDERNAME="binutils-2.25.1"
+FILENAME="binutils-2.25.1.tar.bz2"
+
+# It is important that Binutils be the first package compiled because both Glibc
+# and GCC perform various tests on the available linker and assembler to determine
+# which of their own features to enable.
+pass1() {
+    displayMsg OK "Building Pass 1 ..."
+    
+    # Prepare Binutils for compilation
+    ../../pkg/basic/${FOLDERNAME}/configure \
+            --prefix=/tools                 \
+            --with-sysroot=$MOUNT_POINT     \
+            --with-lib-path=/tools/lib      \
+            --target=$TARGET                \
+            --disable-nls                   \
+            --disable-werror
+
+    # Compile the package
+    make $MAKEFLAGS
+
+    # If building on x86_64, create a symlink to 
+    # ensure the sanity of the toolchain
+    case $(uname -m) in
+        x86_64) mkdir "/tools/lib" && ln -s lib "/tools/lib64" ;;
+    esac
+
+    # Install the package
+    make $MAKEFLAGS install
+    BINUTILS_PASS1="true"
+}
+
+pass2() {
+    displayMsg OK "Building Pass 2 ..."
+  
+    # Prepare Binutils for compilation
+    CC=$TARGET-gcc                          \
+    AR=$TARGET-ar                           \
+    RANLIB=$TARGET-ranlib                   \
+    ../../pkg/basic/${FOLDERNAME}/configure \
+        --prefix=/tools                     \
+        --disable-nls                       \
+        --disable-werror                    \
+        --with-lib-path=/tools/lib          \
+        --with-sysroot
+
+    # Compile the package
+    make $MAKEFLAGS 
+    # Install the package
+    make $MAKEFLAGS install
+
+    # Prepare the linker for the “Re-adjusting” phase
+    make $MAKEFLAGS -C ld clean
+    make $MAKEFLAGS -C ld LIB_PATH=/usr/lib:/lib
+    cp ld/ld-new /tools/bin
+}
+
+if [ $BINUTILS_PASS1 == "true" ]
+then
+    pass2
+else
+    pass1
+fi

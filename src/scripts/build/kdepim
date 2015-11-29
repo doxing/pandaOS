@@ -1,0 +1,20 @@
+#!/bin/bash
+
+FOLDERNAME="kdepim-4.14.10"
+FILENAME="kdepim-4.14.10.tar.xz"
+
+# This package provides several KDE programs for managing personal information. Programs include a contact manager, calendar, mail client, newsreader, X.509 certificate manager and sticky notes.
+
+# Change directory
+cd /src/pkg/standard/${FOLDERNAME}
+
+# Install
+mkdir build &&
+cd    build &&
+
+cmake -DCMAKE_INSTALL_PREFIX=$KDE_PREFIX \
+      -DSYSCONF_INSTALL_DIR=/etc         \
+      -DCMAKE_BUILD_TYPE=Release         \
+      -Wno-dev .. &&
+make $MAKEFLAGS
+make $MAKEFLAGS install

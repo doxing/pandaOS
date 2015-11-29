@@ -1,0 +1,26 @@
+#!/bin/bash
+
+FOLDERNAME="tcl8.6.4"
+FILENAME="tcl-core8.6.4-src.tar.gz"
+
+# The Tcl package contains the Tool Command Language.
+
+# Prepare Tcl for compilation
+cd ../../pkg/basic/${FOLDERNAME}/unix
+./configure --prefix=/tools
+
+# Build the package
+make $MAKEFLAGS
+
+# Install the package
+make $MAKEFLAGS install
+
+# Make the installed library writable so debugging
+# symbols can be removed later
+chmod -v u+w /tools/lib/libtcl8.6.so
+
+# Install Tcl's headers
+make $MAKEFLAGS install-private-headers
+
+# Make a necessary symbolic link
+ln -s tclsh8.6 /tools/bin/tclsh

@@ -1,0 +1,23 @@
+#!/bin/bash
+
+FOLDERNAME="automake-1.15"
+FILENAME="automake-1.15.tar.xz"
+
+# The Automake package contains programs for generating
+# Makefiles for use with Autoconf.
+    
+# Change directory
+cd /src/pkg/basic/${FOLDERNAME}
+
+# Fix a warning that is caused by perl-5.22 and later
+sed -i 's:/\\\${:/\\\$\\{:' bin/automake.in
+
+# Prepare Automake for compilation
+./configure --prefix=/usr \
+            --docdir=/usr/share/doc/automake-1.15
+
+# Compile the package
+make
+
+# Install the package
+make install

@@ -1,0 +1,19 @@
+#!/bin/bash
+
+FOLDERNAME="kdepim-runtime-4.14.10"
+FILENAME="kdepim-runtime-4.14.10.tar.xz"
+
+# This package provides additional resources for Akonadi.
+
+# Change directory
+cd /src/pkg/standard/${FOLDERNAME}
+
+# Install
+mkdir build &&
+cd    build &&
+
+cmake -DCMAKE_INSTALL_PREFIX=$KDE_PREFIX \
+      -DCMAKE_BUILD_TYPE=Release         \
+      -Wno-dev .. &&
+make $MAKEFLAGS
+make $MAKEFLAGS install

@@ -1,0 +1,15 @@
+#!/bin/bash
+
+FOLDERNAME="icu"
+FILENAME="icu4c-55_1-src.tgz"
+
+# The International Components for Unicode (ICU) package is a mature, widely used set of C/C++ libraries providing Unicode and Globalization support for software applications. ICU is widely portable and gives applications the same results on all platforms.
+
+# Change directory
+cd /src/pkg/standard/${FOLDERNAME}
+
+# Install
+cd source &&
+./configure --prefix=/usr &&
+make $MAKEFLAGS
+make $MAKEFLAGS install

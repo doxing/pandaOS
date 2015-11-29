@@ -1,0 +1,43 @@
+#!/bin/bash
+
+FOLDERNAME="khtml-5.14.0"
+FILENAME="portingAids/khtml-5.14.0.tar.xz"
+
+# Change directory
+cd /src/pkg/standard/${FOLDERNAME}
+
+# Install
+pathremove () {
+        local IFS=':'
+        local NEWPATH
+        local DIR
+        local PATHVARIABLE=${2:-PATH}
+        for DIR in ${!PATHVARIABLE} ; do
+                if [ "$DIR" != "$1" ] ; then
+                  NEWPATH=${NEWPATH:+$NEWPATH:}$DIR
+                fi
+        done
+        export $PATHVARIABLE="$NEWPATH"
+}
+
+pathprepend () {
+        pathremove $1 $2
+        local PATHVARIABLE=${2:-PATH}
+        export $PATHVARIABLE="$1${!PATHVARIABLE:+:${!PATHVARIABLE}}"
+}
+
+source /usr/bin/setqt5 &&
+
+mkdir build
+cd    build
+
+cmake -DCMAKE_INSTALL_PREFIX=$KF5_PREFIX \
+      -DCMAKE_PREFIX_PATH=$QT5DIR        \
+      -DCMAKE_BUILD_TYPE=Release         \
+      -DLIB_INSTALL_DIR=lib              \
+      -DBUILD_TESTING=OFF                \
+      -Wno-dev ..                       &&
+make $MAKEFLAGS
+make $MAKEFLAGS install
+
+sudo /sbin/ldconfig

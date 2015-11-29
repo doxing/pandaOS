@@ -1,0 +1,17 @@
+#!/bin/bash
+
+FOLDERNAME="make-4.1"
+FILENAME="make-4.1.tar.bz2"
+
+# The Make package contains a program for compiling packages.
+
+cd ../../pkg/basic/${FOLDERNAME}
+
+# Prepare Make for compilation
+./configure --prefix=/tools --without-guile
+
+# Compile the package
+make $MAKEFLAGS
+
+# Install the package
+make $MAKEFLAGS install

@@ -1,0 +1,48 @@
+#!/bin/bash
+
+FOLDERNAME="bluez-5.34"
+FILENAME="bluez-5.34.tar.xz"
+
+# The BlueZ package contains the Bluetooth protocol stack for Linux.
+
+# Change directory
+cd /src/pkg/standard/${FOLDERNAME}
+
+# Install
+patch -Np1 -i ../bluez-5.34-obexd_without_systemd-1.patch
+
+./configure --prefix=/usr         \
+            --sysconfdir=/etc     \
+            --localstatedir=/var  \
+            --enable-library      \
+            --disable-systemd     &&
+make $MAKEFLAGS
+make $MAKEFLAGS install &&
+ln -svf /usr/libexec/bluetooth/bluetoothd /usr/sbin
+install -v -dm755 /etc/bluetooth &&
+install -v -m644 src/main.conf /etc/bluetooth/main.conf
+install -v -dm755 /usr/share/doc/bluez-5.34 &&
+install -v -m644 doc/*.txt /usr/share/doc/bluez-5.34
+
+cat > /etc/bluetooth/rfcomm.conf << "EOF"
+# rfcomm.conf
+# Set up the RFCOMM configuration of the Bluetooth subsystem in the Linux kernel.
+# Use one line per command
+# See the rfcomm man page for options
+
+
+# End of rfcomm.conf
+EOF
+cat > /etc/bluetooth/uart.conf << "EOF"
+#uart.conf
+# Attach serial devices via UART HCI to BlueZ stack
+# Use one line per device
+# See the hciattach man page for options
+
+# End of uart.conf
+EOF
+
+cd /src/pkg/standard
+tar xf blfs-bootscripts-20150924.tar.bz2
+cd blfs-bootscripts-20150924
+make $MAKEFLAGS install-bluetooth

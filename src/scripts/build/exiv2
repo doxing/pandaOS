@@ -1,0 +1,19 @@
+#!/bin/bash
+
+FOLDERNAME="exiv2-0.25"
+FILENAME="exiv2-0.25.tar.gz"
+
+# Exiv2 is a C++ library and a command line utility for managing image and video metadata.
+
+# Change directory
+cd /src/pkg/standard/${FOLDERNAME}
+
+# Install
+./configure --prefix=/usr     \
+            --enable-video    \
+            --enable-webready \
+            --without-ssh     \
+            --disable-static  &&
+make $MAKEFLAGS
+make $MAKEFLAGS install &&
+chmod -v 755 /usr/lib/libexiv2.so

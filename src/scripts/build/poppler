@@ -1,0 +1,48 @@
+#!/bin/bash
+
+FOLDERNAME="poppler-0.35.0"
+FILENAME="poppler-0.35.0.tar.xz"
+
+# The Poppler package contains a PDF rendering library and command line tools used to manipulate PDF files. This is useful for providing PDF rendering functionality as a shared library.
+
+# Change directory
+cd /src/pkg/standard/${FOLDERNAME}
+
+# Install
+pathremove () {
+        local IFS=':'
+        local NEWPATH
+        local DIR
+        local PATHVARIABLE=${2:-PATH}
+        for DIR in ${!PATHVARIABLE} ; do
+                if [ "$DIR" != "$1" ] ; then
+                  NEWPATH=${NEWPATH:+$NEWPATH:}$DIR
+                fi
+        done
+        export $PATHVARIABLE="$NEWPATH"
+}
+
+pathprepend () {
+        pathremove $1 $2
+        local PATHVARIABLE=${2:-PATH}
+        export $PATHVARIABLE="$1${!PATHVARIABLE:+:${!PATHVARIABLE}}"
+}
+
+source /usr/bin/setqt4 &&
+MOCQT4=/opt/qt4/bin/moc                  \
+./configure --prefix=/usr               \
+            --sysconfdir=/etc           \
+            --disable-static            \
+            --enable-build-type=release \
+            --enable-cmyk               \
+            --enable-xpdf-headers       &&
+make $MAKEFLAGS
+make $MAKEFLAGS install
+
+install -v -m755 -d        /usr/share/doc/poppler-0.35.0 &&
+install -v -m644 README*   /usr/share/doc/poppler-0.35.0 &&
+cp -vr glib/reference/html /usr/share/doc/poppler-0.35.0
+
+tar -xf ../poppler-data-0.4.7.tar.gz &&
+cd poppler-data-0.4.7
+make $MAKEFLAGS prefix=/usr install

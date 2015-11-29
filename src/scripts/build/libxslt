@@ -1,0 +1,14 @@
+#!/bin/bash
+
+FOLDERNAME="libxslt-1.1.28"
+FILENAME="libxslt-1.1.28.tar.gz"
+
+# The libxslt package contains XSLT libraries used for extending libxml2 libraries to support XSLT files.
+
+# Change directory
+cd /src/pkg/standard/${FOLDERNAME}
+
+# Install libxslt
+./configure --prefix=/usr --disable-static &&
+make $MAKEFLAGS
+make $MAKEFLAGS install

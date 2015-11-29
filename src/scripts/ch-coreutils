@@ -1,0 +1,36 @@
+#!/bin/bash
+
+FOLDERNAME="coreutils-8.24"
+FILENAME="coreutils-8.24.tar.xz"
+
+# The Coreutils package contains utilities for showing and
+# setting the basic system characteristics.
+    
+# Change directory
+cd /src/pkg/basic/${FOLDERNAME}
+
+# POSIX requires that programs from Coreutils recognize
+# character boundaries correctly even in multibyte locales.
+# The following patch fixes this non-compliance and other
+# internationalization-related bugs.
+patch -Np1 -i ../coreutils-8.24-i18n-1.patch
+sed -i '/tests\/misc\/sort.pl/ d' Makefile.in
+
+# Prepare Coreutils for compilation
+FORCE_UNSAFE_CONFIGURE=1 ./configure \
+            --prefix=/usr            \
+            --enable-no-install-program=kill,uptime
+
+# Compile the package
+make
+
+# Install the package
+make install
+# Move programs to the locations specified by the FHS
+mv -v /usr/bin/{cat,chgrp,chmod,chown,cp,date,dd,df,echo} /bin
+mv -v /usr/bin/{false,ln,ls,mkdir,mknod,mv,pwd,rm} /bin
+mv -v /usr/bin/{rmdir,stty,sync,true,uname} /bin
+mv -v /usr/bin/chroot /usr/sbin
+mv -v /usr/share/man/man1/chroot.1 /usr/share/man/man8/chroot.8
+sed -i s/\"1\"/\"8\"/1 /usr/share/man/man8/chroot.8
+mv -v /usr/bin/{head,sleep,nice,test,[} /bin

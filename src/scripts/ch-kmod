@@ -1,0 +1,32 @@
+#!/bin/bash
+
+FOLDERNAME="kmod-21"
+FILENAME="kmod-21.tar.xz"
+
+# The Kmod package contains libraries and utilities
+# for loading kernel modules
+    
+# Change directory
+cd /src/pkg/basic/${FOLDERNAME}
+
+# Prepare Kmod for compilation
+./configure --prefix=/usr          \
+            --bindir=/bin          \
+            --sysconfdir=/etc      \
+            --with-rootlibdir=/lib \
+            --with-xz              \
+            --with-zlib
+
+# Compile the package
+make
+
+# Install the package
+make install
+
+# Create symlinks for compatibility with Module-Init-Tools
+# (the package that previously handled Linux kernel modules)
+for target in depmod insmod lsmod modinfo modprobe rmmod; do
+  ln -sv ../../../../bin/kmod /sbin/$target
+done
+
+ln -sv kmod /bin/lsmod

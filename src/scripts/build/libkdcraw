@@ -1,0 +1,22 @@
+#!/bin/bash
+
+FOLDERNAME="libkdcraw-15.04.3"
+FILENAME="libkdcraw-15.04.3.tar.xz"
+
+# Libkdcraw is a C++ interface around the LibRaw library used to decode RAW picture files.
+
+# Change directory
+cd /src/pkg/standard/${FOLDERNAME}
+
+# Install
+sed -e '/3/a add_definitions(${KDE4_ENABLE_EXCEPTIONS})' \
+        -i libkdcraw/CMakeLists.txt &&
+
+mkdir build &&
+cd    build &&
+
+cmake -DCMAKE_INSTALL_PREFIX=$KDE_PREFIX \
+      -DCMAKE_BUILD_TYPE=Release         \
+      -Wno-dev .. &&
+make $MAKEFLAGS
+make $MAKEFLAGS install

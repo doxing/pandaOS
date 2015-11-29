@@ -1,0 +1,14 @@
+#!/bin/bash
+
+FOLDERNAME="xbitmaps-1.1.1"
+FILENAME="xbitmaps-1.1.1.tar.bz2"
+
+# The xbitmaps package contains bitmap images used by
+# multiple applications
+
+# Change directory
+cd /src/pkg/standard/${FOLDERNAME}
+
+# Install xbitmaps
+./configure $XORG_CONFIG
+make install

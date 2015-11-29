@@ -1,0 +1,20 @@
+#!/bin/bash
+
+FOLDERNAME="autoconf-2.69"
+FILENAME="autoconf-2.69.tar.xz"
+
+# The Autoconf package contains programs for producing
+# shell scripts that can automatically configure source
+# code.
+    
+# Change directory
+cd /src/pkg/basic/${FOLDERNAME}
+
+# Prepare Autoconf for compilation
+./configure --prefix=/usr
+
+# Compile the package
+make
+
+# Install the package
+make install

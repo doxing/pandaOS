@@ -1,0 +1,25 @@
+#!/bin/bash
+
+FOLDERNAME="gzip-1.6"
+FILENAME="gzip-1.6.tar.xz"
+
+# The Gzip package contains programs for compressing
+# and decompressing files.
+    
+# Change directory
+cd /src/pkg/basic/${FOLDERNAME}
+
+# Prepare Gzip for compilation
+./configure --prefix=/usr    \
+            --bindir=/bin
+
+# Compile the package
+make
+
+# Install the package
+make install
+
+# Move some programs that do not need to be on the
+# root filesystem
+mv -v /bin/{gzexe,uncompress,zcmp,zdiff,zegrep} /usr/bin
+mv -v /bin/{zfgrep,zforce,zgrep,zless,zmore,znew} /usr/bin

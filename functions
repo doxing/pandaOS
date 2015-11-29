@@ -1,0 +1,124 @@
+#!/bin/bash
+
+# Silence wget
+wget() {
+    $(which wget) --no-check-certificate $@ 2> /dev/null
+}
+
+# Extracts source code for the selected package.
+extractPkg() {
+    if [ "$(echo ${2} | grep "BASIC")" ]
+    then
+        EXTRACT_DIR="${MOUNT_POINT}${PKG_BASIC_DIR}"
+    else
+        EXTRACT_DIR="${MOUNT_POINT}${PKG_STD_DIR}"
+    fi
+    # Extract the primary source archive to a new directory.
+    if [ "$(echo ${1} | grep \\.zip\$)" ]
+    then
+        displayMsg OK "... Extracting source code"
+        unzip "${EXTRACT_DIR}/${1}" -d "${EXTRACT_DIR}"
+    elif [ "$(isArchive ${1})" ]
+    then
+        displayMsg OK "... Extracting source code"
+        tar xf "${EXTRACT_DIR}/${1}" -C "${EXTRACT_DIR}"
+    else
+            displayMsg ERR "... Unknown source format. Not extracting '${1}'"
+    fi
+}
+
+# Checks if a filename is an archive that can be extracted.
+isArchive() {
+  for ext in \\.zip \\.tar\\.bz2 \\.tar\\.gz \\.tar\\.xz \\.tgz \\.tar; do
+    if [ "$(echo ${1} | grep ${ext}\$)" ]; then
+      echo "true"
+      return
+    fi
+  done
+}
+
+BUILD() {
+    cd $MOUNT_POINT
+    # Load build script
+    local SCRIPT_SRC="${SCRIPT_DIR}/${1}"
+
+    displayMsg OK "... Selected '${1}' package"
+    
+    # Extract the source code
+    extractPkg "$(cat ${SCRIPT_SRC} | grep '\FILENAME' | cut -d '=' -f2 | sed -e 's/^"//' -e 's/"$//')" "${2}"
+    
+    displayMsg OK "... Building a temporary version of this software"
+    # Change directory to builds folder
+    cd "${BUILD_DIR}"
+    
+    # Create dedicated directory for the package
+    mkdir -p ${1}
+    # Move inside the dedicated directory
+    cd ${1}
+    # Execute the script
+    . ${MOUNT_POINT}${SCRIPT_SRC}
+}
+
+# The executables and libraries built so far contain about 70 MB of unneeded
+# debugging symbols. Remove those symbols
+stripSymbols() {
+    strip --strip-debug /tools/lib/*
+    /usr/bin/strip --strip-unneeded /tools/{,s}bin/*
+}
+
+# Override the 'chroot' command, to automate the build process.
+inchroot() {
+    # Mounting and Populating /dev
+    sudo mount --bind /dev ${MOUNT_POINT}dev
+    
+    # Mount Virtual Kernel File Systems
+    sudo mount -t devpts devpts ${MOUNT_POINT}dev/pts
+    sudo mount -t proc proc ${MOUNT_POINT}proc
+    sudo mount -t sysfs sysfs ${MOUNT_POINT}sys
+    sudo mount -t tmpfs tmpfs ${MOUNT_POINT}run
+    
+    sudo chroot "$MOUNT_POINT" /tools/bin/env -i \
+    HOME=/root                  \
+    TERM="$TERM"                \
+    PS1='\u:\w\$ '              \
+    PATH=/bin:/usr/bin:/sbin:/usr/sbin:/tools/bin \
+    /tools/bin/bash -c "$@"
+    
+    sync
+    sleep 1
+    
+    sudo umount -l ${MOUNT_POINT}run
+    sudo umount -l ${MOUNT_POINT}sys
+    sudo umount -l ${MOUNT_POINT}proc
+    sudo umount -l ${MOUNT_POINT}dev/pts
+    
+    sudo umount -l ${MOUNT_POINT}dev
+}
+
+inModchroot() {
+    # Mounting and Populating /dev
+    sudo mount --bind /dev ${MOUNT_POINT}dev
+    
+    # Mount Virtual Kernel File Systems
+    sudo mount -t devpts devpts ${MOUNT_POINT}dev/pts
+    sudo mount -t proc proc ${MOUNT_POINT}proc
+    sudo mount -t sysfs sysfs ${MOUNT_POINT}sys
+    sudo mount -t tmpfs tmpfs ${MOUNT_POINT}run
+    
+    sudo chroot "$MOUNT_POINT" /usr/bin/env -i \
+    HOME=/root                  \
+    TERM="$TERM"                \
+    PS1='\u:\w\$ '              \
+    PATH=/bin:/usr/bin:/sbin:/usr/sbin \
+    /bin/bash -c "$@"
+    
+    sync
+    sleep 1
+    
+    sudo umount -l ${MOUNT_POINT}run
+    sudo umount -l ${MOUNT_POINT}sys
+    sudo umount -l ${MOUNT_POINT}proc
+    sudo umount -l ${MOUNT_POINT}dev/pts
+    
+    sudo umount -l ${MOUNT_POINT}dev
+}

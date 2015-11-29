@@ -1,0 +1,23 @@
+#!/bin/bash
+
+#!/bin/bash
+
+FOLDERNAME="libcap-2.24"
+FILENAME="libcap-2.24.tar.xz"
+
+# Change directory
+cd /src/pkg/basic/${FOLDERNAME}
+
+# Reconfigure Libcap
+sed -i 's:LIBDIR:PAM_&:g' pam_cap/Makefile &&
+make
+sed -i '/install.*STALIBNAME/ s/^/#/' libcap/Makefile
+make prefix=/usr \
+     SBINDIR=/sbin \
+     PAM_LIBDIR=/lib \
+     RAISE_SETFCAP=no install
+
+# Clean up some library locations and permissions
+chmod -v 755 /usr/lib/libcap.so &&
+mv -v /usr/lib/libcap.so.* /lib &&
+ln -sfv ../../../../lib/libcap.so.2 /usr/lib/libcap.so

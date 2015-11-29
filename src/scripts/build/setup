@@ -1,0 +1,1142 @@
+#!/bin/bash
+
+source ../../handleErrors
+
+PKG_DIR="/src/pkg"
+PKG_BASIC_DIR="${PKG_DIR}/basic"
+PKG_STD_DIR="${PKG_DIR}/standard"
+BUILD_DIR="/src/build"
+SCRIPT_DIR="/src/scripts/build"
+
+# Extracts source code for the selected package.
+extractPkg() {
+    if [ "$(echo ${2} | grep "BASIC")" ]
+    then
+        EXTRACT_DIR="${PKG_BASIC_DIR}"
+    elif [ "$(echo ${2} | grep "STD")" ]
+    then
+        EXTRACT_DIR="${PKG_STD_DIR}"
+    fi
+    
+    # Extract the primary source archive to a new directory.
+    if [ "$(echo ${1} | grep \\.zip\$)" ]
+    then
+        displayMsg OK "... Extracting source code"
+        unzip "${EXTRACT_DIR}/${1}" -d "${EXTRACT_DIR}"
+    elif [ "$(isArchive ${1})" ]
+    then
+        displayMsg OK "... Extracting source code"
+        tar xf "${EXTRACT_DIR}/${1}" -C "${EXTRACT_DIR}"
+    else
+            displayMsg ERR "... Unknown source format. Not extracting '${1}'"
+    fi
+}
+
+# Checks if a filename is an archive that can be extracted.
+isArchive() {
+  for ext in \\.zip \\.tar\\.bz2 \\.tar\\.gz \\.tar\\.xz \\.tgz \\.tar \\.tar\\.lzma \\.tgz; do
+    if [ "$(echo ${1} | grep ${ext}\$)" ]; then
+      echo "true"
+      return
+    fi
+  done
+}
+
+BUILD() {
+    # Load build script
+    local SCRIPT_SRC="${SCRIPT_DIR}/${1}"
+
+    displayMsg OK "... Selected '${1}' package"
+    
+    # Extract the source code
+    extractPkg "$(cat ${SCRIPT_SRC} | grep '\FILENAME' | cut -d '=' -f2 | sed -e 's/^"//' -e 's/"$//')" "${2}"
+    
+    displayMsg OK "... Building a temporary version of this software"
+    # Change directory to builds folder
+    cd "${BUILD_DIR}"
+    
+    # Create dedicated directory for the package
+    mkdir -p ${1}
+    # Move inside the dedicated directory
+    cd ${1}
+    # Execute the script
+    bash /${SCRIPT_SRC}
+}
+
+reconfigureKernel() {
+    # Extract the package
+    displayMsg OK "... Selected 'linux-kernel' package"
+    extractPkg "linux-4.2.tar.xz" "BASIC"
+    displayMsg OK "... Building a temporary version of this software"
+    
+    # Change the directory to the source folder
+    cd "${PKG_BASIC_DIR}/linux-4.2"
+    make mrproper
+    #make allmodconfig
+    make defconfig
+    make
+    make modules_install
+    # The path to the kernel image may vary depending on the platform being
+    # used. The filename below can be changed to suit your taste, but the
+    # stem of the filename should be vmlinuz to be compatible with the
+    # automatic setup of the boot process
+    cp -v arch/x86/boot/bzImage /boot/vmlinuz-0.4-panda-linux
+
+    # System.map is a symbol file for the kernel. It maps the function entry
+    # points of every function in the kernel API, as well as the addresses of
+    # the kernel data structures for the running kernel. It is used as a
+    # resource when investigating kernel problems. Issue the following command
+    # to install the map file
+    cp -v System.map /boot/System.map-0.1
+
+    # Install the documentation for the Linux kernel
+    install -d /usr/share/doc/linux-4.2
+    cp -r Documentation/* /usr/share/doc/linux-4.2
+
+    #######################################
+    # Configuring Linux Module Load Order #
+    #######################################
+
+    # Create a new file /etc/modprobe.d/usb.conf
+    install -v -m755 -d /etc/modprobe.d
+    cat > /etc/modprobe.d/usb.conf << "EOF"
+# Begin /etc/modprobe.d/usb.conf
+
+install ohci_hcd /sbin/modprobe ehci_hcd ; /sbin/modprobe -i ohci_hcd ; true
+install uhci_hcd /sbin/modprobe ehci_hcd ; /sbin/modprobe -i uhci_hcd ; true
+
+# End /etc/modprobe.d/usb.conf
+EOF
+
+    ###########################
+    # GRUB configuration file #
+    ###########################
+
+    # Generate /boot/grub/grub.cfg
+    mkdir -v /boot/grub
+    cat > /boot/grub/grub.cfg << "EOF"
+# Begin /boot/grub/grub.cfg
+set default=0
+set timeout=10
+
+insmod ext4
+set root=(hd0,10)
+
+menuentry "Panda Linux" {
+        linux   /boot/vmlinuz-0.4-panda-linux root=/dev/sda10 ro
+}
+EOF
+
+    ###############
+    # Final Touch #
+    ###############
+
+    # Create an /etc/os-release file required by systemd
+    cat > /etc/os-release << "EOF"
+NAME="Panda Linux"
+VERSION="0.4"
+ID=panda
+PRETTY_NAME="Panda Linux v0.4"
+EOF
+
+    # Create /etc/lfs-release for compatibility with non systemd branch
+    echo 0.4a > /etc/panda-release
+
+    # Create a file to show the status of your new system with respect
+    # to the Linux Standards Base (LSB)
+    cat > /etc/lsb-release << "EOF"
+DISTRIB_ID="Panda Linux"
+DISTRIB_RELEASE="v0.4a"
+DISTRIB_CODENAME="panda"
+DISTRIB_DESCRIPTION="Panda Linux"
+EOF
+}
+
+cleanupBuild() {
+    displayMsg OK "Cleaning up chroot env..."
+    cd /src/build
+    rm -R -- */
+    cd /src/pkg/basic
+    rm -R -- */
+    cd /src/pkg/standard
+    rm -R -- */
+    displayMsg OK "Done ..."
+}
+
+setupBashStartup() {
+    cat > /etc/profile << "EOF"
+# Begin /etc/profile
+# System wide environment variables and startup programs.
+
+# System wide aliases and functions should go in /etc/bashrc.  Personal
+# environment variables and startup programs should go into
+# ~/.bash_profile.  Personal aliases and functions should go into
+# ~/.bashrc.
+
+# Functions to help us manage paths.  Second argument is the name of the
+# path variable to be modified (default: PATH)
+pathremove () {
+        local IFS=':'
+        local NEWPATH
+        local DIR
+        local PATHVARIABLE=${2:-PATH}
+        for DIR in ${!PATHVARIABLE} ; do
+                if [ "$DIR" != "$1" ] ; then
+                  NEWPATH=${NEWPATH:+$NEWPATH:}$DIR
+                fi
+        done
+        export $PATHVARIABLE="$NEWPATH"
+}
+
+pathprepend () {
+        pathremove $1 $2
+        local PATHVARIABLE=${2:-PATH}
+        export $PATHVARIABLE="$1${!PATHVARIABLE:+:${!PATHVARIABLE}}"
+}
+
+pathappend () {
+        pathremove $1 $2
+        local PATHVARIABLE=${2:-PATH}
+        export $PATHVARIABLE="${!PATHVARIABLE:+${!PATHVARIABLE}:}$1"
+}
+
+export -f pathremove pathprepend pathappend
+
+# Set the initial path
+export PATH=/bin:/usr/bin
+
+if [ $EUID -eq 0 ] ; then
+        pathappend /sbin:/usr/sbin
+        unset HISTFILE
+fi
+
+# Setup some environment variables.
+export HISTSIZE=1000
+export HISTIGNORE="&:[bf]g:exit"
+
+# Set some defaults for graphical systems
+export XDG_DATA_DIRS=/usr/share/
+export XDG_CONFIG_DIRS=/etc/xdg/
+
+# Setup a red prompt for root and a green one for users.
+NORMAL="\[\e[0m\]"
+RED="\[\e[1;31m\]"
+GREEN="\[\e[1;32m\]"
+if [[ $EUID == 0 ]] ; then
+  PS1="$RED\u [$NORMAL\w$RED]# $NORMAL"
+else
+  PS1="$GREEN\u [$NORMAL\w$GREEN]\$ $NORMAL"
+fi
+
+for script in /etc/profile.d/*.sh ; do
+        if [ -r $script ] ; then
+                . $script
+        fi
+done
+
+unset script RED GREEN NORMAL
+
+# End /etc/profile
+EOF
+
+    # Create the /etc/profile.d directory, where the individual initialization scripts are placed
+    install --directory --mode=0755 --owner=root --group=root /etc/profile.d
+    
+    cat > /etc/profile.d/dircolors.sh << "EOF"
+# Setup for /bin/ls and /bin/grep to support color, the alias is in /etc/bashrc.
+if [ -f "/etc/dircolors" ] ; then
+        eval $(dircolors -b /etc/dircolors)
+fi
+
+if [ -f "$HOME/.dircolors" ] ; then
+        eval $(dircolors -b $HOME/.dircolors)
+fi
+
+alias ls='ls --color=auto'
+alias grep='grep --color=auto'
+EOF
+
+    cat > /etc/profile.d/extrapaths.sh << "EOF"
+if [ -d /usr/local/lib/pkgconfig ] ; then
+        pathappend /usr/local/lib/pkgconfig PKG_CONFIG_PATH
+fi
+if [ -d /usr/local/bin ]; then
+        pathprepend /usr/local/bin
+fi
+if [ -d /usr/local/sbin -a $EUID -eq 0 ]; then
+        pathprepend /usr/local/sbin
+fi
+
+# Set some defaults before other applications add to these paths.
+pathappend /usr/share/man  MANPATH
+pathappend /usr/share/info INFOPATH
+EOF
+
+    cat > /etc/profile.d/readline.sh << "EOF"
+# Setup the INPUTRC environment variable.
+if [ -z "$INPUTRC" -a ! -f "$HOME/.inputrc" ] ; then
+        INPUTRC=/etc/inputrc
+fi
+export INPUTRC
+EOF
+
+    cat > /etc/profile.d/umask.sh << "EOF"
+# By default, the umask should be set.
+if [ "$(id -gn)" = "$(id -un)" -a $EUID -gt 99 ] ; then
+  umask 002
+else
+  umask 022
+fi
+EOF
+
+    cat > /etc/bashrc << "EOF"
+# Begin /etc/bashrc
+# System wide aliases and functions.
+
+# System wide environment variables and startup programs should go into
+# /etc/profile.  Personal environment variables and startup programs
+# should go into ~/.bash_profile.  Personal aliases and functions should
+# go into ~/.bashrc
+
+# Provides colored /bin/ls and /bin/grep commands.  Used in conjunction
+# with code in /etc/profile.
+
+alias ls='ls --color=auto'
+alias grep='grep --color=auto'
+
+# Provides prompt for non-login shells, specifically shells started
+# in the X environment. [Review the LFS archive thread titled
+# PS1 Environment Variable for a great case study behind this script
+# addendum.]
+
+NORMAL="\[\e[0m\]"
+RED="\[\e[1;31m\]"
+GREEN="\[\e[1;32m\]"
+if [[ $EUID == 0 ]] ; then
+  PS1="$RED\u [$NORMAL\w$RED]# $NORMAL"
+else
+  PS1="$GREEN\u [$NORMAL\w$GREEN]\$ $NORMAL"
+fi
+
+unset RED GREEN NORMAL
+
+# End /etc/bashrc
+EOF
+
+    cat > ~/.bash_profile << "EOF"
+# Begin ~/.bash_profile
+# Personal environment variables and startup programs.
+
+# Personal aliases and functions should go in ~/.bashrc.  System wide
+# environment variables and startup programs are in /etc/profile.
+# System wide aliases and functions are in /etc/bashrc.
+
+if [ -f "$HOME/.bashrc" ] ; then
+  source $HOME/.bashrc
+fi
+
+if [ -d "$HOME/bin" ] ; then
+  pathprepend $HOME/bin
+fi
+
+# Having . in the PATH is dangerous
+#if [ $EUID -gt 99 ]; then
+#  pathappend .
+#fi
+
+# End ~/.bash_profile
+EOF
+
+    cat > ~/.bashrc << "EOF"
+# Begin ~/.bashrc
+# Personal aliases and functions.
+
+# Personal environment variables and startup programs should go in
+# ~/.bash_profile.  System wide environment variables and startup
+# programs are in /etc/profile.  System wide aliases and functions are
+# in /etc/bashrc.
+
+if [ -f "/etc/bashrc" ] ; then
+  source /etc/bashrc
+fi
+
+# End ~/.bashrc
+EOF
+
+    dircolors -p > /etc/dircolors
+}
+
+certificate-authority-certificates() {
+    cd /src/pkg/standard
+    
+    cat > /usr/bin/make-cert.pl << "EOF"
+#!/usr/bin/perl -w
+
+# Used to generate PEM encoded files from Mozilla certdata.txt.
+# Run as ./make-cert.pl > certificate.crt
+#
+# Parts of this script courtesy of RedHat (mkcabundle.pl)
+#
+# This script modified for use with single file data (tempfile.cer) extracted
+# from certdata.txt, taken from the latest version in the Mozilla NSS source.
+# mozilla/security/nss/lib/ckfw/builtins/certdata.txt
+#
+# Authors: DJ Lucas
+#          Bruce Dubbs
+#
+# Version 20120211
+
+my $certdata = './tempfile.cer';
+
+open( IN, "cat $certdata|" )
+    || die "could not open $certdata";
+
+my $incert = 0;
+
+while ( <IN> )
+{
+    if ( /^CKA_VALUE MULTILINE_OCTAL/ )
+    {
+        $incert = 1;
+        open( OUT, "|openssl x509 -text -inform DER -fingerprint" )
+            || die "could not pipe to openssl x509";
+    }
+
+    elsif ( /^END/ && $incert )
+    {
+        close( OUT );
+        $incert = 0;
+        print "\n\n";
+    }
+
+    elsif ($incert)
+    {
+        my @bs = split( /\\/ );
+        foreach my $b (@bs)
+        {
+            chomp $b;
+            printf( OUT "%c", oct($b) ) unless $b eq '';
+        }
+    }
+}
+EOF
+
+    chmod +x /usr/bin/make-cert.pl
+    
+    cat > /usr/bin/make-ca.sh << "EOF"
+#!/bin/sh
+# Begin make-ca.sh
+# Script to populate OpenSSL's CApath from a bundle of PEM formatted CAs
+#
+# The file certdata.txt must exist in the local directory
+# Version number is obtained from the version of the data.
+#
+# Authors: DJ Lucas
+#          Bruce Dubbs
+#
+# Version 20120211
+
+certdata="certdata.txt"
+
+if [ ! -r $certdata ]; then
+  echo "$certdata must be in the local directory"
+  exit 1
+fi
+
+REVISION=$(grep CVS_ID $certdata | cut -f4 -d'$')
+
+if [ -z "${REVISION}" ]; then
+  echo "$certfile has no 'Revision' in CVS_ID"
+  exit 1
+fi
+
+VERSION=$(echo $REVISION | cut -f2 -d" ")
+
+TEMPDIR=$(mktemp -d)
+TRUSTATTRIBUTES="CKA_TRUST_SERVER_AUTH"
+BUNDLE="BLFS-ca-bundle-${VERSION}.crt"
+CONVERTSCRIPT="/usr/bin/make-cert.pl"
+SSLDIR="/etc/ssl"
+
+mkdir "${TEMPDIR}/certs"
+
+# Get a list of starting lines for each cert
+CERTBEGINLIST=$(grep -n "^# Certificate" "${certdata}" | cut -d ":" -f1)
+
+# Get a list of ending lines for each cert
+CERTENDLIST=`grep -n "^CKA_TRUST_STEP_UP_APPROVED" "${certdata}" | cut -d ":" -f 1`
+
+# Start a loop
+for certbegin in ${CERTBEGINLIST}; do
+  for certend in ${CERTENDLIST}; do
+    if test "${certend}" -gt "${certbegin}"; then
+      break
+    fi
+  done
+
+  # Dump to a temp file with the name of the file as the beginning line number
+  sed -n "${certbegin},${certend}p" "${certdata}" > "${TEMPDIR}/certs/${certbegin}.tmp"
+done
+
+unset CERTBEGINLIST CERTDATA CERTENDLIST certbegin certend
+
+mkdir -p certs
+rm -f certs/*      # Make sure the directory is clean
+
+for tempfile in ${TEMPDIR}/certs/*.tmp; do
+  # Make sure that the cert is trusted...
+  grep "CKA_TRUST_SERVER_AUTH" "${tempfile}" | \
+    egrep "TRUST_UNKNOWN|NOT_TRUSTED" > /dev/null
+
+  if test "${?}" = "0"; then
+    # Throw a meaningful error and remove the file
+    cp "${tempfile}" tempfile.cer
+    perl ${CONVERTSCRIPT} > tempfile.crt
+    keyhash=$(openssl x509 -noout -in tempfile.crt -hash)
+    echo "Certificate ${keyhash} is not trusted!  Removing..."
+    rm -f tempfile.cer tempfile.crt "${tempfile}"
+    continue
+  fi
+
+  # If execution made it to here in the loop, the temp cert is trusted
+  # Find the cert data and generate a cert file for it
+
+  cp "${tempfile}" tempfile.cer
+  perl ${CONVERTSCRIPT} > tempfile.crt
+  keyhash=$(openssl x509 -noout -in tempfile.crt -hash)
+  mv tempfile.crt "certs/${keyhash}.pem"
+  rm -f tempfile.cer "${tempfile}"
+  echo "Created ${keyhash}.pem"
+done
+
+# Remove blacklisted files
+# MD5 Collision Proof of Concept CA
+if test -f certs/8f111d69.pem; then
+  echo "Certificate 8f111d69 is not trusted!  Removing..."
+  rm -f certs/8f111d69.pem
+fi
+
+# Finally, generate the bundle and clean up.
+cat certs/*.pem >  ${BUNDLE}
+rm -r "${TEMPDIR}"
+EOF
+
+    chmod +x /usr/bin/make-ca.sh
+    
+    cat > /usr/sbin/remove-expired-certs.sh << "EOF"
+#!/bin/sh
+# Begin /usr/sbin/remove-expired-certs.sh
+#
+# Version 20120211
+
+# Make sure the date is parsed correctly on all systems
+mydate()
+{
+  local y=$( echo $1 | cut -d" " -f4 )
+  local M=$( echo $1 | cut -d" " -f1 )
+  local d=$( echo $1 | cut -d" " -f2 )
+  local m
+
+  if [ ${d} -lt 10 ]; then d="0${d}"; fi
+
+  case $M in
+    Jan) m="01";;
+    Feb) m="02";;
+    Mar) m="03";;
+    Apr) m="04";;
+    May) m="05";;
+    Jun) m="06";;
+    Jul) m="07";;
+    Aug) m="08";;
+    Sep) m="09";;
+    Oct) m="10";;
+    Nov) m="11";;
+    Dec) m="12";;
+  esac
+
+  certdate="${y}${m}${d}"
+}
+
+OPENSSL=/usr/bin/openssl
+DIR=/etc/ssl/certs
+
+if [ $# -gt 0 ]; then
+  DIR="$1"
+fi
+
+certs=$( find ${DIR} -type f -name "*.pem" -o -name "*.crt" )
+today=$( date +%Y%m%d )
+
+for cert in $certs; do
+  notafter=$( $OPENSSL x509 -enddate -in "${cert}" -noout )
+  date=$( echo ${notafter} |  sed 's/^notAfter=//' )
+  mydate "$date"
+
+  if [ ${certdate} -lt ${today} ]; then
+     echo "${cert} expired on ${certdate}! Removing..."
+     rm -f "${cert}"
+  fi
+done
+EOF
+
+    chmod u+x /usr/sbin/remove-expired-certs.sh
+    
+    make-ca.sh
+    SSLDIR=/etc/ssl                                              &&
+    remove-expired-certs.sh certs                                &&
+    install -d ${SSLDIR}/certs                                   &&
+    cp -v certs/*.pem ${SSLDIR}/certs                            &&
+    c_rehash                                                     &&
+    install BLFS-ca-bundle*.crt ${SSLDIR}/ca-bundle.crt          &&
+    ln -sfv ../ca-bundle.crt ${SSLDIR}/certs/ca-certificates.crt &&
+    unset SSLDIR
+    rm -r certs BLFS-ca-bundle*
+}
+
+buildXorgReqLibs() {
+    BUILD libffi STD
+    BUILD python2 STD
+    BUILD pcre STD
+    BUILD glib STD
+    BUILD freetype-without-harfbuzz STD
+    BUILD harfbuzz STD
+    BUILD freetype STD
+    BUILD fontconfig STD
+    BUILD util-macros STD
+    BUILD libdrm STD
+    BUILD elfutils STD
+    BUILD libvdpau STD
+    BUILD llvm STD
+    BUILD libpng STD
+    BUILD pixman STD
+    BUILD libgpg-error STD
+    BUILD libgcrypt STD
+    
+    cleanupBuild
+}
+
+buildXorgProtocolHeaders(){
+    BUILD bigreqsproto STD
+    BUILD compositeproto STD
+    BUILD damageproto STD
+    BUILD dmxproto STD
+    BUILD dri2proto STD
+    BUILD dri3proto STD
+    BUILD fixesproto STD
+    BUILD fontsproto STD
+    BUILD glproto STD
+    BUILD inputproto STD
+    BUILD kbproto STD
+    BUILD presentproto STD
+    BUILD randrproto STD
+    BUILD recordproto STD
+    BUILD renderproto STD
+    BUILD resourceproto STD
+    BUILD scrnsaverproto STD
+    BUILD videoproto STD
+    BUILD xcmiscproto STD
+    BUILD xextproto STD
+    BUILD xf86bigfontproto STD
+    BUILD xf86dgaproto STD
+    BUILD xf86driproto STD
+    BUILD xf86vidmodeproto STD
+    BUILD xineramaproto STD
+    BUILD xproto STD
+    
+    cleanupBuild
+}
+
+buildXorgLibraries(){
+    BUILD libxcb STD
+    BUILD xtrans STD
+    BUILD libX11 STD
+    BUILD libXext STD
+    BUILD libFS STD
+    BUILD libICE STD
+    BUILD libSM STD
+    BUILD libXScrnSaver STD
+    BUILD libXt STD
+    BUILD libXmu STD
+    BUILD libXpm STD
+    BUILD libXaw STD
+    BUILD libXfixes STD
+    BUILD libXcomposite STD
+    BUILD libXrender STD
+    BUILD libXcursor STD
+    BUILD libXdamage STD
+    BUILD libfontenc STD
+    BUILD libXfont STD
+    BUILD libXft STD
+    BUILD libXi STD
+    BUILD libXinerama STD
+    BUILD libXrandr STD
+    BUILD libXres STD
+    BUILD libXtst STD
+    BUILD libXv STD
+    BUILD libXvMC STD
+    BUILD libXxf86dga STD
+    BUILD libXxf86vm STD
+    BUILD libdmx STD
+    BUILD libpciaccess STD
+    BUILD libxkbfile STD
+    BUILD libxshmfence STD
+    
+    cleanupBuild
+}
+
+buildXorgApplications() {
+    BUILD bdftopcf STD
+    BUILD iceauth STD
+    BUILD luit STD
+    BUILD mkfontdir STD
+    BUILD mkfontscale STD
+    BUILD sessreg STD
+    BUILD setxkbmap STD
+    BUILD smproxy STD
+    BUILD x11perf STD
+    BUILD xauth STD
+    BUILD xbacklight STD
+    BUILD xcmsdb STD
+    BUILD xcursorgen STD
+    BUILD xdpyinfo STD
+    BUILD xdriinfo STD
+    BUILD xev STD
+    BUILD xgamma STD
+    BUILD xhost STD
+    BUILD xinput STD
+    BUILD xkbcomp STD
+    BUILD xkbevd STD
+    BUILD xkbutils STD
+    BUILD xkill STD
+    BUILD xlsatoms STD
+    BUILD xlsclients STD
+    BUILD xmessage STD
+    BUILD xmodmap STD
+    BUILD xpr STD
+    BUILD xprop STD
+    BUILD xrandr STD
+    BUILD xrdb STD
+    BUILD xrefresh STD
+    BUILD xset STD
+    BUILD xsetroot STD
+    BUILD xvinfo STD
+    BUILD xwd STD
+    BUILD xwininfo STD
+    BUILD xwud STD
+    
+    cleanupBuild
+}
+
+buildXorgFonts() {
+    BUILD xcursor-themes STD
+    BUILD font-util STD
+    BUILD encodings STD
+    BUILD font-adobe-100dpi STD
+    BUILD font-adobe-75dpi STD
+    BUILD font-adobe-utopia-100dpi STD
+    BUILD font-adobe-utopia-75dpi STD
+    BUILD font-adobe-utopia-type1 STD
+    BUILD font-alias STD
+    BUILD font-arabic-misc STD
+    BUILD font-bh-100dpi STD
+    BUILD font-bh-75dpi STD
+    BUILD font-bh-lucidatypewriter-100dpi STD
+    BUILD font-bh-lucidatypewriter-75dpi STD
+    BUILD font-bh-ttf STD
+    BUILD font-bh-type1 STD
+    BUILD font-bitstream-100dpi STD
+    BUILD font-bitstream-75dpi STD
+    BUILD font-bitstream-type1 STD
+    BUILD font-cronyx-cyrillic STD
+    BUILD font-cursor-misc STD
+    BUILD font-daewoo-misc STD
+    BUILD font-dec-misc STD
+    BUILD font-ibm-type1 STD
+    BUILD font-isas-misc STD
+    BUILD font-jis-misc STD
+    BUILD font-micro-misc STD
+    BUILD font-misc-cyrillic STD
+    BUILD font-misc-ethiopic STD
+    BUILD font-misc-meltho STD
+    BUILD font-misc-misc STD
+    BUILD font-mutt-misc STD
+    BUILD font-schumacher-misc STD
+    BUILD font-screen-cyrillic STD
+    BUILD font-sony-misc STD
+    BUILD font-sun-misc STD
+    BUILD font-winitzki-cyrillic STD
+    BUILD font-xfree86-type1 STD
+    
+    cleanupBuild
+}
+
+buildXorgDrivers() {
+    BUILD libevdev STD
+    BUILD xorg-evdev-driver STD
+    BUILD xorg-synaptics-driver STD
+    BUILD xorg-ati-driver STD
+    BUILD xorg-fbdev-driver STD
+    BUILD xorg-intel-driver STD
+    BUILD xorg-nouveau-driver STD
+    BUILD libva STD
+    
+    cleanupBuild
+}
+
+
+buildXorg() {
+    cat > /etc/profile.d/xorg.sh << "EOF"
+XORG_PREFIX="/usr"
+XORG_CONFIG="--prefix=$XORG_PREFIX --sysconfdir=/etc --localstatedir=/var --disable-static"
+export XORG_PREFIX XORG_CONFIG
+EOF
+chmod 644 /etc/profile.d/xorg.sh
+
+    buildXorgReqLibs
+    buildXorgProtocolHeaders
+    
+    BUILD libxau STD
+    BUILD libxdmcp STD
+    BUILD xcb-proto STD
+    
+    buildXorgLibraries
+    
+    ln -sv $XORG_PREFIX/lib/X11 /usr/lib/X11 &&
+    ln -sv $XORG_PREFIX/include/X11 /usr/include/X11
+    
+    BUILD xcb-util STD
+    BUILD xcb-util-image STD
+    BUILD xcb-util-keysyms STD
+    BUILD xcb-util-renderutil STD
+    BUILD xcb-util-wm STD
+    BUILD mesalib STD
+    BUILD libepoxy STD
+    BUILD xbitmaps STD
+    
+    buildXorgApplications
+    
+    rm -fv $XORG_PREFIX/bin/xkeystone
+    
+    buildXorgFonts
+    
+    install -v -d -m755 /usr/share/fonts                               &&
+    ln -svfn $XORG_PREFIX/share/fonts/X11/OTF /usr/share/fonts/X11-OTF &&
+    ln -svfn $XORG_PREFIX/share/fonts/X11/TTF /usr/share/fonts/X11-TTF
+    
+    BUILD xkeyboardConfig STD
+    BUILD xorgServer STD
+    
+    buildXorgDrivers
+   
+    BUILD twm STD
+    BUILD xterm STD
+    BUILD xclock STD
+    BUILD xinit STD
+    
+    cleanupBuild
+}
+
+buildQt() {
+    BUILD ruby STD
+    BUILD openssl STD
+    certificate-authority-certificates
+    BUILD mtdev STD
+    BUILD yasm STD
+    BUILD libjpeg-turbo STD
+    BUILD libtiff STD
+    BUILD libwebp STD
+    BUILD little-cms STD
+    BUILD libmng STD
+    BUILD unzip STD
+    BUILD jasper STD
+    BUILD icu STD
+    BUILD gstreamer STD
+    BUILD gst-plugins-base STD
+    BUILD gst-plugins-good STD
+    BUILD dbus STD
+    BUILD sqlite STD
+    BUILD qt STD
+    
+    cleanupBuild
+}
+
+kf5PreinstallConfig() {
+    export KF5_PREFIX=/opt/kf5
+    
+    cat > /etc/profile.d/kf5.sh << "EOF"
+# Begin /etc/profile.d/kf5.sh
+
+. /etc/profile.d/qt5.sh
+
+export KF5_PREFIX=/opt/kf5
+
+pathappend $KF5_PREFIX/bin             PATH
+pathappend $KF5_PREFIX/lib/pkgconfig   PKG_CONFIG_PATH
+
+pathappend /etc/xdg                    XDG_CONFIG_DIRS
+pathappend $KF5_PREFIX/etc/xdg         XDG_CONFIG_DIRS
+pathappend /usr/share                  XDG_DATA_DIRS
+pathappend $KF5_PREFIX/share           XDG_DATA_DIRS
+
+pathappend /usr/lib/qt5/plugins        QT_PLUGIN_PATH
+pathappend $QT5DIR/plugins             QT_PLUGIN_PATH
+pathappend $KF5_PREFIX/lib/plugins     QT_PLUGIN_PATH
+
+pathappend /usr/lib/qt5/qml            QML_IMPORT_PATH
+pathappend $QT5DIR/qml                 QML_IMPORT_PATH
+pathappend $KF5_PREFIX/lib/qml         QML_IMPORT_PATH
+
+pathappend /usr/lib/qt5/qml            QML2_IMPORT_PATH
+pathappend $QT5DIR/qml                 QML2_IMPORT_PATH
+pathappend $KF5_PREFIX/lib/qml         QML2_IMPORT_PATH
+
+pathappend $KF5_PREFIX/lib/python2.7/site-packages PYTHONPATH
+# End /etc/profile.d/kf5.sh
+EOF
+
+cat > /etc/profile.d/qt5.sh << "EOF"
+# Begin /etc/profile.d/kf5.sh
+# Begin Qt5 changes for KF5
+
+pathappend $QT5DIR/plugins             QT_PLUGIN_PATH
+pathappend $QT5DIR/qml                 QML_IMPORT_PATH
+pathappend $QT5DIR/qml                 QML2_IMPORT_PATH
+
+# End Qt5 changes for KF5
+EOF
+
+    cat >> /etc/ld.so.conf << "EOF"
+# Begin KF5 addition
+
+/opt/kf5/lib
+
+# End KF5 addition
+EOF
+
+    install -v -dm755           $KF5_PREFIX/{etc,share} &&
+    ln -sfv /etc/dbus-1         $KF5_PREFIX/etc         &&
+    ln -sfv /usr/share/dbus-1   $KF5_PREFIX/share
+    
+    install -v -dm755                $KF5_PREFIX/share/icons &&
+    ln -sfv /usr/share/icons/hicolor $KF5_PREFIX/share/icons
+}
+
+buildKf5() {
+    buildQt
+    BUILD curl STD
+    BUILD libarchive STD
+    BUILD cmake STD
+    BUILD phonon STD
+    BUILD libxml2 STD
+    BUILD phonon-backend-gstreamer STD
+    BUILD nspr STD
+    BUILD zip STD
+    BUILD js STD
+    BUILD polkit STD
+    BUILD polkit-qt STD
+    BUILD libdbusmenu-qt STD
+    BUILD extra-cmake-modules STD
+    BUILD hicolor-icon-theme STD
+    BUILD bluez STD
+    kf5PreinstallConfig
+    BUILD sgml-common STD
+    BUILD docbook-xml STD
+    BUILD docbook-xsl STD
+    BUILD giflib STD
+    BUILD libxslt STD
+    BUILD shared-mime-info STD
+    BUILD uri STD
+    BUILD gobject-introspection STD
+    BUILD atk STD
+    BUILD gdk-pixbuf STD
+    BUILD cairo STD
+    BUILD pango STD
+    BUILD gtk2 STD
+    BUILD at-spi2-core STD
+    BUILD at-spi2-atk STD
+    BUILD gtk3 STD
+    BUILD libdaemon STD
+    BUILD libglade STD
+    BUILD avahi STD
+    BUILD lmdb STD
+    BUILD attica STD
+    BUILD kapidox STD
+    BUILD karchive STD
+    BUILD kcodecs STD
+    BUILD kconfig STD
+    BUILD kcoreaddons STD
+    BUILD kdbusaddons STD
+    BUILD kdnssd STD
+    BUILD kguiaddons STD
+    BUILD ki18n STD
+    BUILD kidletime STD
+    BUILD kimageformats STD
+    BUILD kitemmodels STD
+    BUILD kitemviews STD
+    BUILD kplotting STD
+    BUILD kwidgetsaddons STD
+    BUILD kwindowsystem STD
+    BUILD networkmanager-qt STD
+    BUILD solid STD
+    BUILD sonnet STD
+    BUILD threadweaver STD
+    BUILD kauth STD
+    BUILD kcompletion STD
+    BUILD kcrash STD
+    BUILD kdoctools STD
+    BUILD kpty STD
+    BUILD kunitconversion STD
+    BUILD kconfigwidgets STD
+    BUILD kglobalaccel STD
+    BUILD kpackage STD
+    BUILD kservice0 STD
+    BUILD kservice1 STD
+    BUILD kservice2 STD
+    BUILD kservice3 STD
+    BUILD kdesu STD
+    BUILD kemoticons STD
+    BUILD kiconthemes STD
+    BUILD kjobwidgets STD
+    BUILD knotifications STD
+    BUILD ktextwidgets STD
+    BUILD kwallet STD
+    BUILD kxmlgui STD
+    BUILD kbookmarks STD
+    BUILD kio STD
+    BUILD kdeclarative STD
+    BUILD kcmutils STD
+    BUILD frameworkintegration STD
+    BUILD kinit STD
+    BUILD knewstuff STD
+    BUILD knotifyconfig STD
+    BUILD kparts STD
+    BUILD boost STD
+    BUILD kactivities STD
+    BUILD kded STD
+    BUILD kdewebkit STD
+    BUILD ktexteditor STD
+    BUILD kdesignerplugin STD
+    BUILD plasma-framework STD
+    BUILD kpeople STD
+    BUILD kxmlrpcclient STD
+    BUILD bluez-qt STD
+    BUILD kfilemetadata STD
+    BUILD baloo STD
+    BUILD kjs STD
+    BUILD kdelibs4support STD
+    BUILD khtml STD
+    BUILD kjsembed STD
+    BUILD kmediaplayer STD
+    BUILD kross STD
+    BUILD krunner STD
+    
+    cleanupBuild
+}
+
+buildPlasma5Libs() {
+    BUILD font-forge STD
+    BUILD cracklib STD
+    BUILD libpwquality STD
+    BUILD libxkbcommon STD
+    BUILD wayland STD
+    BUILD mesalib STD
+    BUILD nss STD
+    BUILD libnl STD
+    BUILD libndp STD
+    BUILD dhcp STD
+    BUILD wpa-supplicant STD
+    BUILD console-kit STD
+    BUILD dbus-glib STD
+    BUILD libgudev STD
+    BUILD gpm STD
+    BUILD popt STD
+    BUILD s-lang STD
+    BUILD newt STD
+    BUILD network-manager STD
+    BUILD jsonc STD
+    BUILD libsndfile STD
+    BUILD pulse-audio STD
+    BUILD xcb-util-cursor STD
+    BUILD taglib STD
+    BUILD libogg STD
+    BUILD libvorbis STD
+    BUILD libcanberra STD
+    BUILD mtdev STD
+    BUILD libinput STD
+    BUILD which STD
+    BUILD lm_sensors STD
+    BUILD oxygen-icon STD
+    BUILD pciutils STD    
+}
+
+buildPlasma5() {
+    buildPlasma5Libs
+    BUILD kde-cli-tools STD
+    BUILD kdecoration STD
+    BUILD kwayland STD
+    BUILD libkscreen STD
+    BUILD libksysguard STD
+    BUILD breeze STD
+    BUILD kwin STD
+    BUILD oxygen STD
+    BUILD oxygen-fonts STD
+    BUILD khelpcenter STD
+    BUILD kinfocenter STD
+    BUILD ksysguard STD
+    BUILD systemsettings STD
+    BUILD plasma-workspace STD
+    BUILD bluedevil STD
+    BUILD khotkeys STD
+    BUILD kmenuedit STD
+    BUILD kscreen STD
+    BUILD kwrited STD
+    BUILD milou STD
+    BUILD plasma-nm STD
+    BUILD plasma-workspace-wallpapers STD
+    BUILD polkit-kde-agent-plasma STD
+    BUILD powerdevil STD
+    BUILD plasma-desktop STD
+    BUILD kdeplasma-addons-plasma STD
+    BUILD kwayland-integration STD
+    BUILD kde-gtk-config STD
+    BUILD kgamma5 STD
+    BUILD ksshaskpass STD
+#    BUILD kwallet-pam STD # Linux PAM is not installed
+    BUILD muon STD
+    BUILD plasma-mediacenter STD
+    BUILD plasma-pa STD
+    BUILD plasma-sdk STD
+    BUILD sddm-kcm STD
+    BUILD user-manager STD
+    
+    cd $KF5_PREFIX/share/plasma/plasmoids
+    for j in $(find -name \*.js); do
+        ln -sfv ../code/$(basename $j) $(dirname $j)/../ui/
+    done
+    
+    cat > ~/.xinitrc << "EOF"
+ck-launch-session dbus-launch --exit-with-session $KF5_PREFIX/bin/startkde
+EOF
+}
+
+export MAKEFLAGS="-j $(cat /proc/cpuinfo | grep processor | wc -l)"
+export XORG_PREFIX="/usr"
+    export XORG_CONFIG="--prefix=$XORG_PREFIX --sysconfdir=/etc \
+    --localstatedir=/var --disable-static"
+export KF5_PREFIX=/opt/kf5
+export XDG_DATA_DIRS=$KF5_PREFIX/share
+
+setupBashStartup
+BUILD random-number-gen STD
+BUILD lsb-release STD
+BUILD iptables STD
+BUILD shadow STD
+BUILD sudo STD
+BUILD nano STD
+buildXorg
+buildKf5
+buildPlasma5
+
+reconfigureKernel
+
+cleanupBuild

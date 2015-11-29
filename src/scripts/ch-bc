@@ -1,0 +1,25 @@
+#!/bin/bash
+
+FOLDERNAME="bc-1.06.95"
+FILENAME="bc-1.06.95.tar.bz2"
+
+# The Bc package contains an arbitrary precision
+# numeric processing language.
+    
+# Change directory
+cd /src/pkg/basic/${FOLDERNAME}
+
+# Fix some minor memory leaks
+patch -Np1 -i ../bc-1.06.95-memory_leak-1.patch
+
+# Prepare Bc for compilation
+./configure --prefix=/usr \
+            --with-readline         \
+            --mandir=/usr/share/man \
+            --infodir=/usr/share/info
+
+# Compile the package
+make
+
+# Install the package
+make install

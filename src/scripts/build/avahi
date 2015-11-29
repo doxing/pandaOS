@@ -1,0 +1,37 @@
+#!/bin/bash
+
+FOLDERNAME="avahi-0.6.31"
+FILENAME="avahi-0.6.31.tar.gz"
+
+# The Avahi package is a system which facilitates service discovery on a local network.
+
+# Change directory
+cd /src/pkg/standard/${FOLDERNAME}
+
+# Install Avahi
+groupadd -fg 84 avahi &&
+useradd -c "Avahi Daemon Owner" -d /var/run/avahi-daemon -u 84 \
+        -g avahi -s /bin/false avahi
+        
+groupadd -fg 86 netdev
+
+sed -i 's/\(CFLAGS=.*\)-Werror \(.*\)/\1\2/' configure &&
+
+sed -e 's/-DG_DISABLE_DEPRECATED=1//' \
+    -e '/-DGDK_DISABLE_DEPRECATED/d'  \
+    -i avahi-ui/Makefile.in &&
+
+./configure --prefix=/usr        \
+            --sysconfdir=/etc    \
+            --localstatedir=/var \
+            --disable-static     \
+            --disable-mono       \
+            --disable-monodoc    \
+            --disable-python     \
+            --disable-qt3        \
+            --disable-qt4        \
+            --enable-core-docs   \
+            --with-distro=none   \
+            --with-systemdsystemunitdir=no &&
+make $MAKEFLAGS
+make $MAKEFLAGS install

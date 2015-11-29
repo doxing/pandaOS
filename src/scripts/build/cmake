@@ -1,0 +1,43 @@
+#!/bin/bash
+
+FOLDERNAME="cmake-3.3.1"
+FILENAME="cmake-3.3.1.tar.gz"
+
+# The CMake package contains a modern toolset used for generating
+# Makefiles. It is a successor of the auto-generated configure
+# script and aims to be platform- and compiler-independent. A
+# significant user of CMake is KDE since version 4.
+
+# Change directory
+cd /src/pkg/standard/${FOLDERNAME}
+
+# Install cmake
+pathremove () {
+        local IFS=':'
+        local NEWPATH
+        local DIR
+        local PATHVARIABLE=${2:-PATH}
+        for DIR in ${!PATHVARIABLE} ; do
+                if [ "$DIR" != "$1" ] ; then
+                  NEWPATH=${NEWPATH:+$NEWPATH:}$DIR
+                fi
+        done
+        export $PATHVARIABLE="$NEWPATH"
+}
+
+pathprepend () {
+        pathremove $1 $2
+        local PATHVARIABLE=${2:-PATH}
+        export $PATHVARIABLE="$1${!PATHVARIABLE:+:${!PATHVARIABLE}}"
+}
+
+source /usr/bin/setqt5 &&
+./bootstrap --prefix=/usr       \
+            --system-libs       \
+            --mandir=/share/man \
+            --qt-gui            \
+            --no-system-jsoncpp \
+            --docdir=/share/doc/cmake-3.3.1 &&
+make $MAKEFLAGS
+
+make $MAKEFLAGS install

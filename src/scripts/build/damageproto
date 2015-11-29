@@ -1,0 +1,13 @@
+#!/bin/bash
+
+FOLDERNAME="damageproto-1.2.1"
+FILENAME="damageproto-1.2.1.tar.bz2"
+
+# Xorg Protocol Headers
+
+# Change directory
+cd /src/pkg/standard/${FOLDERNAME}
+
+# Install bigreqsproto
+./configure $XORG_CONFIG
+make install

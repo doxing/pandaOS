@@ -1,0 +1,17 @@
+#!/bin/bash
+
+FOLDERNAME="sed-4.2.2"
+FILENAME="sed-4.2.2.tar.bz2"
+
+# The Sed package contains a stream editor.
+
+cd ../../pkg/basic/${FOLDERNAME}
+
+# Prepare Sed for compilation
+./configure --prefix=/tools
+
+# Compile the package
+make $MAKEFLAGS
+
+# Install the package
+make $MAKEFLAGS install

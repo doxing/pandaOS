@@ -1,0 +1,14 @@
+#!/bin/bash
+
+FOLDERNAME="font-dec-misc-1.0.3"
+FILENAME="font-dec-misc-1.0.3.tar.bz2"
+
+# Xorg Fonts
+
+# Change directory
+cd /src/pkg/standard/${FOLDERNAME}
+
+# Install
+./configure $XORG_CONFIG
+make
+make install

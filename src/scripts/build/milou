@@ -1,0 +1,44 @@
+#!/bin/bash
+
+FOLDERNAME="milou-5.4.2"
+FILENAME="milou-5.4.2.tar.xz"
+
+# Change directory
+cd /src/pkg/standard/${FOLDERNAME}
+
+# Install
+pathremove () {
+        local IFS=':'
+        local NEWPATH
+        local DIR
+        local PATHVARIABLE=${2:-PATH}
+        for DIR in ${!PATHVARIABLE} ; do
+                if [ "$DIR" != "$1" ] ; then
+                  NEWPATH=${NEWPATH:+$NEWPATH:}$DIR
+                fi
+        done
+        export $PATHVARIABLE="$NEWPATH"
+}
+
+pathprepend () {
+        pathremove $1 $2
+        local PATHVARIABLE=${2:-PATH}
+        export $PATHVARIABLE="$1${!PATHVARIABLE:+:${!PATHVARIABLE}}"
+}
+
+source /usr/bin/setqt5 &&
+
+mkdir build
+cd    build
+
+OPTS=""
+cmake -DCMAKE_INSTALL_PREFIX=$KF5_PREFIX \
+      -DCMAKE_BUILD_TYPE=Release         \
+      -DLIB_INSTALL_DIR=lib              \
+      -DBUILD_TESTING=OFF                \
+      $OPTS                              \
+      -Wno-dev ..  &&
+
+make $MAKEFLAGS
+make $MAKEFLAGS install
+/sbin/ldconfig

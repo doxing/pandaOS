@@ -1,0 +1,14 @@
+#!/bin/bash
+
+FOLDERNAME="xpr-1.0.4"
+FILENAME="xpr-1.0.4.tar.bz2"
+
+# Xorg Application
+
+# Change directory
+cd /src/pkg/standard/${FOLDERNAME}
+
+# Install
+./configure $XORG_CONFIG
+make
+make install

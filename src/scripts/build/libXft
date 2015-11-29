@@ -1,0 +1,15 @@
+#!/bin/bash
+
+FOLDERNAME="libXft-2.3.2"
+FILENAME="libXft-2.3.2.tar.bz2"
+
+# Xorg Library
+
+# Change directory
+cd /src/pkg/standard/${FOLDERNAME}
+
+# Install
+./configure $XORG_CONFIG
+make
+make install
+/sbin/ldconfig

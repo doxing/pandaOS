@@ -1,0 +1,18 @@
+#!/bin/bash
+
+FOLDERNAME="coreutils-8.24"
+FILENAME="coreutils-8.24.tar.xz"
+
+# The Coreutils package contains utilities for showing
+# and setting the basic system characteristics.
+
+cd ../../pkg/basic/${FOLDERNAME}
+
+# Prepare Coreutils for compilation
+./configure --prefix=/tools --enable-install-program=hostname
+
+# Compile the package
+make $MAKEFLAGS
+
+# Install the package
+make $MAKEFLAGS install

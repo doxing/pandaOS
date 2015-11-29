@@ -1,0 +1,14 @@
+#!/bin/bash
+
+FOLDERNAME="lcms2-2.7"
+FILENAME="lcms2-2.7.tar.gz"
+
+# The Little Color Management System is a small-footprint color management engine, with special focus on accuracy and performance. It uses the International Color Consortium standard (ICC), which is the modern standard for color management.
+
+# Change directory
+cd /src/pkg/standard/${FOLDERNAME}
+
+# Install
+./configure --prefix=/usr --disable-static &&
+make $MAKEFLAGS
+make $MAKEFLAGS install

@@ -1,0 +1,19 @@
+#!/bin/bash
+
+FOLDERNAME="qjson-0.8.1"
+FILENAME="qjson-0.8.1.tar.bz2"
+
+# QJson is a Qt-based library that maps JSON data to QVariant objects and vice versa.
+
+# Change directory
+cd /src/pkg/standard/${FOLDERNAME}
+
+# Install qjson
+mkdir build &&
+cd    build &&
+
+cmake -DCMAKE_INSTALL_PREFIX=/usr \
+      -DCMAKE_BUILD_TYPE=Release  \
+      .. &&
+make $MAKEFLAGS
+make $MAKEFLAGS install

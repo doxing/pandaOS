@@ -1,0 +1,13 @@
+#!/bin/bash
+
+FOLDERNAME="bigreqsproto-1.1.2"
+FILENAME="bigreqsproto-1.1.2.tar.bz2"
+
+# Xorg Protocol Headers
+
+# Change directory
+cd /src/pkg/standard/${FOLDERNAME}
+
+# Install bigreqsproto
+./configure $XORG_CONFIG
+make install

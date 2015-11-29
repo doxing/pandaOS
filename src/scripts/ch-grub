@@ -1,0 +1,23 @@
+#!/bin/bash
+
+FOLDERNAME="grub-2.02~beta2"
+FILENAME="grub-2.02~beta2.tar.xz"
+
+# The GRUB package contains the GRand Unified Bootloader.
+    
+# Change directory
+cd /src/pkg/basic/${FOLDERNAME}
+
+# Prepare Xz for compilation
+./configure --prefix=/usr    \
+            --sbindir=/sbin        \
+            --sysconfdir=/etc      \
+            --disable-grub-emu-usb \
+            --disable-efiemu       \
+            --disable-werror
+
+# Compile the package
+make
+
+# Install the package
+make install

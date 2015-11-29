@@ -1,0 +1,14 @@
+#!/bin/bash
+
+FOLDERNAME="xmessage-1.0.4"
+FILENAME="xmessage-1.0.4.tar.bz2"
+
+# Xorg Application
+
+# Change directory
+cd /src/pkg/standard/${FOLDERNAME}
+
+# Install
+./configure $XORG_CONFIG
+make
+make install

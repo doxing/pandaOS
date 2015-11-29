@@ -1,0 +1,16 @@
+#!/bin/bash
+
+FOLDERNAME="libsndfile-1.0.25"
+FILENAME="libsndfile-1.0.25.tar.gz"
+
+# Libsndfile is a library of C routines for reading and writing files containing sampled audio data.
+
+# Change directory
+cd /src/pkg/standard/${FOLDERNAME}
+
+# Install
+./configure --prefix=/usr   \
+            --disable-static \
+            --docdir=/usr/share/doc/libsndfile-1.0.26
+make $MAKEFLAGS
+make $MAKEFLAGS install

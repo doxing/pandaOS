@@ -1,0 +1,31 @@
+#!/bin/bash
+
+cleanup() {
+    displayMsg ""
+    displayMsg OK "Cleaning up the mess ..."
+    rm -rf "${MOUNT_POINT}${BUILD_DIR}"
+    sudo rm -rf "${MOUNT_POINT}${TOOLS_DIR}"
+    sudo rm -rf /tools
+    
+    # Update Grub
+    displayMsg OK "... Updating GRUB ..."
+    sudo bash $(which update-grub)
+    displayMsg OK "... Done ..."
+    
+    # Unmount the filesystem
+    sudo umount -l $PARTITION
+    displayMsg OK "Done ..."
+}
+
+cleanupBuild() {
+    displayMsg ""
+    
+    displayMsg OK "Cleaning up the mess ..."
+    cd "${MOUNT_POINT}${BUILD_DIR}"
+    sudo rm -R -- */
+    cd ../../
+    cd ${MOUNT_POINT}${PKG_BASIC_DIR}
+    sudo rm -R -- */
+    cd ../../
+    displayMsg OK "Done ..."
+}

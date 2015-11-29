@@ -1,0 +1,30 @@
+#!/bin/bash
+
+FOLDERNAME="flex-2.5.39"
+FILENAME="flex-2.5.39.tar.xz"
+
+# The Flex package contains a utility for generating
+# programs that recognize patterns in text.
+    
+# Change directory
+cd /src/pkg/basic/${FOLDERNAME}
+
+# Skip running three regression tests that require
+# Bison
+sed -i -e '/test-bison/d' tests/Makefile.in
+
+# Prepare Flex for compilation
+./configure --prefix=/usr \
+            --docdir=/usr/share/doc/flex-2.5.39
+
+# Compile the package
+make
+
+# Install the package
+make install
+
+# A few programs do not know about flex yet and try
+# to run its predecessor, lex. To support those
+# programs, create a symbolic link named lex that
+# runs flex in lex emulation mode
+ln -sv flex /usr/bin/lex

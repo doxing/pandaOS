@@ -1,0 +1,220 @@
+#!/bin/bash
+
+source ../../handleErrors
+
+PKG_DIR="/src/pkg"
+PKG_BASIC_DIR="${PKG_DIR}/basic"
+PKG_STD_DIR="${PKG_DIR}/standard"
+BUILD_DIR="/src/build"
+TOOLS_DIR="tools"
+SCRIPT_DIR="/src/scripts"
+BACKUP_DIR="/backup"
+
+# Extracts source code for the selected package.
+extractPkg() {
+    if [ "$(echo ${2} | grep "BASIC")" ]
+    then
+        EXTRACT_DIR="${PKG_BASIC_DIR}"
+    else
+        EXTRACT_DIR="${PKG_STD_DIR}"
+    fi
+    # Extract the primary source archive to a new directory.
+    if [ "$(echo ${1} | grep \\.zip\$)" ]
+    then
+        displayMsg OK "... Extracting source code"
+        unzip "${EXTRACT_DIR}/${1}" -d "${EXTRACT_DIR}"
+    elif [ "$(isArchive ${1})" ]
+    then
+        displayMsg OK "... Extracting source code"
+        tar xf "${EXTRACT_DIR}/${1}" -C "${EXTRACT_DIR}"
+    else
+            displayMsg ERR "... Unknown source format. Not extracting '${1}'"
+    fi
+}
+
+# Checks if a filename is an archive that can be extracted.
+isArchive() {
+  for ext in \\.zip \\.tar\\.bz2 \\.tar\\.gz \\.tar\\.xz \\.tgz \\.tar; do
+    if [ "$(echo ${1} | grep ${ext}\$)" ]; then
+      echo "true"
+      return
+    fi
+  done
+}
+
+BUILD() {
+    # Load build script
+    local SCRIPT_SRC="${SCRIPT_DIR}/${1}"
+
+    displayMsg OK "... Selected '${1}' package"
+    
+    # Extract the source code
+    extractPkg "$(cat ${SCRIPT_SRC} | grep '\FILENAME' | cut -d '=' -f2 | sed -e 's/^"//' -e 's/"$//')" "${2}"
+    
+    displayMsg OK "... Building a temporary version of this software"
+    # Change directory to builds folder
+    cd "${BUILD_DIR}"
+    
+    # Create dedicated directory for the package
+    mkdir -p ${1}
+    # Move inside the dedicated directory
+    cd ${1}
+    # Execute the script
+    bash /${SCRIPT_SRC}
+}
+
+cleanupBuild() {
+    displayMsg OK "Cleaning up chroot env..."
+    cd /src/build
+    rm -R -- */
+    cd /src/pkg/basic
+    rm -R -- */
+    displayMsg OK "Done ..."
+    
+}
+
+BUILD ch-linux-api-headers BASIC
+BUILD ch-man-pages BASIC
+BUILD ch-glibc BASIC
+
+# Adjust the toolchain so that it will link any newly compiled program
+# against these new libraries. Replace /tools linker with the adjusted
+# linker. Also create a link to its counterpart in
+# /tools/$(gcc -dumpmachine)/bin
+
+mv /tools/bin/{ld,ld-old}
+mv /tools/$(gcc -dumpmachine)/bin/{ld,ld-old}
+mv /tools/bin/{ld-new,ld}
+ln -s /tools/bin/ld /tools/$(gcc -dumpmachine)/bin/ld
+
+# Amend the GCC specs file so that it points to the new dynamic linker.
+# Simply deleting all instances of “/tools” should leave us with the
+# correct path to the dynamic linker. Also adjust the specs file so
+# that GCC knows where to find the correct headers and Glibc start files.
+gcc -dumpspecs | sed -e 's@/tools@@g'                   \
+    -e '/\*startfile_prefix_spec:/{n;s@.*@/usr/lib/ @}' \
+    -e '/\*cpp:/{n;s@$@ -isystem /usr/include@}' >      \
+    `dirname $(gcc --print-libgcc-file-name)`/specs
+    
+# Perform sanity check
+echo 'int main(){}' > dummy.c
+cc dummy.c -v -Wl,--verbose &> dummy.log
+if [ -n "$(readelf -l a.out | grep ': /lib')" ]
+then
+    echo readelf -l a.out | grep ': /lib'
+else
+    echo "Toolchain test failed while adjusting the toolchain."
+    exit 1
+fi
+
+# Make sure that we're setup to use the correct startfiles
+# FIXME: Verify the result
+# Result: /usr/lib/crt1.o succeeded
+#         /usr/lib/crti.o succeeded
+#         /usr/lib/crtn.o succeeded
+grep -o '/usr/lib.*/crt[1in].*succeeded' dummy.log
+
+# Verify that the compiler is searching for the correct
+# header files.
+# FIXME: Verify the result
+# Result: #include <...> search starts here:
+#        /usr/include
+grep -B1 '^ /usr/include' dummy.log
+
+# Verify that the new linker is being used with the
+# correct search paths.
+# FIXME: Verify the result
+# Result: SEARCH_DIR("/usr/lib")
+#         SEARCH_DIR("/lib");
+grep 'SEARCH.*/usr/lib' dummy.log |sed 's|; |\n|g'
+
+# Make sure that we're using the correct libc
+# FIXME: Verify the result
+# Result: attempt to open /lib/libc.so.6 succeeded
+grep "/lib.*/libc.so.6 " dummy.log
+
+# Make sure GCC is using the correct dynamic linker
+# FIXME: Verify the result
+# Result: found ld-linux.so.2 at /lib/ld-linux.so.2
+grep found dummy.log
+
+# Clean up the test files
+rm dummy.c a.out dummy.log
+
+BUILD ch-zlib BASIC
+BUILD ch-file BASIC
+BUILD ch-binutils BASIC
+BUILD ch-gmp BASIC
+BUILD ch-mpfr BASIC
+BUILD ch-mpc BASIC
+BUILD ch-gcc BASIC
+BUILD ch-bzip BASIC
+BUILD ch-pkg-config BASIC
+BUILD ch-ncurses BASIC
+BUILD ch-attr BASIC
+BUILD ch-acl BASIC
+BUILD ch-libcap BASIC
+BUILD ch-sed BASIC
+BUILD ch-shadow BASIC
+BUILD ch-psmisc BASIC
+BUILD ch-procps-ng BASIC
+BUILD ch-e2fsprogs BASIC
+BUILD ch-coreutils BASIC
+BUILD ch-iana BASIC
+BUILD ch-m4 BASIC
+BUILD ch-flex BASIC
+BUILD ch-bison BASIC
+BUILD ch-grep BASIC
+BUILD ch-readline BASIC
+BUILD ch-bash BASIC
+BUILD ch-bc BASIC
+BUILD ch-libtool BASIC
+BUILD ch-gdbm BASIC
+BUILD ch-expat BASIC
+BUILD ch-inetutils BASIC
+BUILD ch-perl BASIC
+BUILD ch-xml-parser BASIC
+BUILD ch-autoconf BASIC
+BUILD ch-automake BASIC
+BUILD ch-diffutils BASIC
+BUILD ch-gawk BASIC
+BUILD ch-findutils BASIC
+BUILD ch-gettext BASIC
+BUILD ch-intltool BASIC
+BUILD ch-gperf BASIC
+BUILD ch-groff BASIC
+BUILD ch-xz BASIC
+BUILD ch-grub BASIC
+BUILD ch-less BASIC
+BUILD ch-gzip BASIC
+BUILD ch-iproute2 BASIC
+BUILD ch-kbd BASIC
+BUILD ch-kmod BASIC
+BUILD ch-libpipeline BASIC
+BUILD ch-make BASIC
+BUILD ch-patch BASIC
+BUILD ch-systemd BASIC
+BUILD ch-dbus BASIC
+BUILD ch-util-linux BASIC
+BUILD ch-mandb BASIC
+BUILD ch-tar BASIC
+BUILD ch-texinfo BASIC
+BUILD ch-vim BASIC
+
+# Strip the binaries and libraries
+/tools/bin/find /{,usr/}{bin,lib,sbin} -type f \
+    -exec /tools/bin/strip --strip-debug '{}' ';'
+    
+# Clean up some extra files left around from
+# running tests
+rm -rf /tmp/*
+
+# Remove some static libraries
+rm /usr/lib/lib{bfd,opcodes}.a
+rm /usr/lib/libbz2.a
+rm /usr/lib/lib{com_err,e2p,ext2fs,ss}.a
+rm /usr/lib/libltdl.a
+rm /usr/lib/libz.a
+
+# Clean up the mess
+cleanupBuild

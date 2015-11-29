@@ -1,0 +1,19 @@
+#!/bin/bash
+
+FOLDERNAME="taglib-1.10"
+FILENAME="taglib-1.10.tar.gz"
+
+# Taglib is a library used for reading, writing and manipulating audio file tags and is used by applications such as Amarok and VLC.
+
+# Change directory
+cd /src/pkg/standard/${FOLDERNAME}
+
+# Install
+mkdir build &&
+cd    build &&
+
+cmake -DCMAKE_INSTALL_PREFIX=/usr \
+      -DCMAKE_BUILD_TYPE=Release  \
+      .. &&
+make $MAKEFLAGS
+make $MAKEFLAGS install

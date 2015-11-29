@@ -1,0 +1,16 @@
+#!/bin/bash
+
+FOLDERNAME="libXdmcp-1.1.2"
+FILENAME="libXdmcp-1.1.2.tar.bz2"
+
+# The libXdmcp package contains a library implementing the X
+# Display Manager Control Protocol. This is useful for allowing
+# clients to interact with the X Display Manager.
+
+# Change directory
+cd /src/pkg/standard/${FOLDERNAME}
+
+# Install libXdmcp
+./configure $XORG_CONFIG &&
+make
+make install

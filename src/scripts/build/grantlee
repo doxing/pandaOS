@@ -1,0 +1,19 @@
+#!/bin/bash
+
+FOLDERNAME="grantlee-0.5.1"
+FILENAME="grantlee-0.5.1.tar.gz"
+
+# Grantlee is a set of free software libraries written using the Qt framework. Currently two libraries are shipped with Grantlee: Grantlee Templates and Grantlee TextDocument. The goal of Grantlee Templates is to make it easier for application developers to separate the structure of documents from the data they contain, opening the door for theming.
+
+# Change directory
+cd /src/pkg/standard/${FOLDERNAME}
+
+# Install
+mkdir build &&
+cd    build &&
+
+cmake -DCMAKE_INSTALL_PREFIX=/usr \
+      -DCMAKE_BUILD_TYPE=Release  \
+      .. &&
+make $MAKEFLAGS
+make $MAKEFLAGS install

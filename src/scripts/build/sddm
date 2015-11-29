@@ -1,0 +1,84 @@
+#!/bin/bash
+
+FOLDERNAME="sddm-0.13.0"
+FILENAME="sddm-0.13.0.tar.xz"
+
+# The SDDM package contains a lightweight display manager
+# based upon Qt and QML.
+
+# Change directory
+cd /src/pkg/standard/${FOLDERNAME}
+
+# Create a dedicated user and group to take control of
+# the sddm daemon after it is started
+groupadd -g 64 sddm &&
+useradd  -c "SDDM Daemon" \
+         -d /var/lib/sddm \
+         -u 64 -g sddm    \
+         -s /bin/false sddm
+         
+# Install sddm
+pathremove () {
+        local IFS=':'
+        local NEWPATH
+        local DIR
+        local PATHVARIABLE=${2:-PATH}
+        for DIR in ${!PATHVARIABLE} ; do
+                if [ "$DIR" != "$1" ] ; then
+                  NEWPATH=${NEWPATH:+$NEWPATH:}$DIR
+                fi
+        done
+        export $PATHVARIABLE="$NEWPATH"
+}
+
+pathprepend () {
+        pathremove $1 $2
+        local PATHVARIABLE=${2:-PATH}
+        export $PATHVARIABLE="$1${!PATHVARIABLE:+:${!PATHVARIABLE}}"
+}
+
+source /usr/bin/setqt5 &&
+
+mkdir build &&
+cd    build
+
+cmake -DCMAKE_INSTALL_PREFIX=/usr \
+      -DCMAKE_BUILD_TYPE=Release  \
+      -DENABLE_JOURNALD=ON        \
+      -Wno-dev .. &&
+make $MAKEFLAGS
+make $MAKEFLAGS install &&
+install -v -dm755 -o sddm -g sddm /var/lib/sddm
+
+# Create config file
+sddm --example-config > sddm.example.conf
+cp -v sddm.example.conf /etc/sddm.conf
+
+# Replace the default XauthPath value by /opt/xorg/bin/xauth
+sed -e '/ServerPath/ s|usr|opt/xorg|' \
+    -i.orig /etc/sddm.conf
+    
+# For security reasons, you normally want the default ServerArguments=-nolisten tcp
+sed -e 's/-nolisten tcp//'\
+    -i /etc/sddm.conf
+# Desktop (Notebook) users, normally wish the Num Lock key on
+sed -e 's/\"none\"/\"on\"/' \
+    -i /etc/sddm.conf
+
+# Install the /etc/rc.d/init.d/sddm init script
+cd /src/pkg/standard
+tar xf blfs-bootscripts-20150924.tar.bz2
+cd blfs-bootscripts-20150924
+make $MAKEFLAGS install-sddm
+
+# Start sddm
+/etc/rc.d/init.d/sddm start
+init 5
+cp -v /etc/inittab{,-orig} &&
+sed -i '/initdefault/ s/3/5/' /etc/inittab
+
+# Fix keyboard issues
+echo 'setxkbmap "us"' >> \
+     /usr/share/sddm/scripts/Xsetup
+# Fix Dircolors issue
+echo "source /etc/profile.d/dircolors.sh" >> /etc/bashrc
