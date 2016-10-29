@@ -2,7 +2,7 @@
 
 # Verifies minimum system requirements
 checkReq() {
-    displayMsg OK "Verifying requirements ..."
+    displayMsg OK "Verifying requirements..."
     
     # Sanity checks
     if [ "$(whoami)" == "root" ]
@@ -48,7 +48,7 @@ checkReq() {
 
 # Creates necessary directories
 createReqDir() {
-    displayMsg OK "Creating temporary directories ..."
+    displayMsg OK "Creating temporary directories..."
     
     # Change directory to the mount point
     cd $MOUNT_POINT
@@ -77,5 +77,5 @@ createReqDir() {
         exit 1
     fi
     
-    displayMsg OK "Done ..."
+    displayMsg OK "Done..."
 }
